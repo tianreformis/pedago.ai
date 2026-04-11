@@ -1,0 +1,232 @@
+"use client";
+
+import { useState } from "react";
+import { RPPInput, RPPOutput } from "@/types/rpp";
+import { ChevronDown, ChevronUp } from "lucide-react";
+
+interface RPPViewerProps {
+  input: RPPInput;
+  output: RPPOutput;
+}
+
+function SectionCard({ title, icon, color, children, defaultOpen = false }: {
+  title: string;
+  icon: React.ReactNode;
+  color: string;
+  children: React.ReactNode;
+  defaultOpen?: boolean;
+}) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+
+  return (
+    <div className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className={`w-full flex items-center justify-between p-4 ${color} text-white font-semibold`}
+      >
+        <div className="flex items-center gap-2">
+          {icon}
+          {title}
+        </div>
+        {isOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+      </button>
+      {isOpen && <div className="p-4 bg-white dark:bg-gray-800">{children}</div>}
+    </div>
+  );
+}
+
+export default function RPPViewer({ input, output }: RPPViewerProps) {
+  const { karakteristikPembelajar, desainPembelajaran, pengalamanBelajar, asesmen } = output;
+
+  return (
+    <div className="space-y-4">
+      <div className="bg-blue-50 dark:bg-blue-900/30 border-l-4 border-blue-600 p-4 rounded-r-lg">
+        <h3 className="font-semibold text-blue-800 dark:text-blue-300">Identitas RPP</h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2 text-sm">
+          <div className="dark:text-gray-200"><span className="font-medium">Mata Pelajaran:</span> {input.mataPelajaran}</div>
+          <div className="dark:text-gray-200"><span className="font-medium">Fase:</span> {input.fase}</div>
+          {input.kelas && <div className="dark:text-gray-200"><span className="font-medium">Kelas:</span> {input.kelas}</div>}
+          {input.namaGuru && <div className="dark:text-gray-200"><span className="font-medium">Guru:</span> {input.namaGuru}</div>}
+          {input.sekolah && <div className="dark:text-gray-200"><span className="font-medium">Sekolah:</span> {input.sekolah}</div>}
+          {input.alokasWaktu && <div className="dark:text-gray-200"><span className="font-medium">Waktu:</span> {input.alokasWaktu}</div>}
+        </div>
+      </div>
+
+      <SectionCard
+        title="A. Karakteristik Pembelajaran"
+        icon={<span>A</span>}
+        color="bg-green-600"
+        defaultOpen
+      >
+        <div className="space-y-3 text-sm">
+          <div>
+            <span className="font-semibold dark:text-white">Kesiapan Peserta Didik:</span>
+            <p className="mt-1 text-gray-700 dark:text-gray-300">{karakteristikPembelajar.kesiapanPesertaDidik}</p>
+          </div>
+          <div>
+            <span className="font-semibold dark:text-white">Karakteristik Materi:</span>
+            <p className="mt-1 text-gray-700 dark:text-gray-300">{karakteristikPembelajar.karakteristikMateri}</p>
+          </div>
+          <div>
+            <span className="font-semibold dark:text-white">Dimensi Profil Lulusan:</span>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {karakteristikPembelajar.dimensiProfilLulusan.map((d, i) => (
+                <span key={i} className="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300 rounded-full text-xs">
+                  {d}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </SectionCard>
+
+      <SectionCard
+        title="B. Desain Pembelajaran"
+        icon={<span>B</span>}
+        color="bg-purple-600"
+        defaultOpen
+      >
+        <div className="space-y-3 text-sm">
+          <div>
+            <span className="font-semibold dark:text-white">Capaian Pembelajaran:</span>
+            <p className="mt-1 text-gray-700 dark:text-gray-300">{desainPembelajaran.capaianPembelajaran}</p>
+          </div>
+          {desainPembelajaran.lintasDisiplinIlmu && (
+            <div>
+              <span className="font-semibold dark:text-white">Lintas Disciplin Ilmu:</span>
+              <p className="mt-1 text-gray-700 dark:text-gray-300">{desainPembelajaran.lintasDisiplinIlmu}</p>
+            </div>
+          )}
+          <div>
+            <span className="font-semibold dark:text-white">Tujuan Pembelajaran:</span>
+            <ul className="mt-1 list-disc list-inside text-gray-700 dark:text-gray-300">
+              {desainPembelajaran.tujuanPembelajaran.map((tp, i) => (
+                <li key={i}>{tp}</li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <span className="font-semibold dark:text-white">Topik Pembelajaran:</span>
+            <p className="mt-1 text-gray-700 dark:text-gray-300">{desainPembelajaran.topikPembelajaran}</p>
+          </div>
+          <div>
+            <span className="font-semibold dark:text-white">Praktik Pedagogis:</span>
+            <p className="mt-1 text-gray-700 dark:text-gray-300">{desainPembelajaran.praktikPedagogis}</p>
+          </div>
+          {desainPembelajaran.kemitraanPembelajaran && (
+            <div>
+              <span className="font-semibold dark:text-white">Kemitraan Pembelajaran:</span>
+              <p className="mt-1 text-gray-700 dark:text-gray-300">{desainPembelajaran.kemitraanPembelajaran}</p>
+            </div>
+          )}
+          <div>
+            <span className="font-semibold dark:text-white">Lingkungan Belajar:</span>
+            <p className="mt-1 text-gray-700 dark:text-gray-300">{desainPembelajaran.lingkunganBelajar}</p>
+          </div>
+          {desainPembelajaran.pemanfaatanTeknologi && (
+            <div>
+              <span className="font-semibold dark:text-white">Pemanfaatan Teknologi:</span>
+              <p className="mt-1 text-gray-700 dark:text-gray-300">{desainPembelajaran.pemanfaatanTeknologi}</p>
+            </div>
+          )}
+          <div>
+            <span className="font-semibold dark:text-white">Kriteria Pencapaian TP:</span>
+            <ul className="mt-1 list-disc list-inside text-gray-700 dark:text-gray-300">
+              {desainPembelajaran.kriteriaPencapaianTP.map((k, i) => (
+                <li key={i}>{k}</li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <span className="font-semibold dark:text-white">Dimensi Profil Lulusan:</span>
+            <p className="mt-1 text-gray-700 dark:text-gray-300">{desainPembelajaran.dimensiProfilLulusan}</p>
+          </div>
+        </div>
+      </SectionCard>
+
+      <SectionCard
+        title="C. Pengalaman Belajar"
+        icon={<span>C</span>}
+        color="bg-orange-500"
+        defaultOpen
+      >
+        <div className="space-y-4 text-sm">
+          <div className="bg-orange-50 dark:bg-orange-900/20 p-3 rounded-lg border-l-4 border-orange-400">
+            <h4 className="font-semibold text-orange-800 dark:text-orange-300">Fase Awal ({pengalamanBelajar.awal.durasi})</h4>
+            <p className="mt-2 dark:text-gray-200"><span className="font-medium">Prinsip:</span> {pengalamanBelajar.awal.prinsip}</p>
+            <p className="mt-1 dark:text-gray-200"><span className="font-medium">Orientasi:</span> {pengalamanBelajar.awal.orientasi}</p>
+            <p className="mt-1 dark:text-gray-200"><span className="font-medium">Apersepsi:</span> {pengalamanBelajar.awal.apersepsi}</p>
+            <p className="mt-1 dark:text-gray-200"><span className="font-medium">Motivasi:</span> {pengalamanBelajar.awal.motivasi}</p>
+          </div>
+
+          <div className="bg-orange-50 dark:bg-orange-900/20 p-3 rounded-lg border-l-4 border-orange-600">
+            <h4 className="font-semibold text-orange-800 dark:text-orange-300">Fase Inti</h4>
+            <div className="mt-3 space-y-3">
+              <div>
+                <span className="font-medium dark:text-gray-200">Memahami ({pengalamanBelajar.inti.memahami.durasi})</span>
+                <p className="text-gray-700 dark:text-gray-300">{pengalamanBelajar.inti.memahami.prinsip}</p>
+                <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 mt-1">
+                  {(pengalamanBelajar.inti.memahami as any).kegitan?.map((k: string, i: number) => (
+                    <li key={i}>{k}</li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <span className="font-medium dark:text-gray-200">Mengaplikasi ({pengalamanBelajar.inti.mengaplikasi.durasi})</span>
+                <p className="text-gray-700 dark:text-gray-300">{pengalamanBelajar.inti.mengaplikasi.prinsip}</p>
+                <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 mt-1">
+                  {(pengalamanBelajar.inti.mengaplikasi as any).kegitan?.map((k: string, i: number) => (
+                    <li key={i}>{k}</li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <span className="font-medium dark:text-gray-200">Merefleksi ({pengalamanBelajar.inti.merefleksi.durasi})</span>
+                <p className="text-gray-700 dark:text-gray-300">{pengalamanBelajar.inti.merefleksi.prinsip}</p>
+                <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 mt-1">
+                  {(pengalamanBelajar.inti.merefleksi as any).kegitan?.map((k: string, i: number) => (
+                    <li key={i}>{k}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-orange-50 dark:bg-orange-900/20 p-3 rounded-lg border-l-4 border-orange-700">
+            <h4 className="font-semibold text-orange-800 dark:text-orange-300">Fase Penutup ({pengalamanBelajar.penutup.durasi})</h4>
+            <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 mt-2">
+              {(pengalamanBelajar.penutup as any).kegitan?.map((k: string, i: number) => (
+                <li key={i}>{k}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </SectionCard>
+
+      <SectionCard
+        title="D. Asesmen Pembelajaran"
+        icon={<span>D</span>}
+        color="bg-red-500"
+        defaultOpen
+      >
+        <div className="space-y-4 text-sm">
+          <div className="bg-red-50 dark:bg-red-900/20 p-3 rounded-lg border-l-4 border-red-400">
+            <h4 className="font-semibold text-red-800 dark:text-red-300">Asesmen Awal (Assessment as Learning)</h4>
+            <p className="mt-2 dark:text-gray-200"><span className="font-medium">Teknik:</span> {asesmen.asesmenAwal.teknik}</p>
+            <p className="mt-1 dark:text-gray-200"><span className="font-medium">Instrumen:</span> {asesmen.asesmenAwal.instrumen}</p>
+          </div>
+          <div className="bg-red-50 dark:bg-red-900/20 p-3 rounded-lg border-l-4 border-red-500">
+            <h4 className="font-semibold text-red-800 dark:text-red-300">Asesmen Formatif (Assessment for Learning)</h4>
+            <p className="mt-2 dark:text-gray-200"><span className="font-medium">Teknik:</span> {asesmen.asesmenFormatif.teknik}</p>
+            <p className="mt-1 dark:text-gray-200"><span className="font-medium">Instrumen:</span> {asesmen.asesmenFormatif.instrumen}</p>
+          </div>
+          <div className="bg-red-50 dark:bg-red-900/20 p-3 rounded-lg border-l-4 border-red-600">
+            <h4 className="font-semibold text-red-800 dark:text-red-300">Asesmen Sumatif (Assessment of Learning)</h4>
+            <p className="mt-2 dark:text-gray-200"><span className="font-medium">Teknik:</span> {asesmen.asesmenSumatif.teknik}</p>
+            <p className="mt-1 dark:text-gray-200"><span className="font-medium">Instrumen:</span> {asesmen.asesmenSumatif.instrumen}</p>
+          </div>
+        </div>
+      </SectionCard>
+    </div>
+  );
+}
