@@ -14,8 +14,23 @@ model User {
   password  String
   name      String?
   school    String?
+  isAdmin   Boolean  @default(false)
+  
+  subscriptionStatus   String   @default("free") // free, active, expired
+  subscriptionPlan     String?  // monthly, yearly
+  subscriptionExpiry   DateTime?
+  subscriptionMidtransId String? // Midtrans order ID
+  
   createdAt DateTime @default(now())
   rpps      RPP[]
+}
+
+model FreeUsage {
+  id        String   @id @default(cuid())
+  ipAddress String   @unique
+  count     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model RPP {

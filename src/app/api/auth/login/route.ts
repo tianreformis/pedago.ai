@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       data: {
-        user: { id: user.id, email: user.email, name: user.name, school: user.school },
+        user: { id: user.id, email: user.email, name: user.name, school: user.school, isAdmin: user.isAdmin },
         token,
       },
     });
