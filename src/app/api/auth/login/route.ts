@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Email atau password salah" }, { status: 401 });
     }
 
-    const token = createToken(user.id, user.email);
+    const token = createToken(user.id, user.email, user.isAdmin);
 
     return NextResponse.json({
       success: true,

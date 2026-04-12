@@ -31,6 +31,8 @@ export default function GeneratePage() {
       const json = await res.json();
       if (json.success) {
         setRppOutput(json.data);
+      } else if (json.freeLimitReached) {
+        setError(json.error || "Batas penggunaan gratis tercapai.");
       } else {
         setError(json.error || "Gagal generate RPP");
       }
@@ -101,7 +103,7 @@ export default function GeneratePage() {
             <div className="flex gap-2">
               <button
                 onClick={handleSave}
-                disabled={isSaving || saved}
+                disabled={!!isSaving || !!saved}
                 className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg font-medium transition-colors"
               >
                 {isSaving ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}

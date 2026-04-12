@@ -1,24 +1,7 @@
 "use client";
 
-import { useState } from "react";
-
-const MATA_PELAJARAN_OPTIONS = [
-  "Bahasa Indonesia", "Matematika", "IPA", "IPS", "PKN / PPKN",
-  "Bahasa Inggris", "Pendidikan Agama Islam", "Seni Budaya",
-  "Pendidikan Jasmani (PJOK)", "Sejarah", "Geografi", "Ekonomi",
-  "Biologi", "Fisika", "Kimia", "Sosiologi", "Informatika",
-  "Pendidikan Agama Kristen", "Pendidikan Agama Hindu",
-  "Pendidikan Agama Buddha", "Pendidikan Agama Konghucu",
-];
-
-const FASE_OPTIONS = [
-  { value: "Fase A", label: "Fase A — Kelas 1 & 2 SD/MI" },
-  { value: "Fase B", label: "Fase B — Kelas 3 & 4 SD/MI" },
-  { value: "Fase C", label: "Fase C — Kelas 5 & 6 SD/MI" },
-  { value: "Fase D", label: "Fase D — Kelas 7, 8 & 9 SMP/MTs" },
-  { value: "Fase E", label: "Fase E — Kelas 10 SMA/SMK/MA" },
-  { value: "Fase F", label: "Fase F — Kelas 11 & 12 SMA/SMK/MA" },
-];
+import { useState, useEffect } from "react";
+import { getCPOptions, FASE_OPTIONS, MATA_PELAJARAN_OPTIONS } from "@/lib/cp-data";
 
 interface RPPInputFormProps {
   onGenerate: (formData: any) => void;
@@ -26,9 +9,12 @@ interface RPPInputFormProps {
 }
 
 export default function RPPInputForm({ onGenerate, isLoading }: RPPInputFormProps) {
+  const [mounted, setMounted] = useState(false);
+  const [cpOptions, setCpOptions] = useState<string[]>([]);
   const [form, setForm] = useState({
     mataPelajaran: "",
     fase: "",
+    cp: "",
     kelas: "",
     namaGuru: "",
     sekolah: "",
@@ -37,15 +23,38 @@ export default function RPPInputForm({ onGenerate, isLoading }: RPPInputFormProp
     alokasWaktu: "2 x 45 menit",
   });
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (form.mataPelajaran && form.fase) {
+      setCpOptions(getCPOptions(form.mataPelajaran, form.fase));
+    } else {
+      setCpOptions([]);
+    }
+  }, [form.mataPelajaran, form.fase]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    if (name === "mataPelajaran" || name === "fase") {
+      setForm(prev => ({ ...prev, [name]: value, cp: "" }));
+    } else {
+      setForm(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.mataPelajaran || !form.fase) return;
+    if (!form.mataPelajaran || !form.fase || !form.cp) return;
     onGenerate(form);
   };
+
+  if (!mounted) {
+    return null;
+  }
+
+  const canSubmit = !isLoading && Boolean(form.mataPelajaran) && Boolean(form.fase) && Boolean(form.cp);
 
   return (
     <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm space-y-5">
@@ -85,6 +94,26 @@ export default function RPPInputForm({ onGenerate, isLoading }: RPPInputFormProp
             ))}
           </select>
         </div>
+
+        {cpOptions.length > 0 && (
+          <div className="md:col-span-2">
+            <label className="block text-sm font-semibold text-blue-700 dark:text-blue-400 mb-1">
+              Capaian Pembelajaran (CP) <span className="text-red-500">*</span>
+            </label>
+            <select
+              name="cp"
+              value={form.cp}
+              onChange={handleChange}
+              required
+              className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">— Pilih Capaian Pembelajaran —</option>
+              {cpOptions.map((cp) => (
+                <option key={cp} value={cp}>{cp}</option>
+              ))}
+            </select>
+          </div>
+        )}
 
         <div>
           <label className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">Nama Guru</label>
@@ -157,13 +186,13 @@ export default function RPPInputForm({ onGenerate, isLoading }: RPPInputFormProp
       <div className="pt-2">
         <button
           type="submit"
-          disabled={isLoading || !form.mataPelajaran || !form.fase}
+          disabled={canSubmit ? false : true}
           className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white font-semibold py-3 rounded-xl transition-colors"
         >
           {isLoading ? "⏳ Sedang membuat RPP..." : "✨ Generate RPP Pembelajaran Mendalam"}
         </button>
         <p className="text-xs text-center text-gray-400 dark:text-gray-500 mt-2">
-          * Hanya Mata Pelajaran dan Fase yang wajib diisi. Sisanya akan di-generate oleh AI.
+          * Mata Pelajaran, Fase, dan CP wajib diisi
         </p>
       </div>
     </form>

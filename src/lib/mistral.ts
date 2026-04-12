@@ -27,6 +27,7 @@ Capaian Pembelajaran HARUS mengacu pada CP resmi Kemendikbud untuk fase dan mape
   const userPrompt = `Buatkan RPP Pembelajaran Mendalam lengkap untuk:
 - Mata Pelajaran: ${input.mataPelajaran}
 - Fase: ${input.fase}
+- Capaian Pembelajaran (CP): ${input.cp}
 ${input.kelas ? `- Kelas: ${input.kelas}` : ""}
 ${input.alokasWaktu ? `- Alokasi Waktu: ${input.alokasWaktu}` : "- Alokasi Waktu: 2 x 45 menit (1 pertemuan)"}
 ${input.semester ? `- Semester: ${input.semester}` : ""}

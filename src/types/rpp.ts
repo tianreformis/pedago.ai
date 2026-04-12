@@ -1,6 +1,7 @@
 export interface RPPInput {
   mataPelajaran: string;
   fase: string;
+  cp?: string;
   kelas?: string;
   namaGuru?: string;
   sekolah?: string;

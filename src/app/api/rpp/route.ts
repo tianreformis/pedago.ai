@@ -17,12 +17,17 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const user = await prismaClient.user.findUnique({
+      where: { id: userId },
+      select: { name: true, subscriptionStatus: true, subscriptionExpiry: true },
+    });
+
     const rpps = await prismaClient.rPP.findMany({
       where: { userId },
       orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json({ success: true, data: rpps });
+    return NextResponse.json({ success: true, data: rpps, user });
   } catch (error) {
     console.error("Get RPPs error:", error);
     return NextResponse.json({ error: "Failed to fetch RPPs" }, { status: 500 });

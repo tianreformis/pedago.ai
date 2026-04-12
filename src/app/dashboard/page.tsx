@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Plus, FileText, Clock, Trash2, LogOut } from "lucide-react";
+import { Plus, FileText, Clock, Trash2, LogOut, CreditCard } from "lucide-react";
 
 interface RPP {
   id: string;
@@ -14,9 +14,16 @@ interface RPP {
   status: string;
 }
 
+interface User {
+  name?: string;
+  subscriptionStatus?: string;
+  subscriptionExpiry?: string;
+}
+
 export default function DashboardPage() {
   const router = useRouter();
   const [rpps, setRpps] = useState<RPP[]>([]);
+  const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -36,6 +43,7 @@ export default function DashboardPage() {
       const data = await res.json();
       if (data.success) {
         setRpps(data.data);
+        setUser(data.user);
       }
     } catch (error) {
       console.error("Failed to fetch RPPs:", error);
@@ -70,9 +78,24 @@ export default function DashboardPage() {
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">Kelola RPP yang telah Anda buat</p>
+          {user?.subscriptionStatus === "active" && user.subscriptionExpiry ? (
+            <p className="text-green-600 dark:text-green-400 mt-1">
+              Berlangganan aktif hingga {new Date(user.subscriptionExpiry).toLocaleDateString("id-ID")}
+            </p>
+          ) : (
+            <p className="text-gray-600 dark:text-gray-400 mt-1">Kelola RPP yang telah Anda buat</p>
+          )}
         </div>
         <div className="flex gap-2">
+          {user?.subscriptionStatus !== "active" && (
+            <Link
+              href="/payment"
+              className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+            >
+              <CreditCard size={20} />
+              Upgrade
+            </Link>
+          )}
           <Link
             href="/generate"
             className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
@@ -89,6 +112,18 @@ export default function DashboardPage() {
           </button>
         </div>
       </div>
+
+      {user?.subscriptionStatus !== "active" && (
+        <div className="mb-6 p-4 bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+          <p className="text-yellow-800 dark:text-yellow-200 text-center">
+            Anda menggunakan versi gratis.{" "}
+            <Link href="/payment" className="underline font-medium">
+              Upgrade ke premium
+            </Link>{" "}
+            untuk akses tak terbatas.
+          </p>
+        </div>
+      )}
 
       {isLoading ? (
         <div className="text-center py-12 text-gray-500 dark:text-gray-400">Memuat...</div>
