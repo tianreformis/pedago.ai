@@ -19,7 +19,7 @@ export default function Home() {
             <Sparkles className="text-blue-600 dark:text-blue-400" size={24} />
           </div>
           <h3 className="font-semibold text-gray-900 dark:text-white mb-2">AI Powered</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-300">Generate otomatis dengan Mistral AI</p>
+          <p className="text-sm text-gray-600 dark:text-gray-300">Generate otomatis</p>
         </div>
         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 text-center">
           <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-4">

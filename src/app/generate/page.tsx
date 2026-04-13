@@ -85,7 +85,7 @@ export default function GeneratePage() {
         Generator RPP Pembelajaran Mendalam
       </h1>
       <p className="text-center text-gray-500 dark:text-gray-400 mb-8">
-        Berbasis format resmi Kemendikdasmen Indonesia · Powered by Mistral AI
+        Berbasis format resmi Kemendikdasmen Indonesia
       </p>
 
       <RPPInputForm onGenerate={handleGenerate} isLoading={isLoading} />

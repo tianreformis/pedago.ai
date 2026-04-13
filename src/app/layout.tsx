@@ -28,9 +28,9 @@ export default function RootLayout({
             <div className="max-w-6xl mx-auto px-4">
               <div className="flex items-center justify-between h-16">
                 <div className="flex items-center gap-8">
-                  <Link href="/" className="font-bold text-xl">RPM Generator</Link>
+                  <Link href="/" className="font-bold text-xl">Leksika</Link>
                   <div className="hidden md:flex items-center gap-6">
-                    <Link href="/generate" className="hover:text-blue-200 transition-colors">Generate RPP</Link>
+                    <Link href="/generate" className="hover:text-blue-200 transition-colors">Generate RPP-PM</Link>
                     <Link href="/dashboard" className="hover:text-blue-200 transition-colors">Dashboard</Link>
                   </div>
                 </div>
@@ -42,8 +42,8 @@ export default function RootLayout({
             </div>
           </nav>
           <main className="flex-1">{children}</main>
-          <footer className="bg-gray-800 dark:bg-gray-950 text-gray-400 dark:text-gray-500 py-6 text-center">
-            <p>Generator RPP Pembelajaran Mendalam · Powered by Mistral AI</p>
+          <footer className="bg-gray-800 dark:bg-gray-950 text-gray-400 dark:text-gray-500 py-6 text-center pin-b">
+            <p>Generator RPP Pembelajaran Mendalam</p>
           </footer>
         </ThemeProvider>
       </body>
