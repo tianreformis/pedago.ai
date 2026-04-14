@@ -189,6 +189,44 @@ export const CP_DATA: Record<string, Record<string, string[]>> = {
       "Fikih Ushul: Peserta dapat memahami ushul fiqhdan istinbath",
     ],
   },
+  "Informatika": {
+    "Fase A": [
+      "Berpikir Komputasional: Peserta didik mampu mengenali pola sederhana dan mengurutkan langkah-langkah instruksi",
+      "Teknologi Informasi dan Komunikasi: Peserta didik mampu mengenali perangkat teknologi di sekitarnya dan menggunakan aplikasi secara terbimbing",
+      "Sistem Komputer: Peserta didik mampu menyebutkan bagian-bagian dasar perangkat keras komputer",
+      "Analisis Data: Peserta didik mampu mengelompokkan benda berdasarkan ciri-ciri tertentu secara sederhana"
+    ],
+    "Fase B": [
+      "Berpikir Komputasional: Peserta didik mampu menerapkan dekomposisi dan pengenalan pola dalam menyelesaikan persoalan sehari-hari",
+      "Teknologi Informasi dan Komunikasi: Peserta didik mampu memanfaatkan perangkat TIK untuk berkomunikasi dan mencari informasi",
+      "Sistem Komputer: Peserta didik mampu memahami fungsi perangkat keras dan sistem operasi secara umum",
+      "Algoritma dan Pemrograman: Peserta didik mampu memahami instruksi terstruktur untuk mencapai tujuan tertentu"
+    ],
+    "Fase C": [
+      "Berpikir Komputasional: Peserta didik mampu menyusun algoritma sederhana dan melakukan abstraksi untuk menyelesaikan masalah",
+      "Teknologi Informasi dan Komunikasi: Peserta didik mampu mengolah dokumen teks dan presentasi secara kreatif",
+      "Analisis Data: Peserta didik mampu mengumpulkan dan mengolah data dalam bentuk tabel atau grafik sederhana",
+      "Dampak Sosial Informatika: Peserta didik mampu memahami pentingnya keamanan data dan etika dalam berinternet"
+    ],
+    "Fase D": [
+      "Berpikir Komputasional: Peserta didik mampu menerapkan logika proposisional dan algoritma untuk menyelesaikan persoalan komputasi",
+      "Teknologi Informasi dan Komunikasi: Peserta didik mampu mengintegrasikan konten antaraplikasi perkantoran",
+      "Sistem Komputer: Peserta didik mampu memahami interaksi antara perangkat keras, perangkat lunak, dan pengguna",
+      "Algoritma dan Pemrograman: Peserta didik mampu membuat program visual sederhana dengan menerapkan kontrol alur"
+    ],
+    "Fase E": [
+      "Berpikir Komputasional: Peserta didik mampu memecahkan persoalan kompleks dengan strategi algoritmik standar",
+      "Teknologi Informasi dan Komunikasi: Peserta didik mampu memanfaatkan fitur lanjut aplikasi perkantoran untuk pengolahan data",
+      "Sistem Komputer: Peserta didik mampu memahami mekanisme kerja CPU dan memori serta sistem operasi",
+      "Algoritma dan Pemrograman: Peserta didik mampu merancang dan mengimplementasikan program prosedural dengan bahasa pemrograman tertentu"
+    ],
+    "Fase F": [
+      "Berpikir Komputasional: Peserta didik mampu menganalisis persoalan kompleks menggunakan teknik pemrograman dinamis atau pencarian",
+      "Jaringan Komputer dan Internet: Peserta didik mampu memahami arsitektur jaringan, protokol, dan keamanan siber tingkat lanjut",
+      "Analisis Data: Peserta didik mampu melakukan penambangan data (data mining) dan visualisasi data yang bermakna",
+      "Algoritma dan Pemrograman: Peserta didik mampu mengembangkan aplikasi berbasis objek atau berbasis web dengan struktur data yang efisien"
+    ]
+  },
   default: {
     "Fase A": [
       "Peserta dapat memahami konsep dasar mata pelajaran",

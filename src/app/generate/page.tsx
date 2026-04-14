@@ -23,9 +23,14 @@ export default function GeneratePage() {
     setRppInput(formData);
     setSaved(false);
     try {
+      const token = localStorage.getItem("token");
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
       const res = await fetch("/api/generate-rpp", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify(formData),
       });
       const json = await res.json();

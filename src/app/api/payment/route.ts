@@ -32,6 +32,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "User tidak ditemukan" }, { status: 404 });
     }
 
+    if (user.isAdmin) {
+      return NextResponse.json({
+        success: true,
+        data: {
+          isAdmin: true,
+          message: "Admin memiliki akses tanpa batas",
+        },
+      });
+    }
+
     const amount = plan === "monthly" ? MONTHLY_PRICE : YEARLY_PRICE;
     const orderId = `RPP-${user.id}-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`;
 

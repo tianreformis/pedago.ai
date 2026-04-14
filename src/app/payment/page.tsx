@@ -1,16 +1,76 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Loader2 } from "lucide-react";
+import { Check, Loader2, Crown } from "lucide-react";
 
 const MONTHLY_PRICE = 30000;
 const YEARLY_PRICE = 330000;
+
+interface UserData {
+  id: string;
+  email: string;
+  name?: string;
+  school?: string;
+  isAdmin: boolean;
+}
 
 export default function PaymentPage() {
   const router = useRouter();
   const [selectedPlan, setSelectedPlan] = useState<"monthly" | "yearly" | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [userData, setUserData] = useState<UserData | null>(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const storedUser = localStorage.getItem("user");
+    if (token && storedUser) {
+      try {
+        setUserData(JSON.parse(storedUser));
+      } catch {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        router.push("/login");
+      }
+    } else {
+      router.push("/login");
+    }
+  }, [router]);
+
+  if (userData?.isAdmin) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-12">
+        <div className="bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-2xl p-8 shadow-lg text-center">
+          <Crown className="w-16 h-16 mx-auto mb-4 text-white" />
+          <h1 className="text-3xl font-bold text-white mb-2">
+            Admin Access
+          </h1>
+          <p className="text-white/90 text-lg">
+            Anda memiliki akses tanpa batas sebagai administrator.
+          </p>
+        </div>
+        <div className="mt-8 grid md:grid-cols-2 gap-8 max-w-3xl mx-auto">
+          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-8 shadow-lg">
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Fitur Admin</h3>
+            <ul className="space-y-3 mt-4">
+              <li className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                <Check className="text-green-500" size={20} />
+                Generate RPP tak terbatas
+              </li>
+              <li className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                <Check className="text-green-500" size={20} />
+                Akses semua dashboard
+              </li>
+              <li className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                <Check className="text-green-500" size={20} />
+                Tidak perlu membayar
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const handleSubscribe = async (plan: "monthly" | "yearly") => {
     const token = localStorage.getItem("token");
