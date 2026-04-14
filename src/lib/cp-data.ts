@@ -227,6 +227,153 @@ export const CP_DATA: Record<string, Record<string, string[]>> = {
       "Algoritma dan Pemrograman: Peserta didik mampu mengembangkan aplikasi berbasis objek atau berbasis web dengan struktur data yang efisien"
     ]
   },
+  "PKN / PPKN": {
+    "Fase A": [
+      "Pancasila: Peserta didik mampu mengenal simbol dan sila-sila Pancasila dalam lambang negara Garuda Pancasila",
+      "UUD NRI Tahun 1945: Peserta didik mampu mengenal aturan di lingkungan keluarga dan sekolah serta menceritakan sikap patuh terhadap aturan",
+      "Bhinneka Tunggal Ika: Peserta didik mampu menyebutkan identitas diri, keluarga, dan teman sesuai jenis kelamin, ciri fisik, dan hobi",
+      "NKRI: Peserta didik mampu mengenal karakteristik lingkungan tempat tinggal dan sekolah sebagai bagian dari wilayah NKRI"
+    ],
+    "Fase B": [
+      "Pancasila: Peserta didik mampu memahami dan mempraktikkan nilai-nilai Pancasila di lingkungan sekolah dan masyarakat",
+      "UUD NRI Tahun 1945: Peserta didik mampu mengidentifikasi hak dan kewajiban sebagai anggota keluarga dan warga sekolah",
+      "Bhinneka Tunggal Ika: Peserta didik mampu menghargai keberagaman suku bangsa, sosial, dan budaya di lingkungan sekitar",
+      "NKRI: Peserta didik mampu menjelaskan makna NKRI dan menunjukkan sikap menjaga keutuhan wilayah lingkungan sekitar"
+    ],
+    "Fase C": [
+      "Pancasila: Peserta didik mampu meneladani sikap para perumus Pancasila dan menerapkannya dalam kehidupan sehari-hari",
+      "UUD NRI Tahun 1945: Peserta didik mampu melaksanakan aturan bersama dan norma yang berlaku di lingkungan masyarakat",
+      "Bhinneka Tunggal Ika: Peserta didik mampu mempromosikan nilai-nilai toleransi dan persatuan di tengah keberagaman bangsa Indonesia",
+      "NKRI: Peserta didik mampu memahami organisasi pemerintahan tingkat desa/kelurahan hingga kabupaten/kota"
+    ],
+    "Fase D": [
+      "Pancasila: Peserta didik mampu menganalisis kronologi lahirnya Pancasila dan menerapkan fungsinya sebagai dasar negara dan pandangan hidup",
+      "UUD NRI Tahun 1945: Peserta didik mampu memahami periodesasi pemberlakuan konstitusi Indonesia dan menaati tata urutan perundang-undangan",
+      "Bhinneka Tunggal Ika: Peserta didik mampu mengidentifikasi faktor penyebab keberagaman dan tantangan kebinekaan secara kritis",
+      "NKRI: Peserta didik mampu menunjukkan komitmen kebangsaan dalam menjaga kedaulatan wilayah NKRI dari ancaman"
+    ],
+    "Fase E": [
+      "Pancasila: Peserta didik mampu menganalisis cara pandang para pendiri negara tentang rumusan Pancasila dan mempraktikkannya dalam kehidupan global",
+      "UUD NRI Tahun 1945: Peserta didik mampu mengevaluasi produk perundang-undangan dan membandingkan kesesuaiannya dengan konstitusi",
+      "Bhinneka Tunggal Ika: Peserta didik mampu mempromosikan budaya Indonesia ke kancah internasional dan menganalisis pengaruh budaya luar",
+      "NKRI: Peserta didik mampu menganalisis sengketa batas wilayah dan peran Indonesia dalam perdamaian dunia"
+    ],
+    "Fase F": [
+      "Pancasila: Peserta didik mampu memvalidasi penerapan nilai-nilai Pancasila dalam kebijakan publik dan kehidupan berbangsa",
+      "UUD NRI Tahun 1945: Peserta didik mampu menganalisis sistem hukum dan peradilan di Indonesia secara kritis dan objektif",
+      "Bhinneka Tunggal Ika: Peserta didik mampu merancang solusi atas permasalahan yang timbul akibat keberagaman di tengah masyarakat",
+      "NKRI: Peserta didik mampu mengevaluasi peran aktif Indonesia dalam organisasi internasional dan menjaga kedaulatan NKRI di era digital"
+    ]
+  },
+  "Bahasa Inggris": {
+    "Fase A": [
+      "Menyimak - Berbicara: Peserta didik mampu menggunakan bahasa Inggris lisan sederhana untuk berinteraksi dalam situasi sosial sehari-hari",
+      "Membaca - Memirsa: Peserta didik mampu merespons teks visual sederhana dan mengenali kata-kata bermakna dalam bahasa Inggris",
+      "Menulis - Presentasi: (Belum menjadi fokus utama, namun peserta didik mulai mengenal bentuk huruf dan kata dalam konteks visual)"
+    ],
+    "Fase B": [
+      "Menyimak - Berbicara: Peserta didik mampu menggunakan kalimat dengan pola tertentu untuk berinteraksi dan bertukar informasi secara lisan",
+      "Membaca - Memirsa: Peserta didik mampu memahami kata-kata yang sering digunakan sehari-hari dengan bantuan gambar/ilustrasi",
+      "Menulis - Presentasi: Peserta didik mampu menyusun teks prosedur dan deskripsi pendek menggunakan kosakata sederhana dan ejaan yang tepat"
+    ],
+    "Fase C": [
+      "Menyimak - Berbicara: Peserta didik mampu menggunakan bahasa Inggris untuk berinteraksi dalam lingkup kelas dan sekolah yang lebih luas",
+      "Membaca - Memirsa: Peserta didik mampu memahami teks narasi dan informatif sederhana serta menemukan informasi spesifik di dalamnya",
+      "Menulis - Presentasi: Peserta didik mampu menulis teks pendek dan sederhana dalam bentuk cetak atau digital untuk menyampaikan ide"
+    ],
+    "Fase D": [
+      "Menyimak - Berbicara: Peserta didik mampu menggunakan bahasa Inggris untuk bertukar opini dan menjelaskan alasan dalam diskusi formal dan informal",
+      "Membaca - Memirsa: Peserta didik mampu memahami dan menyimpulkan ide pokok dari teks fiksi dan non-fiksi yang lebih kompleks",
+      "Menulis - Presentasi: Peserta didik mampu menulis berbagai jenis teks (report, recount, narrative) dengan struktur organisasi yang jelas"
+    ],
+    "Fase E": [
+      "Menyimak - Berbicara: Peserta didik mampu menggunakan bahasa Inggris secara mandiri untuk berkomunikasi dalam berbagai situasi akademik dan sosial",
+      "Membaca - Memirsa: Peserta didik mampu menganalisis makna tersirat dan mengevaluasi detail informasi dari teks autentik (berita, artikel)",
+      "Menulis - Presentasi: Peserta didik mampu menghasilkan teks orisinal yang menunjukkan pemahaman tentang audiens dan tujuan komunikasi"
+    ],
+    "Fase F": [
+      "Menyimak - Berbicara: Peserta didik mampu menggunakan bahasa Inggris dengan fasih untuk beradu argumen, bernegosiasi, dan menyampaikan presentasi teknis",
+      "Membaca - Memirsa: Peserta didik mampu memahami teks sastra dan profesional yang kompleks serta melakukan sintesis informasi dari berbagai sumber",
+      "Menulis - Presentasi: Peserta didik mampu menulis karya tulis ilmiah atau kreatif yang kohesif dan koheren dengan standar kebahasaan yang tinggi"
+    ]
+  },  
+  "Seni Budaya": {
+    "Fase A": [
+      "Mengalami: Peserta didik mampu mengamati dan mengenal unsur-unsur rupa, bunyi, atau gerak di lingkungan sekitar",
+      "Menciptakan: Peserta didik mampu mengeksplorasi alat dan bahan untuk membuat karya seni sederhana secara bebas",
+      "Merefleksikan: Peserta didik mampu mengenali dan menceritakan karya seni yang dibuatnya sendiri secara lisan",
+      "Berpikir dan Bekerja Artistik: Peserta didik mampu menunjukkan antusiasme dalam melakukan kegiatan seni"
+    ],
+    "Fase B": [
+      "Mengalami: Peserta didik mampu mengidentifikasi unsur-unsur seni dan prinsip desain/komposisi dalam sebuah karya",
+      "Menciptakan: Peserta didik mampu membuat karya seni berdasarkan instruksi atau ide orisinal dengan keterampilan dasar yang mulai terasah",
+      "Merefleksikan: Peserta didik mampu membandingkan karya seni sendiri dengan karya orang lain berdasarkan pengamatan",
+      "Berpikir dan Bekerja Artistik: Peserta didik mampu bekerja secara mandiri atau berkelompok dengan prosedur keselamatan kerja yang benar"
+    ],
+    "Fase C": [
+      "Mengalami: Peserta didik mampu menganalisis keterkaitan antar unsur seni dan memilih teknik yang tepat dalam berkarya",
+      "Menciptakan: Peserta didik mampu menciptakan karya seni yang menunjukkan ekspresi diri dan penguasaan teknik yang lebih stabil",
+      "Merefleksikan: Peserta didik mampu memberikan pendapat kritis tentang nilai estetis dan pesan dalam sebuah karya seni",
+      "Dampak: Peserta didik mampu menghasilkan karya seni yang memberikan dampak positif bagi diri sendiri dan lingkungan sekolah"
+    ],
+    "Fase D": [
+      "Mengalami: Peserta didik mampu mengeksplorasi dan merekam referensi seni dari berbagai sumber dan budaya sebagai inspirasi",
+      "Menciptakan: Peserta didik mampu menciptakan karya seni yang menunjukkan orisinalitas dan kemampuan teknis yang sistematis",
+      "Merefleksikan: Peserta didik mampu mengevaluasi karya seni berdasarkan efektivitas pesan dan penggunaan unsur seni",
+      "Berpikir dan Bekerja Artistik: Peserta didik mampu merancang sebuah proses kreatif mulai dari perencanaan hingga penyelesaian karya"
+    ],
+    "Fase E": [
+      "Mengalami: Peserta didik mampu mengamati dan menganalisis karya seni rupa/musik/tari/teater berdasarkan konteks sejarah dan sosial",
+      "Menciptakan: Peserta didik mampu menciptakan karya seni yang menunjukkan kematangan konsep dan eksplorasi medium yang beragam",
+      "Merefleksikan: Peserta didik mampu mempresentasikan analisis karya seni dengan menggunakan istilah teknis yang tepat dan mendalam",
+      "Dampak: Peserta didik mampu memilih dan menerapkan gaya seni tertentu yang relevan dengan pesan yang ingin disampaikan"
+    ],
+    "Fase F": [
+      "Mengalami: Peserta didik mampu menganalisis secara kritis keterkaitan seni dengan disiplin ilmu lain atau isu global",
+      "Menciptakan: Peserta didik mampu memproduksi karya seni profesional atau eksperimental yang menunjukkan identitas artistik pribadi",
+      "Merefleksikan: Peserta didik mampu memberikan kritik seni yang komprehensif dan solutif terhadap perkembangan seni di masyarakat",
+      "Berpikir dan Bekerja Artistik: Peserta didik mampu mengelola sebuah proyek seni atau pameran/pertunjukan secara mandiri dan berkelompok"
+    ]
+  },  
+  "Pendidikan Jasmani (PJOK)": {
+    "Fase A": [
+      "Keterampilan Gerak: Peserta didik mampu mempraktikkan gerak dasar lokomotor, non-lokomotor, dan manipulatif dalam permainan sederhana",
+      "Pengetahuan Gerak: Peserta didik mampu mengenali berbagai aktivitas jasmani dan konsep gerak dasar yang benar",
+      "Pemanfaatan Gerak: Peserta didik mampu mengenali bagian-bagian tubuh dan cara menjaga kebersihan diri sendiri",
+      "Karakter: Peserta didik mampu menunjukkan perilaku hormat dan menerima arahan dari guru saat beraktivitas"
+    ],
+    "Fase B": [
+      "Keterampilan Gerak: Peserta didik mampu mempraktikkan variasi gerak dasar dalam berbagai olahraga modifikasi dan permainan tradisional",
+      "Pengetahuan Gerak: Peserta didik mampu memahami prosedur variasi pola gerak dasar secara benar",
+      "Pemanfaatan Gerak: Peserta didik mampu memahami pola makan sehat dan perlunya istirahat untuk pertumbuhan tubuh",
+      "Karakter: Peserta didik mampu menunjukkan sikap bekerja sama, berbagi alat, dan mengikuti aturan permainan"
+    ],
+    "Fase C": [
+      "Keterampilan Gerak: Peserta didik mampu mempraktikkan kombinasi gerak dasar dalam olahraga beregu, perorangan, dan bela diri",
+      "Pengetahuan Gerak: Peserta didik mampu menganalisis kombinasi gerak dasar berdasarkan konsep tubuh dan ruang",
+      "Pemanfaatan Gerak: Peserta didik mampu memahami bahaya merokok, minuman keras, dan narkoba bagi kesehatan tubuh",
+      "Karakter: Peserta didik mampu menunjukkan etika yang baik dan sikap sportif dalam situasi menang maupun kalah"
+    ],
+    "Fase D": [
+      "Keterampilan Gerak: Peserta didik mampu mempraktikkan gerak spesifik dalam berbagai permainan besar, kecil, dan aktivitas atletik",
+      "Pengetahuan Gerak: Peserta didik mampu menganalisis fakta, konsep, dan prosedur dalam melakukan gerak spesifik olahraga",
+      "Pemanfaatan Gerak: Peserta didik mampu merancang program latihan kebugaran jasmani sederhana terkait kesehatan",
+      "Karakter: Peserta didik mampu menginisiasi kerja sama tim dan menunjukkan tanggung jawab personal dalam aktivitas fisik"
+    ],
+    "Fase E": [
+      "Keterampilan Gerak: Peserta didik mampu mempraktikkan hasil evaluasi penerapan keterampilan gerak dalam berbagai cabang olahraga",
+      "Pengetahuan Gerak: Peserta didik mampu mengevaluasi fakta, konsep, dan strategi permainan yang digunakan dalam aktivitas jasmani",
+      "Pemanfaatan Gerak: Peserta didik mampu menganalisis dampak aktivitas fisik terhadap pencegahan penyakit tidak menular",
+      "Karakter: Peserta didik mampu menunjukkan kemampuan kepemimpinan dan manajemen konflik dalam konteks olahraga"
+    ],
+    "Fase F": [
+      "Keterampilan Gerak: Peserta didik mampu mendemonstrasikan keterampilan gerak tingkat lanjut yang mendukung gaya hidup aktif dan sehat",
+      "Pengetahuan Gerak: Peserta didik mampu menciptakan strategi atau pola baru dalam permainan olahraga berdasarkan analisis kritis",
+      "Pemanfaatan Gerak: Peserta didik mampu mempromosikan gaya hidup sehat di komunitas dan merancang aktivitas fisik secara mandiri",
+      "Karakter: Peserta didik mampu menunjukkan integritas, sportivitas tinggi, dan dedikasi dalam berkompetisi secara sehat"
+    ]
+  },
+
   default: {
     "Fase A": [
       "Peserta dapat memahami konsep dasar mata pelajaran",
@@ -268,27 +415,27 @@ export const CP_DATA: Record<string, Record<string, string[]>> = {
 };
 
 export function getCPOptions(mataPelajaran: string, fase: string): string[] {
-  const mapel = MATA_PELAJARAN_OPTIONS.find(m => 
+  const mapel = MATA_PELAJARAN_OPTIONS.find(m =>
     mataPelajaran.toLowerCase().includes(m.toLowerCase())
   );
-  
+
   if (!mapel) {
     return CP_DATA.default[fase] || CP_DATA.default["Fase A"];
   }
-  
+
   return CP_DATA[mapel]?.[fase] || CP_DATA.default[fase] || CP_DATA.default["Fase A"];
 }
 
 export const MATA_PELAJARAN_OPTIONS = [
-  "Bahasa Indonesia",
-  "Matematika", 
-  "IPA",
-  "IPS",
-  "PKN / PPKN",
-  "Bahasa Inggris",
-  "Pendidikan Agama Islam",
-  "Seni Budaya",
-  "Pendidikan Jasmani (PJOK)",
+  "Bahasa Indonesia",//
+  "Matematika", //
+  "IPA",//
+  "IPS",//
+  "PKN / PPKN",//
+  "Bahasa Inggris",//
+  "Pendidikan Agama Islam",//
+  "Seni Budaya",//
+  "Pendidikan Jasmani (PJOK)",//
   "Sejarah",
   "Geografi",
   "Ekonomi",
@@ -296,7 +443,7 @@ export const MATA_PELAJARAN_OPTIONS = [
   "Fisika",
   "Kimia",
   "Sosiologi",
-  "Informatika",
+  "Informatika",//
   "Pendidikan Agama Kristen",
   "Pendidikan Agama Hindu",
   "Pendidikan Agama Buddha",
