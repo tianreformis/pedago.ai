@@ -15,6 +15,7 @@ export default function RPPInputForm({ onGenerate, isLoading }: RPPInputFormProp
     mataPelajaran: "",
     fase: "",
     cp: "",
+    cpLainnya: "",
     kelas: "",
     namaGuru: "",
     sekolah: "",
@@ -22,6 +23,8 @@ export default function RPPInputForm({ onGenerate, isLoading }: RPPInputFormProp
     semester: "1",
     alokasWaktu: "2 x 45 menit",
   });
+
+  const showCpLainnya = form.cp === "___lainnya___";
 
   useEffect(() => {
     setMounted(true);
@@ -35,10 +38,12 @@ export default function RPPInputForm({ onGenerate, isLoading }: RPPInputFormProp
     }
   }, [form.mataPelajaran, form.fase]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     if (name === "mataPelajaran" || name === "fase") {
       setForm(prev => ({ ...prev, [name]: value, cp: "" }));
+    } else if (name === "cpLainnya") {
+      setForm(prev => ({ ...prev, cpLainnya: value }));
     } else {
       setForm(prev => ({ ...prev, [name]: value }));
     }
@@ -46,7 +51,12 @@ export default function RPPInputForm({ onGenerate, isLoading }: RPPInputFormProp
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.mataPelajaran || !form.fase || !form.cp) return;
+    if (!form.mataPelajaran || !form.fase) return;
+    if (form.cp === "___lainnya___") {
+      if (!form.cpLainnya || !form.cpLainnya.trim()) return;
+    } else if (!form.cp) {
+      return;
+    }
     onGenerate(form);
   };
 
@@ -54,7 +64,11 @@ export default function RPPInputForm({ onGenerate, isLoading }: RPPInputFormProp
     return null;
   }
 
-  const canSubmit = !isLoading && Boolean(form.mataPelajaran) && Boolean(form.fase) && Boolean(form.cp);
+  const canSubmit = !isLoading && Boolean(form.mataPelajaran) && Boolean(form.fase) && (
+    form.cp === "___lainnya___" 
+      ? Boolean(form.cpLainnya && form.cpLainnya.trim()) 
+      : Boolean(form.cp)
+  );
 
   return (
     <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm space-y-5">
@@ -95,7 +109,7 @@ export default function RPPInputForm({ onGenerate, isLoading }: RPPInputFormProp
           </select>
         </div>
 
-        {cpOptions.length > 0 && (
+        {(cpOptions.length > 0 || showCpLainnya) && (
           <div className="md:col-span-2">
             <label className="block text-sm font-semibold text-blue-700 dark:text-blue-400 mb-1">
               Capaian Pembelajaran (CP) <span className="text-red-500">*</span>
@@ -111,7 +125,25 @@ export default function RPPInputForm({ onGenerate, isLoading }: RPPInputFormProp
               {cpOptions.map((cp) => (
                 <option key={cp} value={cp}>{cp}</option>
               ))}
+              <option value="___lainnya___">Lainnya (buat sendiri)</option>
             </select>
+          </div>
+        )}
+
+        {showCpLainnya && (
+          <div className="md:col-span-2">
+            <label className="block text-sm font-semibold text-blue-700 dark:text-blue-400 mb-1">
+              Tulis Capaian Pembelajaran <span className="text-red-500">*</span>
+            </label>
+            <textarea
+              name="cpLainnya"
+              value={form.cpLainnya}
+              onChange={handleChange}
+              required
+              rows={3}
+              placeholder="Tuliskan Capaian Pembelajaran yang Anda ingin ajarkan..."
+              className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
           </div>
         )}
 
