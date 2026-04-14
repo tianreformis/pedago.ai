@@ -296,7 +296,7 @@ export const CP_DATA: Record<string, Record<string, string[]>> = {
       "Membaca - Memirsa: Peserta didik mampu memahami teks sastra dan profesional yang kompleks serta melakukan sintesis informasi dari berbagai sumber",
       "Menulis - Presentasi: Peserta didik mampu menulis karya tulis ilmiah atau kreatif yang kohesif dan koheren dengan standar kebahasaan yang tinggi"
     ]
-  },  
+  },
   "Seni Budaya": {
     "Fase A": [
       "Mengalami: Peserta didik mampu mengamati dan mengenal unsur-unsur rupa, bunyi, atau gerak di lingkungan sekitar",
@@ -334,7 +334,7 @@ export const CP_DATA: Record<string, Record<string, string[]>> = {
       "Merefleksikan: Peserta didik mampu memberikan kritik seni yang komprehensif dan solutif terhadap perkembangan seni di masyarakat",
       "Berpikir dan Bekerja Artistik: Peserta didik mampu mengelola sebuah proyek seni atau pameran/pertunjukan secara mandiri dan berkelompok"
     ]
-  },  
+  },
   "Pendidikan Jasmani (PJOK)": {
     "Fase A": [
       "Keterampilan Gerak: Peserta didik mampu mempraktikkan gerak dasar lokomotor, non-lokomotor, dan manipulatif dalam permainan sederhana",
@@ -367,10 +367,10 @@ export const CP_DATA: Record<string, Record<string, string[]>> = {
       "Karakter: Peserta didik mampu menunjukkan kemampuan kepemimpinan dan manajemen konflik dalam konteks olahraga"
     ],
     "Fase F": [
-      "Keterampilan Gerak: Peserta didik mampu mendemonstrasikan keterampilan gerak tingkat lanjut yang mendukung gaya hidup aktif dan sehat",
-      "Pengetahuan Gerak: Peserta didik mampu menciptakan strategi atau pola baru dalam permainan olahraga berdasarkan analisis kritis",
-      "Pemanfaatan Gerak: Peserta didik mampu mempromosikan gaya hidup sehat di komunitas dan merancang aktivitas fisik secara mandiri",
-      "Karakter: Peserta didik mampu menunjukkan integritas, sportivitas tinggi, dan dedikasi dalam berkompetisi secara sehat"
+      "Terampil Bergerak: Peserta didik merancang, menerapkan, menghaluskan dan mengevaluasi keterampilan gerak spesifik serta menciptakan strategi gerak dalam berbagai situasi yang menantang untuk meningkatkan kinerja dan keberhasilan.",
+      "Belajar Melalui Gerak: Peserta didik mengadaptasi strategi gerak, mengevaluasi fair play, merefleksikan perilaku etis, serta merancang strategi pengambilan keputusan tim yang menunjukkan kepemimpinan dan kolaborasi.",
+      "Bergaya Hidup Aktif: Peserta didik berpartisipasi dalam aktivitas kebugaran (termasuk luar ruang/alam) dan mengevaluasi dampak partisipasi teratur serta efektivitas strategi peningkatan kebugaran untuk kesehatan.",
+      "Memilih Hidup yang Menyehatkan: Peserta didik mengadvokasi gaya hidup aktif, sehat, dan gizi seimbang melalui berbagai media, serta mempraktikkan tindakan Resusitasi Jantung-Paru (RJP) sesuai POS sebagai upaya penyelamatan hidup."
     ]
   },
 

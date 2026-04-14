@@ -73,7 +73,7 @@ export default function GeneratePage() {
       const data = await res.json();
       if (data.success) {
         setSaved(true);
-        router.push("/dashboard");
+        router.push(`/dashboard/${data.data.id}`);
       } else {
         setError(data.error || "Gagal menyimpan RPP");
       }

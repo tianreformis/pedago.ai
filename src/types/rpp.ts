@@ -72,6 +72,19 @@ export interface RPPOutput {
       instrumen: string;
     };
   };
+  pertanyaanRefleksiGuru: {
+    pertanyaan: string[];
+    tujuan: string;
+  };
+  lembarKerjaPesertaDidik: {
+    namaLembarKerja: string;
+    instruksi: string;
+    tugas: {
+      nomor: number;
+      pertanyaan: string;
+      ruangJawaban: string;
+    }[];
+  };
 }
 
 export interface RPPDocument extends RPPInput, RPPOutput {

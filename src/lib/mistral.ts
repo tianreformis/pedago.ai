@@ -95,6 +95,31 @@ Kembalikan JSON dengan struktur PERSIS seperti ini (isi semua field dengan konte
       "teknik": "...",
       "instrumen": "..."
     }
+  },
+  "pertanyaanRefleksiGuru": {
+    "pertanyaan": ["1. ...", "2. ...", "3. ...", "4. ...", "5. ..."],
+    "tujuan": "Membantu guru merefleksikan keberhasilan pembelajaran dan perbaikan untuk pertemuan berikutnya"
+  },
+  "lembarKerjaPesertaDidik": {
+    "namaLembarKerja": "Lembar Kerja [Nama Materi]",
+    "instruksi": "Isilah atau kerjakan tugas berikut dengan tulisan tangan yang rapi.",
+    "tugas": [
+      {
+        "nomor": 1,
+        "pertanyaan": "Pertanyaan tentang pemahaman konsep",
+        "ruangJawaban": "............................\n............................\n............................"
+      },
+      {
+        "nomor": 2,
+        "pertanyaan": "Pertanyaan tentang aplikasi konsep",
+        "ruangJawaban": "............................\n............................\n............................"
+      },
+      {
+        "nomor": 3,
+        "pertanyaan": "Pertanyaan analisis atau penalaran",
+        "ruangJawaban": "............................\n............................\n............................"
+      }
+    ]
   }
 }`;
 

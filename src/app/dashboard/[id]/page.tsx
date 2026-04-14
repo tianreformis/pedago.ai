@@ -33,7 +33,10 @@ export default function RPPDetailPage() {
 
   const fetchRPP = async () => {
     try {
-      const res = await fetch(`/api/rpp/${params.id}`);
+      const token = localStorage.getItem("token");
+      const res = await fetch(`/api/rpp/${params.id}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
       const data = await res.json();
       if (data.success) {
         setRpp(data.data);
@@ -88,7 +91,13 @@ export default function RPPDetailPage() {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">{rpp.mataPelajaran}</h1>
-          <p className="text-gray-600">{rpp.fase} · {new Date(rpp.createdAt).toLocaleDateString("id-ID")}</p>
+          <p className="text-gray-600">{rpp.fase} · {new Date(rpp.createdAt).toLocaleString("id-ID", { 
+            day: "numeric", 
+            month: "short", 
+            year: "numeric", 
+            hour: "2-digit", 
+            minute: "2-digit" 
+          })}</p>
         </div>
         <RPPExportButton rppInput={input} rppOutput={rpp.rawOutput} />
       </div>

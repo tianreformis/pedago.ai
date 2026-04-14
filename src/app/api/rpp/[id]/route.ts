@@ -2,12 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { prismaClient } from "@/lib/prisma";
 import { verifyToken } from "@/lib/jwt";
 
-function getUserId(req: NextRequest): string | null {
+function getUserId(req: NextRequest): { userId: string | null; isAdmin: boolean } {
   const authHeader = req.headers.get("authorization");
   const token = authHeader?.replace("Bearer ", "");
-  if (!token) return null;
+  if (!token) return { userId: null, isAdmin: false };
   const decoded = verifyToken(token);
-  return decoded?.userId || null;
+  return { userId: decoded?.userId || null, isAdmin: decoded?.isAdmin === true };
 }
 
 export async function GET(
@@ -15,7 +15,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const userId = getUserId(req);
+    const { userId, isAdmin } = getUserId(req);
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -29,7 +29,7 @@ export async function GET(
       return NextResponse.json({ error: "RPP tidak ditemukan" }, { status: 404 });
     }
 
-    if (rpp.userId !== userId) {
+    if (!isAdmin && rpp.userId !== userId) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -45,7 +45,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const userId = getUserId(req);
+    const { userId, isAdmin } = getUserId(req);
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -57,7 +57,7 @@ export async function DELETE(
       return NextResponse.json({ error: "RPP tidak ditemukan" }, { status: 404 });
     }
 
-    if (rpp.userId !== userId) {
+    if (!isAdmin && rpp.userId !== userId) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

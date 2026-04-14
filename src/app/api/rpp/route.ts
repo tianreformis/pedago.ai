@@ -2,28 +2,28 @@ import { NextRequest, NextResponse } from "next/server";
 import { prismaClient } from "@/lib/prisma";
 import { verifyToken } from "@/lib/jwt";
 
-function getUserId(req: NextRequest): string | null {
+function getUserId(req: NextRequest): { userId: string | null; isAdmin: boolean } {
   const authHeader = req.headers.get("authorization");
   const token = authHeader?.replace("Bearer ", "");
-  if (!token) return null;
+  if (!token) return { userId: null, isAdmin: false };
   const decoded = verifyToken(token);
-  return decoded?.userId || null;
+  return { userId: decoded?.userId || null, isAdmin: decoded?.isAdmin === true };
 }
 
 export async function GET(req: NextRequest) {
   try {
-    const userId = getUserId(req);
+    const { userId, isAdmin } = getUserId(req);
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const user = await prismaClient.user.findUnique({
       where: { id: userId },
-      select: { name: true, subscriptionStatus: true, subscriptionExpiry: true },
+      select: { name: true, subscriptionStatus: true, subscriptionExpiry: true, isAdmin: true },
     });
 
     const rpps = await prismaClient.rPP.findMany({
-      where: { userId },
+      where: isAdmin ? {} : { userId },
       orderBy: { createdAt: "desc" },
     });
 
@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const userId = getUserId(req);
+    const { userId } = getUserId(req);
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

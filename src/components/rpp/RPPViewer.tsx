@@ -36,7 +36,7 @@ function SectionCard({ title, icon, color, children, defaultOpen = false }: {
 }
 
 export default function RPPViewer({ input, output }: RPPViewerProps) {
-  const { karakteristikPembelajar, desainPembelajaran, pengalamanBelajar, asesmen } = output;
+  const { karakteristikPembelajar, desainPembelajaran, pengalamanBelajar, asesmen, pertanyaanRefleksiGuru, lembarKerjaPesertaDidik } = output;
 
   return (
     <div className="space-y-4">
@@ -224,6 +224,46 @@ export default function RPPViewer({ input, output }: RPPViewerProps) {
             <h4 className="font-semibold text-red-800 dark:text-red-300">Asesmen Sumatif (Assessment of Learning)</h4>
             <p className="mt-2 dark:text-gray-200"><span className="font-medium">Teknik:</span> {asesmen.asesmenSumatif.teknik}</p>
             <p className="mt-1 dark:text-gray-200"><span className="font-medium">Instrumen:</span> {asesmen.asesmenSumatif.instrumen}</p>
+          </div>
+        </div>
+      </SectionCard>
+
+      <SectionCard
+        title="E. Pertanyaan Refleksi Guru"
+        icon={<span>E</span>}
+        color="bg-teal-600"
+        defaultOpen
+      >
+        <div className="space-y-3 text-sm">
+          <p className="text-gray-600 dark:text-gray-400 italic">{pertanyaanRefleksiGuru?.tujuan}</p>
+          <ol className="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300">
+            {pertanyaanRefleksiGuru?.pertanyaan?.map((p, i) => (
+              <li key={i}>{p}</li>
+            ))}
+          </ol>
+        </div>
+      </SectionCard>
+
+      <SectionCard
+        title="F. Lembar Kerja Peserta Didik"
+        icon={<span>F</span>}
+        color="bg-indigo-600"
+        defaultOpen
+      >
+        <div className="space-y-4 text-sm">
+          <div className="bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-lg border border-indigo-200 dark:border-indigo-800">
+            <h4 className="font-semibold text-indigo-800 dark:text-indigo-300">{lembarKerjaPesertaDidik?.namaLembarKerja}</h4>
+            <p className="mt-2 text-gray-700 dark:text-gray-300"><span className="font-medium">Instruksi:</span> {lembarKerjaPesertaDidik?.instruksi}</p>
+          </div>
+          <div className="space-y-4">
+            {lembarKerjaPesertaDidik?.tugas?.map((tugas, i) => (
+              <div key={i} className="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+                <p className="font-medium text-gray-800 dark:text-gray-200">{tugas.nomor}. {tugas.pertanyaan}</p>
+                <div className="mt-2 p-2 bg-gray-50 dark:bg-gray-900 border border-dashed border-gray-300 dark:border-gray-600 rounded min-h-[80px] text-gray-400 text-xs">
+                  {tugas.ruangJawaban}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </SectionCard>

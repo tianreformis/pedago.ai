@@ -18,12 +18,14 @@ interface User {
   name?: string;
   subscriptionStatus?: string;
   subscriptionExpiry?: string;
+  isAdmin?: boolean;
 }
 
 export default function DashboardPage() {
   const router = useRouter();
   const [rpps, setRpps] = useState<RPP[]>([]);
   const [user, setUser] = useState<User | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -44,6 +46,7 @@ export default function DashboardPage() {
       if (data.success) {
         setRpps(data.data);
         setUser(data.user);
+        setIsAdmin(data.user?.isAdmin === true);
       }
     } catch (error) {
       console.error("Failed to fetch RPPs:", error);
@@ -87,7 +90,7 @@ export default function DashboardPage() {
           )}
         </div>
         <div className="flex gap-2">
-          {user?.subscriptionStatus !== "active" && (
+          {!isAdmin && user?.subscriptionStatus !== "active" && (
             <Link
               href="/payment"
               className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
@@ -113,7 +116,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {user?.subscriptionStatus !== "active" && (
+      {!isAdmin && user?.subscriptionStatus !== "active" && (
         <div className="mb-6 p-4 bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 rounded-lg">
           <p className="text-yellow-800 dark:text-yellow-200 text-center">
             Anda menggunakan versi gratis.{" "}
@@ -160,7 +163,13 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 mb-4">
                 <div className="flex items-center gap-1">
                   <Clock size={14} />
-                  {new Date(rpp.createdAt).toLocaleDateString("id-ID")}
+                  {new Date(rpp.createdAt).toLocaleString("id-ID", { 
+                    day: "numeric", 
+                    month: "short", 
+                    year: "numeric", 
+                    hour: "2-digit", 
+                    minute: "2-digit" 
+                  })}
                 </div>
               </div>
               <div className="flex gap-2">
