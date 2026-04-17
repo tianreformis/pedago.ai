@@ -28,7 +28,7 @@ export default function RootLayout({
             <div className="max-w-6xl mx-auto px-4">
               <div className="flex items-center justify-between h-16">
                 <div className="flex items-center gap-8">
-                  <Link href="/" className="font-bold text-xl">Leksika</Link>
+                  <Link href="/" className="font-bold text-xl">PedagoAI</Link>
                   <div className="hidden md:flex items-center gap-6">
                     <Link href="/generate" className="hover:text-blue-200 transition-colors">Generate RPP-PM</Link>
                     <Link href="/dashboard" className="hover:text-blue-200 transition-colors">Dashboard</Link>
