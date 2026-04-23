@@ -1,36 +1,69 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Generator RPP & Program Tahunan Pembelajaran Mendalam
+
+Generator RPP (Rencana Pembelajaran Pembelajaran) dan Prota (Program Tahunan) berbasis AI sesuai format resmi Kemendikdasmen Indonesia.
+
+## Fitur
+
+### RPP (Rencana Pembelajaran Pembelajaran)
+- Generate RPP otomatis via AI Mistral
+- Format resmi Kemendikdasmen Indonesia
+- Pembelajaran Mendalam (BERKESADARAN, BERMAKNA, MENGGEMBIRAKAN)
+- Integrasi 8 Dimensi Profil Pelajar Pancasila
+- Asesmen AS, FOR, dan OF Learning
+- Lembar Kerja Peserta Didik
+- Export ke Word/HTML
+
+### Program Tahunan (Prota)
+- Generate Program Tahunan otomatis via AI
+- Distribusi CP ke alur pembelajaran mingguan
+- Rekapitulasi total jam dan distribusi topik
+- Export ke HTML
+- Kelola di dashboard
+
+## Tech Stack
+
+- **Framework**: Next.js 16 (App Router)
+- **Database**: PostgreSQL + Prisma
+- **AI**: Mistral AI
+- **Styling**: Tailwind CSS v4
+- **Auth**: JWT
+- **Payment**: Midtrans
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+# Install dependencies
+npm install
+
+# Setup database
+npx prisma db push
+
+# Run development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Routes
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Route | Description |
+|-------|-------------|
+| `/` | Home |
+| `/generate` | Generate RPP |
+| `/generate-prota` | Generate Prota |
+| `/dashboard` | Dashboard RPP |
+| `/dashboard-prota` | Dashboard Prota |
+| `/login` | Login |
+| `/register` | Register |
+| `/payment` | Subscription |
 
-## Learn More
+## Environment Variables
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```env
+DATABASE_URL=
+DIRECT_URL=
+MISTRAL_API_KEY=
+JWT_SECRET=
+MIDTRANS_SERVER_KEY=
+MIDTRANS_CLIENT_KEY=
+```
