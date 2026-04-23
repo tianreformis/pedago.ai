@@ -11,8 +11,8 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "Generator RPP Pembelajaran Mendalam",
-  description: "AI-powered RPP Generator berbasis format Kemendikdasmen Indonesia",
+  title: "Generator RPP & Prota Pembelajaran Mendalam",
+  description: "AI-powered RPP & Program Tahunan Generator berbasis format Kemendikdasmen Indonesia",
 };
 
 export default function RootLayout({
@@ -30,7 +30,8 @@ export default function RootLayout({
                 <div className="flex items-center gap-8">
                   <Link href="/" className="font-bold text-xl">PedagoAI</Link>
                   <div className="hidden md:flex items-center gap-6">
-                    <Link href="/generate" className="hover:text-blue-200 transition-colors">Generate RPP-PM</Link>
+                    <Link href="/generate" className="hover:text-blue-200 transition-colors">RPP</Link>
+                    <Link href="/generate-prota" className="hover:text-blue-200 transition-colors">Prota</Link>
                     <Link href="/dashboard" className="hover:text-blue-200 transition-colors">Dashboard</Link>
                   </div>
                 </div>
