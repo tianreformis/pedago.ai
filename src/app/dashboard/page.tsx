@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Plus, FileText, Clock, Trash2, LogOut, CreditCard } from "lucide-react";
+import { Plus, FileText, Clock, Trash2, LogOut, CreditCard, Calendar } from "lucide-react";
 
 interface RPP {
   id: string;
@@ -90,6 +90,13 @@ export default function DashboardPage() {
           )}
         </div>
         <div className="flex gap-2">
+          <Link
+            href="/dashboard-prota"
+            className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+          >
+            <Calendar size={20} />
+            Prota
+          </Link>
           {!isAdmin && user?.subscriptionStatus !== "active" && (
             <Link
               href="/payment"

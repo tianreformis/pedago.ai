@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BookOpen, Sparkles, FileDown, Save } from "lucide-react";
+import { BookOpen, Sparkles, FileDown, Save, Calendar } from "lucide-react";
 
 export default function Home() {
   return (
@@ -13,7 +13,7 @@ export default function Home() {
         </p>
       </div>
 
-      <div className="grid md:grid-cols-4 gap-6 mb-12">
+      <div className="grid md:grid-cols-5 gap-6 mb-12">
         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 text-center">
           <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mx-auto mb-4">
             <Sparkles className="text-blue-600 dark:text-blue-400" size={24} />
@@ -23,7 +23,14 @@ export default function Home() {
         </div>
         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 text-center">
           <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-4">
-            <BookOpen className="text-green-600 dark:text-green-400" size={24} />
+            <Calendar className="text-green-600 dark:text-green-400" size={24} />
+          </div>
+          <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Program Tahunan</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-300">Buat Prota sekali buat</p>
+        </div>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 text-center">
+          <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900 rounded-full flex items-center justify-center mx-auto mb-4">
+            <BookOpen className="text-emerald-600 dark:text-emerald-400" size={24} />
           </div>
           <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Format Resmi</h3>
           <p className="text-sm text-gray-600 dark:text-gray-300">Sesuai standar Kemendikdasmen</p>
@@ -49,7 +56,13 @@ export default function Home() {
           href="/generate"
           className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-4 rounded-xl text-lg transition-colors"
         >
-          Mulai Generate RPP
+          Generate RPP
+        </Link>
+        <Link
+          href="/generate-prota"
+          className="inline-block ml-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-8 py-4 rounded-xl text-lg transition-colors"
+        >
+          Generate Prota
         </Link>
       </div>
 
