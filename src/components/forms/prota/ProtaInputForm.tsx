@@ -19,6 +19,10 @@ export default function ProtaInputForm({ onGenerate, isLoading }: ProtaInputForm
     namaGuru: "",
     sekolah: "",
     tahunAjaran: "2025/2026",
+    jpPerMinggu: "4",
+    mingguEfektif: "34",
+    cp: "",
+    materi: "",
   });
 
   const kelasByFase: Record<string, string[]> = {
@@ -209,6 +213,63 @@ export default function ProtaInputForm({ onGenerate, isLoading }: ProtaInputForm
             value={form.tahunAjaran}
             onChange={handleChange}
             className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-3 py-2"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">JP per Minggu</label>
+          <select
+            name="jpPerMinggu"
+            value={form.jpPerMinggu}
+            onChange={handleChange}
+            className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-3 py-2"
+          >
+            <option value="2">2 JP</option>
+            <option value="3">3 JP</option>
+            <option value="4">4 JP</option>
+            <option value="5">5 JP</option>
+            <option value="6">6 JP</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">Minggu Efektif</label>
+          <select
+            name="mingguEfektif"
+            value={form.mingguEfektif}
+            onChange={handleChange}
+            className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-3 py-2"
+          >
+            <option value="32">32 minggu</option>
+            <option value="33">33 minggu</option>
+            <option value="34">34 minggu</option>
+            <option value="35">35 minggu</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">Capaian Pembelajaran (Opsional)</label>
+          <textarea
+            name="cp"
+            value={form.cp}
+            onChange={handleChange}
+            rows={3}
+            placeholder="Tuliskan CP yang ingin dicapai..."
+            className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded-lg px-3 py-2"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">Daftar Materi (Opsional)</label>
+          <textarea
+            name="materi"
+            value={form.materi}
+            onChange={handleChange}
+            rows={3}
+            placeholder="Tuliskan materi yang akan dipelajari..."
+            className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded-lg px-3 py-2"
           />
         </div>
       </div>

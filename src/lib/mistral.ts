@@ -163,32 +163,38 @@ export interface ProtaInput {
   namaGuru?: string;
   sekolah?: string;
   tahunAjaran?: string;
+  jpPerMinggu?: number;
+  mingguEfektif?: number;
+  cp?: string;
+  materi?: string;
 }
 
 export interface ProtaOutput {
-  informasiUmum: {
+  identitas: {
+    satuanPendidikan: string;
     mataPelajaran: string;
-    fase: string;
-    kelas: string[];
-    tahunAjaran: string;
-    namaGuru: string;
-    sekolah: string;
+    faseKelas: string;
+    tahunPelajaran: string;
   };
-  alurPembelajaran: Array<{
+  capaianPembelajaran: string[];
+  alokasiWaktu: {
+    mingguEfektif: number;
+    jpPerMinggu: number;
+    totalJpPertahun: number;
+  };
+  distribusiMateri: Array<{
+    nomor: number;
+    materi: string;
     semester: string;
-    mingguan: Array<{
-      minggu: number;
-      topik: string;
-      cp: string;
-      tujuanPembelajaran: string[];
-      alokasWaktu: string;
-    }>;
+    alokasiJp: number;
+    keterangan: string;
   }>;
-  rekapitulasi: {
-    totalJam: string;
-    totalMinggu: number;
-    distribusiTopik: Record<string, number>;
+  kalenderPendidikan: {
+    awalTahunAjaran: string;
+    pembagianSemester: string;
+    perkiraanAsesmen: string;
   };
+  catatan: string[];
 }
 
 export async function generateProta(input: ProtaInput): Promise<ProtaOutput> {
@@ -198,81 +204,112 @@ export async function generateProta(input: ProtaInput): Promise<ProtaOutput> {
     throw new Error("Mistral API key not configured");
   }
 
-  const systemPrompt = `Kamu adalah asisten pendidikan ahli kurikulum Indonesia.
-Tugasmu adalah membuat Program Tahunan (Prota) yang lengkap dan sesuai format resmi Kemendikdasmen Indonesia.
+  const mingguEfektif = input.mingguEfektif || 34;
+  const jpPerMinggu = input.jpPerMinggu || 4;
+  const totalJp = mingguEfektif * jpPerMinggu;
 
-FORMAT WAJIB: Kembalikan HANYA JSON valid, tanpa penjelasan, tanpa markdown, tanpa komentar apapun.
-Gunakan Capaian Pembelajaran (CP) resmi dari Kemendikdasmen yang sesuai fase dan mata pelajaran.
+  const systemPrompt = `Kamu adalah asisten pendidikan ahli Kurikulum Merdeka Indonesia.
+Tugasmu adalah membuat dokumen PROGRAM TAHUNAN (PROTA) yang formal, rapi, dan siap digunakan guru.
 
-PROGRAM TAHUNAN (PROTA):
-- Prota adalah rencana프로그램 pembelajaran yang menjabarkan alur pembelajaran selama satu tahun ajaran
-- Mencakup distribusi CP/tujuan pembelajaran ke dalam mingguan/bulanan
-- Memperhatikan alokasi waktu dan urutan topik
-- Memperhatikan keterkaitan antar topik dan kesinambungan pembelajaran`;
+FORMAT WAJIB: 
+- Kembalikan HANYA JSON valid, tanpa penjelasan, tanpa markdown, tanpa komentar apapun
+- Gunakan bahasa Indonesia baku
+- Gunakan format tabel dan struktur yang rapi
+- Jangan mengarang Capaian Pembelajaran spesifik jika tidak tersedia, gunakan format umum yang relevan
 
-  const userPrompt = `Buatkan Program Tahunan (Prota) lengkap untuk:
+OUTPUT FORMAT BARU:
+
+# PROGRAM TAHUNAN (PROTA)
+
+## Identitas
+- Satuan Pendidikan: [nama sekolah]
+- Mata Pelajaran: [mata pelajaran]
+- Fase/Kelas: [fase dan kelas]
+- Tahun Pelajaran: [tahun ajaran]
+
+## Capaian Pembelajaran
+(Tulis CP sesuai Kurikulum Merdeka, ringkas dan relevan - max 4-6 poin)
+
+## Alokasi Waktu
+- Jumlah Minggu Efektif: [34 minggu]
+- JP per Minggu: [4 JP]
+- Total JP per Tahun: [136 JP] (hitung otomatis)
+
+## Distribusi Materi / Tujuan Pembelajaran
+
+Buat tabel dengan pembagian logis antara semester ganjil (~50%) dan genap (~50%)
+
+| No | Materi / Tujuan Pembelajaran | Semester | Alokasi Waktu (JP) | Keterangan |
+|----|-----------------------------|----------|--------------------|------------|
+| 1  | [materi 1]                  | Ganjil   | [JP]               | [keterangan]|
+
+ATURAN PEMBAGIAN:
+- Semester ganjil ~50%, Semester genap ~50%
+- Sesuaikan dengan tingkat kesulitan materi
+- Materi prasyarat diawal semester, materi pengayaan di akhir
+
+## Kalender Pendidikan (Ringkas)
+- Awal tahun ajaran: Juli
+- Pembagian semester: Ganjil (Juli-Desember), Genap (Januari-Juni)
+- Perkiraan asesmen: Tengah semester & Akhir semester
+
+## Catatan
+- Fleksibilitas pembelajaran disesuaikan kondisi peserta didi
+- Integrasi Projek P5 jika relevan
+- Remedial dan pengayaan sesuai kebutuhan`;
+
+  const userPrompt = `Buatkan PROGRAM TAHUNAN (PROTA) berdasarkan input berikut:
+
+INPUT:
+- Nama Sekolah: ${input.sekolah || "-"}
 - Mata Pelajaran: ${input.mataPelajaran}
-- Fase: ${input.fase}
-- Kelas: ${input.kelas.join(", ")}
-${input.tahunAjaran ? `- Tahun Ajaran: ${input.tahunAjaran}` : "- Tahun Ajaran: 2025/2026"}
-${input.namaGuru ? `- Nama Guru: ${input.namaGuru}` : ""}
-${input.sekolah ? `- Sekolah: ${input.sekolah}` : ""}
+- Fase/Kelas: ${input.fase} (${input.kelas.join(", ")})
+- Tahun Pelajaran: ${input.tahunAjaran || "2025/2026"}
+- Jumlah JP per Minggu: ${jpPerMinggu}
+- Total Minggu Efektif: ${mingguEfektif}
+- Total JP per Tahun: ${totalJp}
+${input.cp ? `- Capaian Pembelajaran: ${input.cp}` : ""}
+${input.materi ? `- Daftar Materi: ${input.materi}` : ""}
 
-Kembalikan JSON dengan struktur PERSIS seperti ini (isi semua field dengan konten nyata dan detail):
+Kembalikan JSON dengan struktur PERSIS seperti ini:
 
 {
-  "informasiUmum": {
+  "identitas": {
+    "satuanPendidikan": "${input.sekolah || "-"}",
     "mataPelajaran": "${input.mataPelajaran}",
-    "fase": "${input.fase}",
-    "kelas": [${input.kelas.map(k => `"${k}"`).join(", ")}],
-    "tahunAjaran": "${input.tahunAjaran || "2025/2026"}",
-    "namaGuru": "${input.namaGuru || ""}",
-    "sekolah": "${input.sekolah || ""}"
+    "faseKelas": "${input.fase} (${input.kelas.join(", ")})",
+    "tahunPelajaran": "${input.tahunAjaran || "2025/2026"}"
   },
-  "alurPembelajaran": [
+  "capaianPembelajaran": [
+    "CP 1 ringkas",
+    "CP 2 ringkas",
+    "CP 3 ringkas"
+  ],
+  "alokasiWaktu": {
+    "mingguEfektif": ${mingguEfektif},
+    "jpPerMinggu": ${jpPerMinggu},
+    "totalJpPertahun": ${totalJp}
+  },
+  "distribusiMateri": [
     {
-      "semester": "Semester 1 (Ganjil)",
-      "mingguan": [
-        {
-          "minggu": 1,
-          "topik": "Topik pembelajaran minggu 1",
-          "cp": "Capaian pembelajaran yang dibahas",
-          "tujuanPembelajaran": ["1. Tujuan pembelajaran 1", "2. Tujuan pembelajaran 2"],
-          "alokasWaktu": "4 x 45 menit"
-        },
-        {
-          "minggu": 2,
-          "topik": "Topik pembelajaran minggu 2",
-          "cp": "Capaian pembelajaran yang dibahas",
-          "tujuanPembelajaran": ["1. Tujuan pembelajaran 1", "2. Tujuan pembelajaran 2"],
-          "alokasWaktu": "4 x 45 menit"
-        }
-      ]
-    },
-    {
-      "semester": "Semester 2 (Genap)",
-      "mingguan": [
-        {
-          "minggu": 1,
-          "topik": "Topik pembelajaran minggu 1 semester 2",
-          "cp": "Capaian pembelajaran yang dibahas",
-          "tujuanPembelajaran": ["1. Tujuan pembelajaran 1", "2. Tujuan pembelajaran 2"],
-          "alokasWaktu": "4 x 45 menit"
-        }
-      ]
+      "nomor": 1,
+      "materi": "Nama materi pembelajaran",
+      "semester": "Ganjil",
+      "alokasiJp": 8,
+      "keterangan": "Pengenalan dan pemahaman dasar"
     }
   ],
-  "rekapitulasi": {
-    "totalJam": "Total jam pelajaran dalam setahun",
-    "totalMinggu": 34,
-    "distribusiTopik": {
-      "Topik 1": 4,
-      "Topik 2": 6,
-      "Topik 3": 4
-    }
-  }
+  "kalenderPendidikan": {
+    "awalTahunAjaran": "Juli",
+    "pembagianSemester": "Ganjil: Juli-Desember, Genap: Januari-Juni",
+    "perkiraanAsesmen": "Tengah semester (Oktober, Maret), Akhir semester (Desember, Juni)"
+  },
+  "catatan": [
+    "Fleksibilitas pembelajaran disesuaikan kondisi peserta",
+    "Integrasi Projek P5 jika relevan",
+    "Remedial dan pengayaan sesuai kebutuhan"
+  ]
 }`;
-
   const response = await fetch("https://api.mistral.ai/v1/chat/completions", {
     method: "POST",
     headers: {

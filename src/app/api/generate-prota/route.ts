@@ -33,7 +33,7 @@ async function checkFreeLimit(ip: string): Promise<{ allowed: boolean; remaining
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { mataPelajaran, fase, kelas, namaGuru, sekolah, tahunAjaran } = body;
+    const { mataPelajaran, fase, kelas, namaGuru, sekolah, tahunAjaran, jpPerMinggu, mingguEfektif, cp, materi } = body;
 
     if (!mataPelajaran || !fase || !kelas || kelas.length === 0) {
       return NextResponse.json(
@@ -90,6 +90,10 @@ export async function POST(req: NextRequest) {
       namaGuru,
       sekolah,
       tahunAjaran,
+      jpPerMinggu: jpPerMinggu ? parseInt(jpPerMinggu) : undefined,
+      mingguEfektif: mingguEfektif ? parseInt(mingguEfektif) : undefined,
+      cp: cp || undefined,
+      materi: materi || undefined,
     });
 
     if (userId) {
