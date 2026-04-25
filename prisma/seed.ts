@@ -488,7 +488,7 @@ const SEED_DATA = [
       {
         nama: "Fase D",
         keterangan: "Kelas 7, 8 & 9 SMP/MTs",
-        catatanPembelajarans: [
+        capaianPembelajarans: [
           { nama: "Tarikh", deskripsi: "Peserta dapat memahami Sejarah Islam periode klasik" },
           { nama: "Tafsir", deskripsi: "Peserta dapat memahami dasar-dasar tafsir Al-Quran" },
           { nama: "Hadits", deskripsi: "Peserta dapat memahami klasifikasi hadits" },
@@ -588,7 +588,7 @@ const SEED_DATA = [
       {
         nama: "Fase A",
         keterangan: "Kelas 1 & 2 SD/MI",
-        catatanPembelajarans: [
+        capaianPembelajarans: [
           { nama: "Keterampilan Gerak", deskripsi: "Peserta dapat mempraktikkan gerak dasar lokomotor dan non-lokomotor" },
           { nama: "Pengetahuan Gerak", deskripsi: "Peserta dapat mengenali berbagai aktivitas jasmani dan konsep gerak" },
           { nama: "Pemanfaatan Gerak", deskripsi: "Peserta dapat mengenali bagian-bagian tubuh dan cara menjaga kebersihan" },
@@ -653,47 +653,64 @@ async function main() {
   console.log("🌱 Starting seed...");
 
   for (const mapelData of SEED_DATA) {
-    const mapel = await prisma.mataPelajaran.upsert({
+    const existingMapel = await prisma.mataPelajaran.findUnique({
       where: { nama: mapelData.nama },
-      update: {},
-      create: { nama: mapelData.nama },
     });
+
+    let mapel;
+    if (existingMapel) {
+      mapel = existingMapel;
+    } else {
+      mapel = await prisma.mataPelajaran.create({
+        data: { nama: mapelData.nama },
+      });
+    }
 
     console.log(`✓ Created Mata Pelajaran: ${mapel.nama}`);
 
     for (const faseData of mapelData.fases) {
-      const fase = await prisma.fase.upsert({
+      const existingFase = await prisma.fase.findFirst({
         where: {
-          mataPelajaranId_nama: {
-            mataPelajaranId: mapel.id,
-            nama: faseData.nama,
-          },
-        },
-        update: {},
-        create: {
-          nama: faseData.nama,
-          keterangan: faseData.keterangan,
           mataPelajaranId: mapel.id,
+          nama: faseData.nama,
         },
       });
+
+      let fase;
+      if (existingFase) {
+        fase = await prisma.fase.update({
+          where: { id: existingFase.id },
+          data: { keterangan: faseData.keterangan },
+        });
+      } else {
+        fase = await prisma.fase.create({
+          data: {
+            nama: faseData.nama,
+            keterangan: faseData.keterangan,
+            mataPelajaranId: mapel.id,
+          },
+        });
+      }
 
       console.log(`  ✓ Created Fase: ${fase.nama}`);
 
       for (const cpData of faseData.capaianPembelajarans || []) {
-        await prisma.capaianPembelajaran.upsert({
+        const existingCp = await prisma.capaianPembelajaran.findFirst({
           where: {
-            faseId_nama: {
-              faseId: fase.id,
-              nama: cpData.nama,
-            },
-          },
-          update: {},
-          create: {
-            nama: cpData.nama,
-            deskripsi: cpData.deskripsi,
             faseId: fase.id,
+            nama: cpData.nama,
           },
         });
+
+        if (!existingCp) {
+          await prisma.capaianPembelajaran.create({
+            data: {
+              nama: cpData.nama,
+              deskripsi: cpData.deskripsi,
+              faseId: fase.id,
+            },
+          });
+        }
       }
 
       console.log(`  ✓ Created ${faseData.capaianPembelajarans?.length || 0} CP for ${fase.nama}`);

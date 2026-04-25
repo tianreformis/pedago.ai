@@ -117,4 +117,5 @@ model CapaianPembelajaran {
   updatedAt   DateTime @updatedAt
 
   @@index([faseId])
+  @@unique([faseId, nama])
 }
