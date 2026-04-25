@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Menu, X, User, Settings, LogOut, ChevronDown } from "lucide-react";
-import ThemeToggle from "@/components/theme-toggle";
 
 interface UserData {
   id: string;
@@ -51,7 +50,6 @@ export default function Navbar() {
             </div>
           </div>
           <div className="hidden md:flex items-center gap-4">
-            <ThemeToggle />
             {user ? (
               <div className="relative">
                 <button
@@ -120,13 +118,39 @@ export default function Navbar() {
             >
               Dashboard
             </Link>
-            <div className="pt-3 border-t border-blue-500">
+<div className="pt-3 border-t border-blue-500">
               {user ? (
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 text-gray-200">
                     <User size={16} />
                     <span className="text-sm truncate">{user.email}</span>
                   </div>
+                  <Link
+                    href="/settings"
+                    className="flex items-center gap-2 hover:text-blue-200 transition-colors"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <Settings size={16} />
+                    Settings
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-2 text-red-300 hover:text-red-200"
+                  >
+                    <LogOut size={16} />
+                    Logout
+                  </button>
+                </div>
+              ) : (
+                <Link
+                  href="/login"
+                  className="hover:text-blue-200 transition-colors"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Login
+                </Link>
+              )}
+            </div>
                   <Link
                     href="/settings"
                     className="flex items-center gap-2 hover:text-blue-200 transition-colors"
