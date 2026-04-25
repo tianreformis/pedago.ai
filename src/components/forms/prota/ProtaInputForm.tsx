@@ -115,7 +115,8 @@ export default function ProtaInputForm({ onGenerate, isLoading }: ProtaInputForm
   }
 
   const selectedMapel = mataPelajaranList.find(m => m.id === form.mataPelajaran);
-  const availableKelas = kelasByFase[form.fase] || [];
+  const selectedFase = selectedMapel?.fases.find(f => f.id === form.fase);
+  const availableKelas = kelasByFase[selectedFase?.nama || ""] || [];
   const canSubmit = !isLoading && Boolean(form.mataPelajaran) && Boolean(form.fase) && selectedKelas.length > 0;
 
   return (
@@ -176,7 +177,7 @@ export default function ProtaInputForm({ onGenerate, isLoading }: ProtaInputForm
             <Plus size={18} className={`transition-transform ${showKelasDropdown ? "rotate-45" : ""}`} />
           </button>
 
-          {showKelasDropdown && form.fase && (
+          {showKelasDropdown && form.fase && availableKelas.length > 0 && (
             <div className="absolute z-10 mt-1 w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg">
               {availableKelas.length === 0 ? (
                 <div className="px-3 py-2 text-gray-500 text-sm">Pilih fase terlebih dahulu</div>
