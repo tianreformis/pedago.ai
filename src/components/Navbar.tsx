@@ -19,14 +19,39 @@ export default function Navbar() {
   const [user, setUser] = useState<UserData | null>(null);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch {
-        localStorage.removeItem("user");
+    const checkUser = () => {
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        try {
+          setUser(JSON.parse(storedUser));
+        } catch {
+          localStorage.removeItem("user");
+        }
       }
-    }
+    };
+    
+    checkUser();
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "user" || e.key === "token") {
+        checkUser();
+      }
+    };
+
+    const handleLoginEvent = () => {
+      checkUser();
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    window.addEventListener("user-logged-in", handleLoginEvent);
+    
+    const interval = setInterval(checkUser, 1000);
+    
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("user-logged-in", handleLoginEvent);
+      clearInterval(interval);
+    };
   }, []);
 
   const handleLogout = () => {
@@ -34,6 +59,7 @@ export default function Navbar() {
     localStorage.removeItem("user");
     setUser(null);
     setShowUserMenu(false);
+    window.dispatchEvent(new Event("user-logged-out"));
     router.push("/login");
   };
 
