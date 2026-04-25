@@ -78,3 +78,43 @@ model Prota {
 
   @@index([userId])
 }
+
+model MataPelajaran {
+  id          String   @id @default(cuid())
+  nama        String   @unique
+
+  fases       Fase[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Fase {
+  id              String   @id @default(cuid())
+  nama            String   // e.g., "Fase A", "Fase B"
+  keterangan      String?  // e.g., "Kelas 1 & 2 SD/MI"
+
+  mataPelajaranId String
+  mataPelajaran   MataPelajaran @relation(fields: [mataPelajaranId], references: [id])
+
+  capaianPembelajarans CapaianPembelajaran[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([mataPelajaranId, nama])
+}
+
+model CapaianPembelajaran {
+  id          String   @id @default(cuid())
+  nama        String   // e.g., "Menyimak", "Membaca"
+  deskripsi   String
+
+  faseId      String
+  fase        Fase     @relation(fields: [faseId], references: [id])
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([faseId])
+}

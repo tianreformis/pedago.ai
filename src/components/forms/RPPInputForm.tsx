@@ -1,7 +1,25 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getCPOptions, FASE_OPTIONS, MATA_PELAJARAN_OPTIONS } from "@/lib/cp-data";
+
+interface Capaian {
+  id: string;
+  nama: string;
+  deskripsi: string;
+}
+
+interface Fase {
+  id: string;
+  nama: string;
+  keterangan: string | null;
+  capaianPembelajarans: Capaian[];
+}
+
+interface MataPelajaran {
+  id: string;
+  nama: string;
+  fases: Fase[];
+}
 
 interface RPPInputFormProps {
   onGenerate: (formData: any) => void;
@@ -10,7 +28,9 @@ interface RPPInputFormProps {
 
 export default function RPPInputForm({ onGenerate, isLoading }: RPPInputFormProps) {
   const [mounted, setMounted] = useState(false);
-  const [cpOptions, setCpOptions] = useState<string[]>([]);
+  const [mataPelajaranList, setMataPelajaranList] = useState<MataPelajaran[]>([]);
+  const [cpOptions, setCpOptions] = useState<Capaian[]>([]);
+  const [isLoadingData, setIsLoadingData] = useState(true);
   const [form, setForm] = useState({
     mataPelajaran: "",
     fase: "",
@@ -28,20 +48,39 @@ export default function RPPInputForm({ onGenerate, isLoading }: RPPInputFormProp
 
   useEffect(() => {
     setMounted(true);
+    fetchData();
   }, []);
+
+  const fetchData = async () => {
+    try {
+      const res = await fetch("/api/mata-pelajaran");
+      const json = await res.json();
+      if (json.success) {
+        setMataPelajaranList(json.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch mata pelajaran:", error);
+    } finally {
+      setIsLoadingData(false);
+    }
+  };
 
   useEffect(() => {
     if (form.mataPelajaran && form.fase) {
-      setCpOptions(getCPOptions(form.mataPelajaran, form.fase));
+      const mapel = mataPelajaranList.find(m => m.id === form.mataPelajaran);
+      const fase = mapel?.fases.find(f => f.id === form.fase);
+      setCpOptions(fase?.capaianPembelajarans || []);
     } else {
       setCpOptions([]);
     }
-  }, [form.mataPelajaran, form.fase]);
+  }, [form.mataPelajaran, form.fase, mataPelajaranList]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    if (name === "mataPelajaran" || name === "fase") {
-      setForm(prev => ({ ...prev, [name]: value, cp: "" }));
+    if (name === "mataPelajaran") {
+      setForm(prev => ({ ...prev, mataPelajaran: value, fase: "", cp: "" }));
+    } else if (name === "fase") {
+      setForm(prev => ({ ...prev, fase: value, cp: "" }));
     } else if (name === "cpLainnya") {
       setForm(prev => ({ ...prev, cpLainnya: value }));
     } else {
@@ -65,10 +104,12 @@ export default function RPPInputForm({ onGenerate, isLoading }: RPPInputFormProp
   }
 
   const canSubmit = !isLoading && Boolean(form.mataPelajaran) && Boolean(form.fase) && (
-    form.cp === "___lainnya___" 
-      ? Boolean(form.cpLainnya && form.cpLainnya.trim()) 
+    form.cp === "___lainnya___"
+      ? Boolean(form.cpLainnya && form.cpLainnya.trim())
       : Boolean(form.cp)
   );
+
+  const selectedMapel = mataPelajaranList.find(m => m.id === form.mataPelajaran);
 
   return (
     <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm space-y-5">
@@ -82,11 +123,12 @@ export default function RPPInputForm({ onGenerate, isLoading }: RPPInputFormProp
             value={form.mataPelajaran}
             onChange={handleChange}
             required
+            disabled={isLoadingData}
             className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">— Pilih Mata Pelajaran —</option>
-            {MATA_PELAJARAN_OPTIONS.map((m) => (
-              <option key={m} value={m}>{m}</option>
+            {mataPelajaranList.map((m) => (
+              <option key={m.id} value={m.id}>{m.nama}</option>
             ))}
           </select>
         </div>
@@ -100,11 +142,12 @@ export default function RPPInputForm({ onGenerate, isLoading }: RPPInputFormProp
             value={form.fase}
             onChange={handleChange}
             required
+            disabled={!form.mataPelajaran || isLoadingData}
             className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">— Pilih Fase —</option>
-            {FASE_OPTIONS.map((f) => (
-              <option key={f.value} value={f.value}>{f.label}</option>
+            {selectedMapel?.fases.map((f) => (
+              <option key={f.id} value={f.id}>{f.nama} — {f.keterangan}</option>
             ))}
           </select>
         </div>
@@ -123,7 +166,7 @@ export default function RPPInputForm({ onGenerate, isLoading }: RPPInputFormProp
             >
               <option value="">— Pilih Capaian Pembelajaran —</option>
               {cpOptions.map((cp) => (
-                <option key={cp} value={cp}>{cp}</option>
+                <option key={cp.id} value={`${cp.nama}: ${cp.deskripsi}`}>{cp.nama}: {cp.deskripsi}</option>
               ))}
               <option value="___lainnya___">Lainnya (buat sendiri)</option>
             </select>

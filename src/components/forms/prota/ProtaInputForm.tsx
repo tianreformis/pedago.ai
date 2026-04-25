@@ -1,8 +1,19 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { FASE_OPTIONS, MATA_PELAJARAN_OPTIONS } from "@/lib/cp-data";
 import { X, Plus } from "lucide-react";
+
+interface Fase {
+  id: string;
+  nama: string;
+  keterangan: string | null;
+}
+
+interface MataPelajaran {
+  id: string;
+  nama: string;
+  fases: Fase[];
+}
 
 interface ProtaInputFormProps {
   onGenerate: (formData: any) => void;
@@ -11,8 +22,10 @@ interface ProtaInputFormProps {
 
 export default function ProtaInputForm({ onGenerate, isLoading }: ProtaInputFormProps) {
   const [mounted, setMounted] = useState(false);
+  const [mataPelajaranList, setMataPelajaranList] = useState<MataPelajaran[]>([]);
   const [selectedKelas, setSelectedKelas] = useState<string[]>([]);
   const [showKelasDropdown, setShowKelasDropdown] = useState(false);
+  const [isLoadingData, setIsLoadingData] = useState(true);
   const [form, setForm] = useState({
     mataPelajaran: "",
     fase: "",
@@ -34,11 +47,24 @@ export default function ProtaInputForm({ onGenerate, isLoading }: ProtaInputForm
     "Fase F": ["Kelas 11", "Kelas 12"],
   };
 
-  const availableKelas = kelasByFase[form.fase] || [];
-
   useEffect(() => {
     setMounted(true);
+    fetchData();
   }, []);
+
+  const fetchData = async () => {
+    try {
+      const res = await fetch("/api/mata-pelajaran");
+      const json = await res.json();
+      if (json.success) {
+        setMataPelajaranList(json.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch mata pelajaran:", error);
+    } finally {
+      setIsLoadingData(false);
+    }
+  };
 
   useEffect(() => {
     setSelectedKelas([]);
@@ -46,8 +72,10 @@ export default function ProtaInputForm({ onGenerate, isLoading }: ProtaInputForm
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    if (name === "mataPelajaran" || name === "fase") {
-      setForm(prev => ({ ...prev, [name]: value }));
+    if (name === "mataPelajaran") {
+      setForm(prev => ({ ...prev, mataPelajaran: value, fase: "" }));
+    } else if (name === "fase") {
+      setForm(prev => ({ ...prev, fase: value }));
     } else {
       setForm(prev => ({ ...prev, [name]: value }));
     }
@@ -68,9 +96,17 @@ export default function ProtaInputForm({ onGenerate, isLoading }: ProtaInputForm
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.mataPelajaran || !form.fase || selectedKelas.length === 0) return;
+
+    const selectedMapel = mataPelajaranList.find(m => m.id === form.mataPelajaran);
+    const selectedFase = selectedMapel?.fases.find(f => f.id === form.fase);
+
     onGenerate({
       ...form,
       kelas: selectedKelas,
+      mataPelajaranId: form.mataPelajaran,
+      mataPelajaranNama: selectedMapel?.nama,
+      faseId: form.fase,
+      faseNama: selectedFase?.nama,
     });
   };
 
@@ -78,6 +114,8 @@ export default function ProtaInputForm({ onGenerate, isLoading }: ProtaInputForm
     return null;
   }
 
+  const selectedMapel = mataPelajaranList.find(m => m.id === form.mataPelajaran);
+  const availableKelas = kelasByFase[form.fase] || [];
   const canSubmit = !isLoading && Boolean(form.mataPelajaran) && Boolean(form.fase) && selectedKelas.length > 0;
 
   return (
@@ -92,11 +130,12 @@ export default function ProtaInputForm({ onGenerate, isLoading }: ProtaInputForm
             value={form.mataPelajaran}
             onChange={handleChange}
             required
+            disabled={isLoadingData}
             className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">— Pilih Mata Pelajaran —</option>
-            {MATA_PELAJARAN_OPTIONS.map((m) => (
-              <option key={m} value={m}>{m}</option>
+            {mataPelajaranList.map((m) => (
+              <option key={m.id} value={m.id}>{m.nama}</option>
             ))}
           </select>
         </div>
@@ -110,11 +149,12 @@ export default function ProtaInputForm({ onGenerate, isLoading }: ProtaInputForm
             value={form.fase}
             onChange={handleChange}
             required
+            disabled={!form.mataPelajaran || isLoadingData}
             className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">— Pilih Fase —</option>
-            {FASE_OPTIONS.map((f) => (
-              <option key={f.value} value={f.value}>{f.label}</option>
+            {selectedMapel?.fases.map((f) => (
+              <option key={f.id} value={f.id}>{f.nama} — {f.keterangan}</option>
             ))}
           </select>
         </div>
