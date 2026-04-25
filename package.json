@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:push": "prisma db push",
+    "seed": "npx tsx prisma/seed.ts"
   },
   "dependencies": {
     "@mistralai/mistralai": "^2.2.0",
@@ -34,6 +36,7 @@
     "eslint-config-next": "16.2.3",
     "prisma": "^5.22.0",
     "tailwindcss": "^4",
+    "tsx": "^4.19.0",
     "typescript": "^5"
   }
 }

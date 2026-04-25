@@ -11,13 +11,13 @@ Generator RPP (Rencana Pembelajaran Pembelajaran) dan Prota (Program Tahunan) be
 - Integrasi 8 Dimensi Profil Pelajar Pancasila
 - Asesmen AS, FOR, dan OF Learning
 - Lembar Kerja Peserta Didik
-- Export ke Word/HTML
+- Export ke Word/PDF
 
 ### Program Tahunan (Prota)
 - Generate Program Tahunan otomatis via AI
 - Distribusi CP ke alur pembelajaran mingguan
 - Rekapitulasi total jam dan distribusi topik
-- Export ke HTML
+- Export ke Word/PDF
 - Kelola di dashboard
 
 ## Tech Stack
@@ -38,6 +38,9 @@ npm install
 # Setup database
 npx prisma db push
 
+# Seed data curriculum (Mata Pelajaran, Fase, CP)
+npm run seed
+
 # Run development server
 npm run dev
 ```
@@ -46,16 +49,17 @@ Open [http://localhost:3000](http://localhost:3000)
 
 ## Routes
 
-| Route | Description |
-|-------|-------------|
-| `/` | Home |
-| `/generate` | Generate RPP |
-| `/generate-prota` | Generate Prota |
-| `/dashboard` | Dashboard RPP |
-| `/dashboard-prota` | Dashboard Prota |
-| `/login` | Login |
-| `/register` | Register |
-| `/payment` | Subscription |
+|Route|Description|
+|-----|-------------|
+|`/`|Home|
+|`/generate`|Generate RPP|
+|`/generate-prota`|Generate Prota|
+|`/dashboard`|Dashboard RPP|
+|`/dashboard-prota`|Dashboard Prota|
+|`/login`|Login|
+|`/register`|Register|
+|`/payment`|Subscription|
+|`/admin/mata-pelajaran`|Kelola Data Kurikulum|
 
 ## Environment Variables
 
@@ -66,4 +70,14 @@ MISTRAL_API_KEY=
 JWT_SECRET=
 MIDTRANS_SERVER_KEY=
 MIDTRANS_CLIENT_KEY=
+```
+
+## Commands
+
+```bash
+# Update database schema
+npm run db:push
+
+# Seed curriculum data
+npm run seed
 ```
