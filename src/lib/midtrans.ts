@@ -1,10 +1,13 @@
 import crypto from "crypto";
 
 const MIDTRANS_SERVER_KEY = process.env.MIDTRANS_SERVER_KEY || "";
+const MIDTRANS_CLIENT_KEY = process.env.MIDTRANS_CLIENT_KEY || "";
+const MIDTRANS_MERCHANT_ID = process.env.MIDTRANS_MERCHANT_ID || "";
 const MIDTRANS_IS_PRODUCTION = process.env.MIDTRANS_IS_PRODUCTION === "true";
 const MIDTRANS_BASE_URL = MIDTRANS_IS_PRODUCTION 
   ? "https://app.midtrans.com" 
   : "https://app.sandbox.midtrans.com";
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
 function getBasicAuth(): string {
   return Buffer.from(MIDTRANS_SERVER_KEY + ":").toString("base64");
@@ -37,7 +40,7 @@ export async function createPaymentLink(params: CreatePaymentParams): Promise<Pa
     item_details: [
       {
         id: "subscription",
-        name: "Langganan RPP Pembelajaran Mendalam",
+        name: "Langganan PedagoAI - RPP Pembelajaran Mendalam",
         price: amount,
         quantity: 1,
       },
@@ -49,6 +52,12 @@ export async function createPaymentLink(params: CreatePaymentParams): Promise<Pa
       unit: "day",
       duration: 1,
     },
+    callbacks: {
+      finish: `${APP_URL}/payment/finish`,
+      unfinish: `${APP_URL}/payment/unfinish`,
+      error: `${APP_URL}/payment/error`,
+    },
+    notification_url: `${APP_URL}/api/payment/webhook`,
   };
 
   const response = await fetch(`${MIDTRANS_BASE_URL}/v2/snap/token`, {
@@ -68,7 +77,12 @@ export async function createPaymentLink(params: CreatePaymentParams): Promise<Pa
   return response.json();
 }
 
-export async function verifyPaymentNotification(signatureKey: string, orderId: string, statusCode: string, grossAmount: number): Promise<boolean> {
+export async function verifyPaymentNotification(
+  orderId: string,
+  statusCode: string,
+  grossAmount: string,
+  signatureKey: string
+): Promise<boolean> {
   const data = `${orderId}${statusCode}${grossAmount}${MIDTRANS_SERVER_KEY}`;
   const hash = crypto.createHash("sha512").update(data).digest("hex");
   return hash === signatureKey;
@@ -76,4 +90,8 @@ export async function verifyPaymentNotification(signatureKey: string, orderId: s
 
 export function isPaymentSuccessful(status: string): boolean {
   return status === "capture" || status === "settlement";
+}
+
+export function getClientKey(): string {
+  return MIDTRANS_CLIENT_KEY;
 }

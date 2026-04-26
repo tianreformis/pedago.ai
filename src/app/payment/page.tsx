@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Loader2, Crown } from "lucide-react";
+import { getClientKey } from "@/lib/midtrans";
 
 const MONTHLY_PRICE = 30000;
 const YEARLY_PRICE = 330000;
@@ -20,6 +21,7 @@ export default function PaymentPage() {
   const [selectedPlan, setSelectedPlan] = useState<"monthly" | "yearly" | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [userData, setUserData] = useState<UserData | null>(null);
+  const [midtransLoaded, setMidtransLoaded] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -36,6 +38,21 @@ export default function PaymentPage() {
       router.push("/login");
     }
   }, [router]);
+
+  useEffect(() => {
+    const clientKey = getClientKey();
+    if (!clientKey) return;
+
+    const script = document.createElement("script");
+    script.src = "https://app.sandbox.midtrans.com/snap/snap.js";
+    script.setAttribute("data-client-key", clientKey);
+    script.onload = () => setMidtransLoaded(true);
+    document.body.appendChild(script);
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
 
   if (userData?.isAdmin) {
     return (
@@ -94,14 +111,37 @@ export default function PaymentPage() {
 
       const json = await res.json();
 
-      if (json.success && json.data.redirectUrl) {
-        window.location.href = json.data.redirectUrl;
+      if (json.success) {
+        if (json.data.redirectUrl) {
+          window.location.href = json.data.redirectUrl;
+        } else if (json.data.token) {
+          window.snap.pay(json.data.token, {
+            onSuccess: () => {
+              window.location.href = "/payment/finish";
+            },
+            onPending: () => {
+              window.location.href = "/payment/unfinish";
+            },
+            onError: () => {
+              window.location.href = "/payment/error";
+            },
+            onClose: () => {
+              setIsLoading(false);
+              setSelectedPlan(null);
+            },
+          });
+        } else {
+          alert(json.error || "Gagal membuat pembayaran");
+          setIsLoading(false);
+          setSelectedPlan(null);
+        }
       } else {
         alert(json.error || "Gagal membuat pembayaran");
+        setIsLoading(false);
+        setSelectedPlan(null);
       }
-    } catch {
+    } catch (err) {
       alert("Terjadi kesalahan");
-    } finally {
       setIsLoading(false);
       setSelectedPlan(null);
     }

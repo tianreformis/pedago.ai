@@ -17,13 +17,12 @@ export async function POST(req: NextRequest) {
     }
 
     const userId = userIdMatch[1];
-    const amount = parseInt(gross_amount, 10);
 
-    const isValid = await verifyPaymentNotification(
-      signature_key,
+    const isValid = verifyPaymentNotification(
       order_id,
-      status_code,
-      amount
+      status_code?.toString() || "0",
+      gross_amount?.toString() || "0",
+      signature_key
     );
 
     if (!isValid) {
@@ -37,6 +36,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "User not found" }, { status: 404 });
       }
 
+      const amount = parseInt(gross_amount, 10);
       const isYearly = amount >= 100000;
       const expiryDate = new Date();
       if (isYearly) {
