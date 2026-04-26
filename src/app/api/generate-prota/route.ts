@@ -11,6 +11,24 @@ function getClientIP(req: NextRequest): string {
 
 const FREE_LIMIT = 1;
 
+async function checkUserDailyLimit(userId: string): Promise<{ allowed: boolean; remaining: number }> {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  const count = await prismaClient.prota.count({
+    where: {
+      userId,
+      createdAt: { gte: today },
+    },
+  });
+  
+  if (count >= FREE_LIMIT) {
+    return { allowed: false, remaining: 0 };
+  }
+  
+  return { allowed: true, remaining: FREE_LIMIT - count - 1 };
+}
+
 async function checkFreeLimit(ip: string): Promise<{ allowed: boolean; remaining: number }> {
   let usage = await prismaClient.freeUsage.findUnique({ where: { ipAddress: ip } });
 
@@ -67,19 +85,33 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    if (!isAdmin && !isSubscriber && !userId) {
-      const clientIP = getClientIP(req);
-      const { allowed } = await checkFreeLimit(clientIP);
+    if (!isAdmin && !isSubscriber) {
+      if (userId) {
+        const { allowed } = await checkUserDailyLimit(userId);
+        if (!allowed) {
+          return NextResponse.json(
+            { 
+              error: "Batas penggunaan gratis tercapai (1 Prota per hari). Silakan upgrade ke premium untuk unlimited.",
+              requireLogin: true,
+              freeLimitReached: true
+            },
+            { status: 403 }
+          );
+        }
+      } else {
+        const clientIP = getClientIP(req);
+        const { allowed } = await checkFreeLimit(clientIP);
 
-      if (!allowed) {
-        return NextResponse.json(
-          {
-            error: "Batas penggunaan gratis tercapai. Silakan login atau langganan untuk melanjutkan.",
-            requireLogin: true,
-            freeLimitReached: true
-          },
-          { status: 403 }
-        );
+        if (!allowed) {
+          return NextResponse.json(
+            {
+              error: "Batas penggunaan gratis tercapai. Silakan login atau langganan untuk melanjutkan.",
+              requireLogin: true,
+              freeLimitReached: true
+            },
+            { status: 403 }
+          );
+        }
       }
     }
 
