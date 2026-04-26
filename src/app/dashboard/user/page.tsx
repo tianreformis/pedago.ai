@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Users as UsersIcon, CreditCard, Clock, Check, X, Crown, ChevronLeft, ChevronRight } from "lucide-react";
+import { Users as UsersIcon, CreditCard, Clock, Check, X, Crown, ChevronLeft, ChevronRight, Plus, Pencil, Trash2 } from "lucide-react";
 
 interface UserData {
   id: string;
@@ -27,8 +27,9 @@ export default function DashboardUserPage() {
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
   const [showModal, setShowModal] = useState(false);
-  const [action, setAction] = useState<"subscribe" | "admin" | null>(null);
+  const [modalType, setModalType] = useState<"subscribe" | "admin" | "add" | "edit" | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const itemsPerPage = 5;
 
   useEffect(() => {
@@ -66,31 +67,59 @@ export default function DashboardUserPage() {
 
     try {
       const res = await fetch("/api/admin/users", {
-        method: "PATCH",
+        method: actionType === "delete" ? "DELETE" : "PATCH",
         headers: { 
           "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ userId, action: actionType, ...data }),
+        body: actionType === "delete" ? undefined : JSON.stringify({ userId, action: actionType, ...data }),
       });
       const result = await res.json();
       if (result.success) {
-        setUsers(users.map(u => u.id === userId ? { ...u, ...result.data } : u));
+        if (actionType === "delete") {
+          setUsers(users.filter(u => u.id !== userId));
+        } else {
+          setUsers(users.map(u => u.id === userId ? { ...u, ...result.data } : u));
+        }
         setShowModal(false);
         setSelectedUser(null);
-        setAction(null);
+        setModalType(null);
       }
     } catch (error) {
       console.error("Failed to update user:", error);
     }
   };
 
-  const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString("id-ID", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    });
+  const handleAddUser = async (data: { email: string; password: string; name: string; school: string }) => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      const res = await fetch("/api/admin/users", {
+        method: "POST",
+        headers: { 
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+      const result = await res.json();
+      if (result.success) {
+        setUsers([result.data, ...users]);
+        setShowModal(false);
+        setModalType(null);
+      }
+    } catch (error) {
+      console.error("Failed to add user:", error);
+    }
+  };
+
+  const handleDelete = async (userId: string) => {
+    if (!confirm("Apakah Anda yakin ingin menghapus user ini? Semua RPP dan Prota user juga akan dihapus.")) return;
+    
+    setIsDeleting(userId);
+    await handleAction(userId, "delete", {});
+    setIsDeleting(null);
   };
 
   const getDaysRemaining = (expiry: string | null) => {
@@ -107,9 +136,9 @@ export default function DashboardUserPage() {
     }
   };
 
-  const openModal = (user: UserData, actionType: "subscribe" | "admin") => {
+  const openModal = (user: UserData, type: "subscribe" | "admin" | "edit") => {
     setSelectedUser(user);
-    setAction(actionType);
+    setModalType(type);
     setShowModal(true);
   };
 
@@ -124,6 +153,13 @@ export default function DashboardUserPage() {
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Kelola User</h1>
           <p className="text-gray-600 dark:text-gray-400 text-sm">Kelola subscription dan akses admin user</p>
         </div>
+        <button
+          onClick={() => { setModalType("add"); setShowModal(true); }}
+          className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+        >
+          <Plus size={20} />
+          Tambah User
+        </button>
       </div>
 
       {loading ? (
@@ -198,13 +234,20 @@ export default function DashboardUserPage() {
                           </div>
                         </td>
                         <td className="px-4 py-3">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => openModal(user, "edit")}
+                              className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
+                              title="Edit User"
+                            >
+                              <Pencil size={16} />
+                            </button>
                             <button
                               onClick={() => openModal(user, "subscribe")}
                               className="p-2 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 rounded-lg transition-colors"
                               title="Kelola Subscription"
                             >
-                              <CreditCard size={18} />
+                              <CreditCard size={16} />
                             </button>
                             <button
                               onClick={() => openModal(user, "admin")}
@@ -215,7 +258,15 @@ export default function DashboardUserPage() {
                               }`}
                               title="Kelola Admin"
                             >
-                              <Crown size={18} />
+                              <Crown size={16} />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(user.id)}
+                              disabled={isDeleting === user.id}
+                              className="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors disabled:opacity-50"
+                              title="Hapus User"
+                            >
+                              <Trash2 size={16} />
                             </button>
                           </div>
                         </td>
@@ -251,92 +302,247 @@ export default function DashboardUserPage() {
         </>
       )}
 
-      {showModal && selectedUser && (
+      {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md mx-4">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-              {action === "subscribe" ? "Kelola Subscription" : "Kelola Akses Admin"}
-            </h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
-              {action === "subscribe" ? (
-                <>User: <strong>{selectedUser.email}</strong></>
-              ) : (
-                <>Berikan akses admin kepada <strong>{selectedUser.email}</strong>?</>
-              )}
-            </p>
-            
-            {action === "subscribe" ? (
-              <div className="space-y-3">
-                <button
-                  onClick={() => handleAction(selectedUser.id, "setSubscription", { 
-                    status: "active", 
-                    plan: "monthly", 
-                    durationMonths: 1 
-                  })}
-                  className="w-full p-3 text-left bg-purple-50 dark:bg-purple-900/30 hover:bg-purple-100 dark:hover:bg-purple-900/50 rounded-lg transition-colors"
-                >
-                  <div className="flex items-center gap-2">
-                    <CreditCard size={18} className="text-purple-600" />
-                    <span className="font-medium">1 Bulan - Rp 30.000</span>
-                  </div>
-                </button>
-                <button
-                  onClick={() => handleAction(selectedUser.id, "setSubscription", { 
-                    status: "active", 
-                    plan: "yearly", 
-                    durationMonths: 12 
-                  })}
-                  className="w-full p-3 text-left bg-purple-50 dark:bg-purple-900/30 hover:bg-purple-100 dark:hover:bg-purple-900/50 rounded-lg transition-colors"
-                >
-                  <div className="flex items-center gap-2">
-                    <Crown size={18} className="text-purple-600" />
-                    <span className="font-medium">1 Tahun - Rp 300.000</span>
-                  </div>
-                </button>
-                <button
-                  onClick={() => handleAction(selectedUser.id, "setSubscription", { 
-                    status: "free" 
-                  })}
-                  className="w-full p-3 text-left bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors"
-                >
-                  <div className="flex items-center gap-2">
-                    <X size={18} className="text-gray-600 dark:text-gray-400" />
-                    <span className="font-medium">Hapus Subscription</span>
-                  </div>
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                <button
-                  onClick={() => handleAction(selectedUser.id, "toggleAdmin", { isAdmin: true })}
-                  className="w-full p-3 text-left bg-yellow-50 dark:bg-yellow-900/30 hover:bg-yellow-100 dark:hover:bg-yellow-900/50 rounded-lg transition-colors"
-                >
-                  <div className="flex items-center gap-2">
-                    <Check size={18} className="text-yellow-600" />
-                    <span className="font-medium">Jadikan Admin</span>
-                  </div>
-                </button>
-                <button
-                  onClick={() => handleAction(selectedUser.id, "toggleAdmin", { isAdmin: false })}
-                  className="w-full p-3 text-left bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors"
-                >
-                  <div className="flex items-center gap-2">
-                    <X size={18} className="text-gray-600 dark:text-gray-400" />
-                    <span className="font-medium">Hapus Akses Admin</span>
-                  </div>
-                </button>
-              </div>
-            )}
-            
-            <button
-              onClick={() => { setShowModal(false); setSelectedUser(null); setAction(null); }}
-              className="mt-4 w-full py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-            >
-              Batal
-            </button>
+            {modalType === "add" ? (
+              <AddUserModal onSubmit={handleAddUser} onClose={() => { setShowModal(false); setModalType(null); }} />
+            ) : modalType === "edit" && selectedUser ? (
+              <EditUserModal user={selectedUser} onSubmit={handleAction} onClose={() => { setShowModal(false); setSelectedUser(null); setModalType(null); }} />
+            ) : modalType === "subscribe" && selectedUser ? (
+              <SubscriptionModal user={selectedUser} onSubmit={handleAction} onClose={() => { setShowModal(false); setSelectedUser(null); setModalType(null); }} />
+            ) : modalType === "admin" && selectedUser ? (
+              <AdminModal user={selectedUser} onSubmit={handleAction} onClose={() => { setShowModal(false); setSelectedUser(null); setModalType(null); }} />
+            ) : null}
           </div>
         </div>
       )}
     </div>
+  );
+}
+
+function AddUserModal({ onSubmit, onClose }: { onSubmit: (data: { email: string; password: string; name: string; school: string }) => void; onClose: () => void }) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [school, setSchool] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !password) return;
+    setLoading(true);
+    onSubmit({ email, password, name, school });
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Tambah User</h2>
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email *</label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-3 py-2"
+            required
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password *</label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-3 py-2"
+            required
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nama</label>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-3 py-2"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sekolah</label>
+          <input
+            type="text"
+            value={school}
+            onChange={(e) => setSchool(e.target.value)}
+            className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-3 py-2"
+          />
+        </div>
+      </div>
+      <div className="flex gap-2 mt-6">
+        <button
+          type="submit"
+          disabled={loading}
+          className="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
+        >
+          {loading ? "Menyimpan..." : "Tambah"}
+        </button>
+        <button
+          type="button"
+          onClick={onClose}
+          className="flex-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 py-2 rounded-lg font-medium transition-colors"
+        >
+          Batal
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function EditUserModal({ user, onSubmit, onClose }: { user: UserData; onSubmit: (userId: string, action: string, data: any) => void; onClose: () => void }) {
+  const [name, setName] = useState(user.name || "");
+  const [school, setSchool] = useState(user.school || "");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    onSubmit(user.id, "updateInfo", { name, school, password: password || undefined });
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Edit User</h2>
+      <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{user.email}</p>
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nama</label>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-3 py-2"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sekolah</label>
+          <input
+            type="text"
+            value={school}
+            onChange={(e) => setSchool(e.target.value)}
+            className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-3 py-2"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password Baru (opsional)</label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Kosongkan jika tidak ingin mengubah"
+            className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-3 py-2"
+          />
+        </div>
+      </div>
+      <div className="flex gap-2 mt-6">
+        <button
+          type="submit"
+          disabled={loading}
+          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
+        >
+          {loading ? "Menyimpan..." : "Simpan"}
+        </button>
+        <button
+          type="button"
+          onClick={onClose}
+          className="flex-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 py-2 rounded-lg font-medium transition-colors"
+        >
+          Batal
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function SubscriptionModal({ user, onSubmit, onClose }: { user: UserData; onSubmit: (userId: string, action: string, data: any) => void; onClose: () => void }) {
+  const handleSetSubscription = (status: string, plan?: string, durationMonths?: number) => {
+    onSubmit(user.id, "setSubscription", { status, plan, durationMonths });
+  };
+
+  return (
+    <>
+      <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Kelola Subscription</h2>
+      <p className="text-gray-600 dark:text-gray-400 mb-6">User: <strong>{user.email}</strong></p>
+      <div className="space-y-3">
+        <button
+          onClick={() => handleSetSubscription("active", "monthly", 1)}
+          className="w-full p-3 text-left bg-purple-50 dark:bg-purple-900/30 hover:bg-purple-100 dark:hover:bg-purple-900/50 rounded-lg transition-colors"
+        >
+          <div className="flex items-center gap-2">
+            <CreditCard size={18} className="text-purple-600" />
+            <span className="font-medium">1 Bulan - Rp 30.000</span>
+          </div>
+        </button>
+        <button
+          onClick={() => handleSetSubscription("active", "yearly", 12)}
+          className="w-full p-3 text-left bg-purple-50 dark:bg-purple-900/30 hover:bg-purple-100 dark:hover:bg-purple-900/50 rounded-lg transition-colors"
+        >
+          <div className="flex items-center gap-2">
+            <Crown size={18} className="text-purple-600" />
+            <span className="font-medium">1 Tahun - Rp 300.000</span>
+          </div>
+        </button>
+        <button
+          onClick={() => handleSetSubscription("free")}
+          className="w-full p-3 text-left bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors"
+        >
+          <div className="flex items-center gap-2">
+            <X size={18} className="text-gray-600 dark:text-gray-400" />
+            <span className="font-medium">Hapus Subscription</span>
+          </div>
+        </button>
+      </div>
+      <button
+        onClick={onClose}
+        className="mt-4 w-full py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+      >
+        Batal
+      </button>
+    </>
+  );
+}
+
+function AdminModal({ user, onSubmit, onClose }: { user: UserData; onSubmit: (userId: string, action: string, data: any) => void; onClose: () => void }) {
+  return (
+    <>
+      <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Kelola Akses Admin</h2>
+      <p className="text-gray-600 dark:text-gray-400 mb-6">Berikan akses admin kepada <strong>{user.email}</strong>?</p>
+      <div className="space-y-3">
+        <button
+          onClick={() => onSubmit(user.id, "toggleAdmin", { isAdmin: true })}
+          className="w-full p-3 text-left bg-yellow-50 dark:bg-yellow-900/30 hover:bg-yellow-100 dark:hover:bg-yellow-900/50 rounded-lg transition-colors"
+        >
+          <div className="flex items-center gap-2">
+            <Check size={18} className="text-yellow-600" />
+            <span className="font-medium">Jadikan Admin</span>
+          </div>
+        </button>
+        <button
+          onClick={() => onSubmit(user.id, "toggleAdmin", { isAdmin: false })}
+          className="w-full p-3 text-left bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors"
+        >
+          <div className="flex items-center gap-2">
+            <X size={18} className="text-gray-600 dark:text-gray-400" />
+            <span className="font-medium">Hapus Akses Admin</span>
+          </div>
+        </button>
+      </div>
+      <button
+        onClick={onClose}
+        className="mt-4 w-full py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+      >
+        Batal
+      </button>
+    </>
   );
 }
