@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Menu, X, User, Settings, LogOut, ChevronDown } from "lucide-react";
@@ -12,65 +12,48 @@ interface UserData {
   isAdmin?: boolean;
 }
 
+function getStoredUser(): UserData | null {
+  if (typeof window === "undefined") return null;
+  const stored = localStorage.getItem("user");
+  if (!stored) return null;
+  try {
+    return JSON.parse(stored);
+  } catch {
+    return null;
+  }
+}
+
+function subscribeToUser() {
+  return () => {};
+}
+
+function getUserSnapshot(): UserData | null {
+  return getStoredUser();
+}
+
+function getPathname(): string {
+  if (typeof window === "undefined") return "";
+  return window.location.pathname;
+}
+
+function subscribeToPathname() {
+  return () => {};
+}
+
 export default function Navbar() {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [user, setUser] = useState<UserData | null>(null);
-  const [pathname, setPathname] = useState("");
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-    setPathname(window.location.pathname);
-  }, []);
-
-  useEffect(() => {
-    const checkUser = () => {
-      const storedUser = localStorage.getItem("user");
-      if (storedUser) {
-        try {
-          setUser(JSON.parse(storedUser));
-        } catch {
-          localStorage.removeItem("user");
-        }
-      }
-    };
-    
-    checkUser();
-
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === "user" || e.key === "token") {
-        checkUser();
-      }
-    };
-
-    const handleLoginEvent = () => {
-      checkUser();
-    };
-
-    window.addEventListener("storage", handleStorageChange);
-    window.addEventListener("user-logged-in", handleLoginEvent);
-    
-    const interval = setInterval(checkUser, 1000);
-    
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-      window.removeEventListener("user-logged-in", handleLoginEvent);
-      clearInterval(interval);
-    };
-  }, []);
+  const user = useSyncExternalStore(subscribeToUser, getUserSnapshot, () => null);
+  const pathname = useSyncExternalStore(subscribeToPathname, getPathname, () => "");
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    setUser(null);
     setShowUserMenu(false);
     window.dispatchEvent(new Event("user-logged-out"));
     router.push("/login");
   };
-
-  const isDashboard = mounted && pathname.startsWith("/dashboard");
 
   return (
     <nav className="bg-blue-600 dark:bg-blue-800 text-white shadow-lg fixed top-0 left-0 right-0 z-20 md:relative">

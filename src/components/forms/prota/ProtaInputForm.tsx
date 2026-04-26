@@ -15,8 +15,14 @@ interface MataPelajaran {
   fases: Fase[];
 }
 
+interface ProtaFormData {
+  mataPelajaran: string;
+  fase: string;
+  kelas: string[];
+}
+
 interface ProtaInputFormProps {
-  onGenerate: (formData: any) => void;
+  onGenerate: (formData: ProtaFormData) => void;
   isLoading: boolean;
 }
 

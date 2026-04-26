@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Loader2, Crown } from "lucide-react";
 import { getClientKey } from "@/lib/midtrans";
@@ -16,26 +16,36 @@ interface UserData {
   isAdmin: boolean;
 }
 
+function getStoredUser(): UserData | null {
+  if (typeof window === "undefined") return null;
+  const stored = localStorage.getItem("user");
+  if (!stored) return null;
+  try {
+    return JSON.parse(stored);
+  } catch {
+    return null;
+  }
+}
+
+function subscribe() {
+  return () => {};
+}
+
+function getSnapshot(): UserData | null {
+  return getStoredUser();
+}
+
 export default function PaymentPage() {
   const router = useRouter();
   const [selectedPlan, setSelectedPlan] = useState<"monthly" | "yearly" | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [userData, setUserData] = useState<UserData | null>(null);
-  const [midtransLoaded, setMidtransLoaded] = useState(false);
+  const userData = useSyncExternalStore(subscribe, getSnapshot, () => null);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    const storedUser = localStorage.getItem("user");
-    if (token && storedUser) {
-      try {
-        setUserData(JSON.parse(storedUser));
-      } catch {
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-        router.push("/login");
-      }
-    } else {
+    if (!token) {
       router.push("/login");
+      return;
     }
   }, [router]);
 
@@ -46,7 +56,6 @@ export default function PaymentPage() {
     const script = document.createElement("script");
     script.src = "https://app.sandbox.midtrans.com/snap/snap.js";
     script.setAttribute("data-client-key", clientKey);
-    script.onload = () => setMidtransLoaded(true);
     document.body.appendChild(script);
 
     return () => {
@@ -140,7 +149,7 @@ export default function PaymentPage() {
         setIsLoading(false);
         setSelectedPlan(null);
       }
-    } catch (err) {
+    } catch {
       alert("Terjadi kesalahan");
       setIsLoading(false);
       setSelectedPlan(null);

@@ -1,12 +1,11 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { CheckCircle, Loader2 } from "lucide-react";
 
 export default function PaymentFinishPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   useEffect(() => {
     const timer = setTimeout(() => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { FileText, Calendar, Users, LogOut, CreditCard, LayoutDashboard } from "lucide-react";
@@ -12,10 +12,29 @@ interface User {
   isAdmin?: boolean;
 }
 
+function getStoredUser(): User | null {
+  if (typeof window === "undefined") return null;
+  const stored = localStorage.getItem("user");
+  if (!stored) return null;
+  try {
+    return JSON.parse(stored);
+  } catch {
+    return null;
+  }
+}
+
+function subscribe() {
+  return () => {};
+}
+
+function getSnapshot(): User | null {
+  return getStoredUser();
+}
+
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [user, setUser] = useState<User | null>(null);
+  const storedUser = useSyncExternalStore(subscribe, getSnapshot, () => null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -23,16 +42,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     if (!token) {
       router.push("/login");
       return;
-    }
-
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch {
-        localStorage.removeItem("user");
-        router.push("/login");
-      }
     }
     setIsLoading(false);
   }, [router]);
@@ -42,6 +51,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     localStorage.removeItem("user");
     router.push("/login");
   };
+
+  const user = storedUser;
 
   if (isLoading) {
     return (

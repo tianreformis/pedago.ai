@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, useSyncExternalStore, ReactNode } from "react";
 
 type Theme = "light" | "dark" | "system";
 
@@ -16,37 +16,43 @@ const ThemeContext = createContext<ThemeContextType>({
   resolvedTheme: "light",
 });
 
+function getStoredTheme(): Theme {
+  if (typeof window === "undefined") return "system";
+  return (localStorage.getItem("theme") as Theme) || "system";
+}
+
+function subscribe() {
+  return () => {};
+}
+
+function getSnapshot(): Theme {
+  return getStoredTheme();
+}
+
+function applyThemeToDOM(resolved: "light" | "dark") {
+  if (typeof document === "undefined") return;
+  const root = document.documentElement;
+  if (resolved === "dark") {
+    root.classList.add("dark");
+  } else {
+    root.classList.remove("dark");
+  }
+}
+
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("system");
+  const theme = useSyncExternalStore<Theme>(subscribe, getSnapshot, () => "system");
   const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("light");
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem("theme") as Theme | null;
-    if (stored) {
-      setThemeState(stored);
-    }
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (!mounted) return;
-    
     const updateTheme = () => {
       let resolved: "light" | "dark";
       if (theme === "system") {
         resolved = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
       } else {
-        resolved = theme;
+        resolved = theme as "light" | "dark";
       }
       setResolvedTheme(resolved);
-      
-      const root = document.documentElement;
-      if (resolved === "dark") {
-        root.classList.add("dark");
-      } else {
-        root.classList.remove("dark");
-      }
+      applyThemeToDOM(resolved);
     };
 
     updateTheme();
@@ -59,10 +65,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     };
     mediaQuery.addEventListener("change", listener);
     return () => mediaQuery.removeEventListener("change", listener);
-  }, [theme, mounted]);
+  }, [theme]);
 
   const setTheme = (newTheme: Theme) => {
-    setThemeState(newTheme);
     localStorage.setItem("theme", newTheme);
   };
 

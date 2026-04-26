@@ -1,38 +1,48 @@
 "use client";
 
 import { Moon, Sun, Monitor } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 
 type Theme = "light" | "dark" | "system";
 
+function getStoredTheme(): Theme {
+  if (typeof window === "undefined") return "system";
+  return (localStorage.getItem("theme") as Theme) || "system";
+}
+
+function subscribe() {
+  return () => {};
+}
+
+function getSnapshot(): Theme {
+  return getStoredTheme();
+}
+
+function applyTheme(newTheme: Theme) {
+  if (typeof window === "undefined") return;
+  let resolved: "light" | "dark";
+  if (newTheme === "system") {
+    resolved = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  } else {
+    resolved = newTheme;
+  }
+  
+  const root = document.documentElement;
+  if (resolved === "dark") {
+    root.classList.add("dark");
+  } else {
+    root.classList.remove("dark");
+  }
+}
+
 export default function ThemeToggle() {
-  const [theme, setThemeState] = useState<Theme>("system");
+  const theme = useSyncExternalStore<Theme>(subscribe, getSnapshot, () => "system");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem("theme") as Theme | null;
-    if (stored) {
-      setThemeState(stored);
-    }
-    applyTheme(stored || "system");
+    applyTheme(theme);
     setMounted(true);
-  }, []);
-
-  const applyTheme = (newTheme: Theme) => {
-    let resolved: "light" | "dark";
-    if (newTheme === "system") {
-      resolved = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-    } else {
-      resolved = newTheme;
-    }
-    
-    const root = document.documentElement;
-    if (resolved === "dark") {
-      root.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
-    }
-  };
+  }, [theme]);
 
   const cycleTheme = () => {
     let newTheme: Theme;
@@ -44,9 +54,7 @@ export default function ThemeToggle() {
       newTheme = "light";
     }
     
-    setThemeState(newTheme);
     localStorage.setItem("theme", newTheme);
-    applyTheme(newTheme);
   };
 
   const getIcon = () => {

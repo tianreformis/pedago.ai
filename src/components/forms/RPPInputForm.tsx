@@ -21,8 +21,22 @@ interface MataPelajaran {
   fases: Fase[];
 }
 
+interface RPPFormData {
+  mataPelajaran: string;
+  fase: string;
+  cp: string;
+  cpLainnya: string;
+  kelas: string;
+  namaGuru: string;
+  sekolah: string;
+  tahunAjaran: string;
+  semester: string;
+  alokasWaktu: string;
+  faseKeterangan?: string | null;
+}
+
 interface RPPInputFormProps {
-  onGenerate: (formData: any) => void;
+  onGenerate: (formData: RPPFormData) => void;
   isLoading: boolean;
 }
 
