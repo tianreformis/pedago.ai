@@ -24,7 +24,7 @@ export default function DashboardStatsPage() {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
+useEffect(() => {
     const fetchData = async () => {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -33,20 +33,23 @@ export default function DashboardStatsPage() {
       }
 
       try {
-        const [rppRes, protaRes] = await Promise.all([
+        const [rppRes, protaRes, adminRes] = await Promise.all([
           fetch("/api/rpp", { headers: { Authorization: `Bearer ${token}` } }),
           fetch("/api/prota", { headers: { Authorization: `Bearer ${token}` } }),
+          fetch("/api/admin/users", { headers: { Authorization: `Bearer ${token}` } }),
         ]);
 
-        const [rppData, protaData] = await Promise.all([
+        const [rppData, protaData, adminData] = await Promise.all([
           rppRes.json(),
           protaRes.json(),
+          adminRes.json(),
         ]);
 
         const rppCount = rppData.success ? rppData.data.length : 0;
         const protaCount = protaData.success ? protaData.data.length : 0;
+        const userCount = (adminRes.ok && adminData.success) ? adminData.data.length : 0;
 
-        setStats({ rppCount, protaCount });
+        setStats({ rppCount, protaCount, userCount });
         setUser(rppData.user);
       } catch (error) {
         console.error("Failed to fetch stats:", error);
@@ -59,29 +62,6 @@ export default function DashboardStatsPage() {
   }, [router]);
 
   const isAdmin = user?.isAdmin === true;
-
-  useEffect(() => {
-    if (!isAdmin || isLoading) return;
-
-    const fetchUserCount = async () => {
-      const token = localStorage.getItem("token");
-      if (!token) return;
-
-      try {
-        const res = await fetch("/api/admin/users", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
-        if (data.success) {
-          setStats(prev => prev ? { ...prev, userCount: data.data.length } : null);
-        }
-      } catch (error) {
-        console.error("Failed to fetch user count:", error);
-      }
-    };
-
-    fetchUserCount();
-  }, [isAdmin, isLoading]);
 
   if (isLoading) {
     return (

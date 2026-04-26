@@ -103,10 +103,8 @@ export default function ProtaInputForm({ onGenerate, isLoading }: ProtaInputForm
     onGenerate({
       ...form,
       kelas: selectedKelas,
-      mataPelajaranId: form.mataPelajaran,
-      mataPelajaranNama: selectedMapel?.nama,
-      faseId: form.fase,
-      faseNama: selectedFase?.nama,
+      mataPelajaran: selectedMapel?.nama || form.mataPelajaran,
+      fase: selectedFase?.nama || form.fase,
     });
   };
 

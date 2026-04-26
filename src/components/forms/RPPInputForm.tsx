@@ -91,12 +91,24 @@ export default function RPPInputForm({ onGenerate, isLoading }: RPPInputFormProp
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.mataPelajaran || !form.fase) return;
-    if (form.cp === "___lainnya___") {
-      if (!form.cpLainnya || !form.cpLainnya.trim()) return;
-    } else if (!form.cp) {
-      return;
+    
+    const selectedMapel = mataPelajaranList.find(m => m.id === form.mataPelajaran);
+    const selectedFase = selectedMapel?.fases.find(f => f.id === form.fase);
+    
+    let cpValue = form.cp;
+    if (form.cp === "___lainnya___" && form.cpLainnya) {
+      cpValue = form.cpLainnya;
     }
-    onGenerate(form);
+    
+    if (!cpValue) return;
+    
+    onGenerate({
+      ...form,
+      cp: cpValue,
+      mataPelajaran: selectedMapel?.nama || form.mataPelajaran,
+      fase: selectedFase?.nama || form.fase,
+      faseKeterangan: selectedFase?.keterangan || null,
+    });
   };
 
   if (!mounted) {

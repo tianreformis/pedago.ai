@@ -17,6 +17,13 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [user, setUser] = useState<UserData | null>(null);
+  const [pathname, setPathname] = useState("");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    setPathname(window.location.pathname);
+  }, []);
 
   useEffect(() => {
     const checkUser = () => {
@@ -63,11 +70,13 @@ export default function Navbar() {
     router.push("/login");
   };
 
+  const isDashboard = mounted && pathname.startsWith("/dashboard");
+
   return (
-    <nav className="bg-blue-600 dark:bg-blue-800 text-white shadow-lg">
+    <nav className="bg-blue-600 dark:bg-blue-800 text-white shadow-lg fixed top-0 left-0 right-0 z-20 md:relative">
       <div className="max-w-6xl mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          <div className="flex items-center gap-8">
+          <div className="flex items-center gap-4 md:gap-8">
             <Link href="/" className="font-bold text-xl">PedagoAI</Link>
             <div className="hidden md:flex items-center gap-6">
               <Link href="/dashboard" className="hover:text-blue-200 transition-colors">Dashboard</Link>
