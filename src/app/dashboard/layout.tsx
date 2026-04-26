@@ -51,9 +51,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     );
   }
 
-  const isProtaPage = pathname === "/dashboard/prota";
-  const isUserPage = pathname === "/dashboard/user";
-
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex">
       <aside className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
@@ -64,9 +61,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         <nav className="flex-1 p-4 space-y-2">
           <Link
-            href="/dashboard"
+            href="/dashboard/rpp"
             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-              !isProtaPage && !isUserPage
+              pathname === "/dashboard/rpp"
                 ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
                 : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
             }`}
@@ -78,7 +75,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <Link
             href="/dashboard/prota"
             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-              isProtaPage
+              pathname === "/dashboard/prota"
                 ? "bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400"
                 : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
             }`}
@@ -91,7 +88,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <Link
               href="/dashboard/user"
               className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                isUserPage
+                pathname === "/dashboard/user"
                   ? "bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400"
                   : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
               }`}
