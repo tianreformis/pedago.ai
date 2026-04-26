@@ -70,7 +70,7 @@ export default function ProtaInputForm({ onGenerate, isLoading }: ProtaInputForm
     setSelectedKelas([]);
   }, [form.fase]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     if (name === "mataPelajaran") {
       setForm(prev => ({ ...prev, mataPelajaran: value, fase: "" }));

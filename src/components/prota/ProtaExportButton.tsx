@@ -35,7 +35,7 @@ export default function ProtaExportButton({ input, output }: ProtaExportButtonPr
   const exportDocx = async () => {
     const { identitas, capaianPembelajaran, alokasiWaktu, distribusiMateri, kalenderPendidikan, catatan } = output;
 
-    const children: Paragraph[] = [];
+    const children: (Paragraph | Table)[] = [];
 
     children.push(
       new Paragraph({
@@ -316,10 +316,7 @@ export default function ProtaExportButton({ input, output }: ProtaExportButtonPr
     doc.text("JP", 120, y);
     doc.text("Keterangan", 135, y);
     y += 2;
-    doc.setLineDash([1, 1], 0);
     doc.line(20, y, pageWidth - 20, y);
-    y += 6;
-    doc.setLineDash([]);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
 

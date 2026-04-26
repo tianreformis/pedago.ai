@@ -73,6 +73,9 @@ export default function Navbar() {
               <Link href="/generate" className="hover:text-blue-200 transition-colors">RPP</Link>
               <Link href="/generate-prota" className="hover:text-blue-200 transition-colors">Prota</Link>
               <Link href="/dashboard" className="hover:text-blue-200 transition-colors">Dashboard</Link>
+              {user?.isAdmin && (
+                <Link href="/admin/users" className="hover:text-blue-200 transition-colors">Admin</Link>
+              )}
             </div>
           </div>
           <div className="hidden md:flex items-center gap-4">

@@ -5,7 +5,8 @@ import { createToken } from "@/lib/jwt";
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, password } = await req.json();
+    const body = await req.json().catch(() => ({}));
+    const { email, password } = body;
 
     if (!email || !password) {
       return NextResponse.json({ error: "Email dan password wajib diisi" }, { status: 400 });

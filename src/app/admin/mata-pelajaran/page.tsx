@@ -202,7 +202,7 @@ export default function AdminMataPelajaranPage() {
           <div key={mapel.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
             <div
               className="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-700/50 cursor-pointer"
-              onClick={() => setExpandedMapel(expandedMapel === mapel.id ? null : mapel.id)}
+              onClick={() => mapel.id && setExpandedMapel(expandedMapel === mapel.id ? null : mapel.id)}
             >
               <div className="flex items-center gap-2">
                 <ChevronDown
@@ -267,7 +267,7 @@ export default function AdminMataPelajaranPage() {
                   <div key={fase.id} className="border border-gray-200 dark:border-gray-600 rounded-lg p-3">
                     <div
                       className="flex items-center justify-between cursor-pointer"
-                      onClick={() => setExpandedFase(expandedFase === fase.id ? null : fase.id)}
+                      onClick={() => fase.id && setExpandedFase(expandedFase === fase.id ? null : fase.id)}
                     >
                       <div className="flex items-center gap-2">
                         <ChevronDown

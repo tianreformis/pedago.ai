@@ -98,16 +98,16 @@ export default function DashboardProtaDetailPage() {
     );
   }
 
-  const rawOutput = prota.rawOutput;
+  const rawOutput = prota.rawOutput as any;
 
   const identitas = rawOutput.identitas || {
-    satuanPendidikan: rawOutput.informasiUmum?.sekolah || prota.sekolah || "-",
+    satuanPendidikan: prota.sekolah || "-",
     mataPelajaran: prota.mataPelajaran,
     faseKelas: prota.fase,
     tahunPelajaran: prota.tahunAjaran || "",
   };
 
-  const capaianPembelajaran = rawOutput.capaianPembelajaran || rawOutput.alurPembelajaran?.flatMap((s: any) =>
+  const capaianPembelajaran: string[] = rawOutput.capaianPembelajaran || rawOutput.alurPembelajaran?.flatMap((s: any) =>
     s.mingguan?.flatMap((w: any) => w.cp ? [w.cp] : []) || []
   ) || ["CP tidak tersedia"];
 
@@ -117,7 +117,14 @@ export default function DashboardProtaDetailPage() {
     totalJpPertahun: (rawOutput.rekapitulasi?.totalMinggu || 34) * 4,
   };
 
-  const distribusiMateri = rawOutput.distribusiMateri || rawOutput.alurPembelajaran?.flatMap((semester: any, semIdx: number) =>
+  interface DistribusiItem {
+    nomor: number;
+    materi: string;
+    semester: string;
+    alokasiJp: number;
+    keterangan: string;
+  }
+  const distribusiMateri: DistribusiItem[] = rawOutput.distribusiMateri || rawOutput.alurPembelajaran?.flatMap((semester: any, semIdx: number) =>
     semester.mingguan?.map((week: any, weekIdx: number) => ({
       nomor: weekIdx + 1,
       materi: week.topik || "Topik",
@@ -133,7 +140,7 @@ export default function DashboardProtaDetailPage() {
     perkiraanAsesmen: "Tengah semester & Akhir semester",
   };
 
-  const catatan = rawOutput.catatan || ["Fleksibilitas pembelajaran disesuaikan kondisi peserta", "Integrasi Projek P5 jika relevan"];
+  const catatan: string[] = rawOutput.catatan || ["Fleksibilitas pembelajaran disesuaikan kondisi peserta", "Integrasi Projek P5 jika relevan"];
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
