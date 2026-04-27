@@ -8,6 +8,7 @@ export interface RPPInput {
   tahunAjaran?: string;
   semester?: string;
   alokasWaktu?: string;
+  bahasa?: "indonesia" | "inggris";
 }
 
 export interface RPPOutput {

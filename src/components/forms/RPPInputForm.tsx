@@ -33,6 +33,7 @@ interface RPPFormData {
   semester: string;
   alokasWaktu: string;
   faseKeterangan?: string | null;
+  bahasa?: "indonesia" | "inggris";
 }
 
 interface RPPInputFormProps {
@@ -56,6 +57,7 @@ export default function RPPInputForm({ onGenerate, isLoading }: RPPInputFormProp
     tahunAjaran: "2025/2026",
     semester: "1",
     alokasWaktu: "2 x 45 menit",
+    bahasa: "indonesia" as "indonesia" | "inggris",
   });
 
   const showCpLainnya = form.cp === "___lainnya___";
@@ -281,6 +283,26 @@ export default function RPPInputForm({ onGenerate, isLoading }: RPPInputFormProp
             <option value="1">Semester 1 (Ganjil)</option>
             <option value="2">Semester 2 (Genap)</option>
           </select>
+        </div>
+
+        <div className="md:col-span-2">
+          <label className="block text-sm font-semibold text-blue-700 dark:text-blue-400 mb-1">
+            Bahasa RPP
+          </label>
+          <select
+            name="bahasa"
+            value={form.bahasa}
+            onChange={handleChange}
+            className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="indonesia">Bahasa Indonesia</option>
+            <option value="inggris">Full English</option>
+          </select>
+          {form.mataPelajaran.toLowerCase().includes("inggris") && (
+            <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+              Untuk Mata Pelajaran Bahasa Inggris, gunakan opsi "Full English" untuk RPP lengkap dalam bahasa Inggris
+            </p>
+          )}
         </div>
       </div>
 

@@ -6,6 +6,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { FileText, Calendar, Users, LogOut, CreditCard, LayoutDashboard } from "lucide-react";
 
 interface User {
+  id?: string;
   name?: string;
   subscriptionStatus?: string;
   subscriptionExpiry?: string;
@@ -62,7 +63,7 @@ function getSnapshot(): User | null {
   const current = getStoredUser();
   if (current && current.id !== cachedUserId) {
     cachedUser = current;
-    cachedUserId = current.id;
+    cachedUserId = current.id || null;
   }
   if (!current && cachedUserId !== null) {
     cachedUser = null;

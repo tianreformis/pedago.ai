@@ -51,7 +51,7 @@ async function checkFreeLimit(ip: string): Promise<{ allowed: boolean; remaining
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { mataPelajaran, fase, cp, kelas, namaGuru, sekolah, tahunAjaran, semester, alokasWaktu } = body;
+    const { mataPelajaran, fase, cp, kelas, namaGuru, sekolah, tahunAjaran, semester, alokasWaktu, bahasa } = body;
 
     if (!mataPelajaran || !fase || !cp) {
       return NextResponse.json(
@@ -125,6 +125,7 @@ export async function POST(req: NextRequest) {
       tahunAjaran,
       semester,
       alokasWaktu,
+      bahasa: bahasa || "indonesia",
     });
 
     if (userId) {

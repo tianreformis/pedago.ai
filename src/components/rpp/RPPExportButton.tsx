@@ -516,7 +516,7 @@ function createRPPDocument(input: RPPInput, output: RPPOutput): Document {
     );
   }
   if (lembarKerjaPesertaDidik?.tugas) {
-    children.push(new Paragraph({ text: "Tugas:", bold: true }));
+    children.push(new Paragraph({ children: [new TextRun({ text: "Tugas:", bold: true })] }));
     for (const tugas of lembarKerjaPesertaDidik.tugas) {
       children.push(
         new Paragraph({
