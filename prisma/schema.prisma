@@ -13,7 +13,7 @@ model User {
   email     String   @unique
   password  String
   name      String?
-  school    String?
+  school    String? 
   isAdmin   Boolean  @default(false)
   
   subscriptionStatus   String   @default("free") // free, active, expired
