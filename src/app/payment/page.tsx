@@ -16,8 +16,17 @@ interface UserData {
   isAdmin: boolean;
 }
 
+let cachedUser: UserData | null = null;
+let cachedUserId: string | null = null;
+
 function getStoredUser(): UserData | null {
   if (typeof window === "undefined") return null;
+  const token = localStorage.getItem("token");
+  if (!token) {
+    cachedUser = null;
+    cachedUserId = null;
+    return null;
+  }
   const stored = localStorage.getItem("user");
   if (!stored) return null;
   try {
@@ -27,12 +36,42 @@ function getStoredUser(): UserData | null {
   }
 }
 
-function subscribe() {
-  return () => {};
+function subscribe(callback: () => void) {
+  const handler = () => {
+    const newUser = getStoredUser();
+    cachedUser = newUser;
+    cachedUserId = newUser?.id || null;
+    callback();
+  };
+  cachedUser = getStoredUser();
+  cachedUserId = cachedUser?.id || null;
+  window.addEventListener("storage", handler);
+  window.addEventListener("user-updated", handler);
+  window.addEventListener("user-logged-in", handler);
+  window.addEventListener("user-logged-out", handler);
+  return () => {
+    window.removeEventListener("storage", handler);
+    window.removeEventListener("user-updated", handler);
+    window.removeEventListener("user-logged-in", handler);
+    window.removeEventListener("user-logged-out", handler);
+  };
 }
 
 function getSnapshot(): UserData | null {
-  return getStoredUser();
+  if (cachedUser === null) {
+    cachedUser = getStoredUser();
+    cachedUserId = cachedUser?.id || null;
+  }
+  const current = getStoredUser();
+  if (current && current.id !== cachedUserId) {
+    cachedUser = current;
+    cachedUserId = current.id;
+  }
+  if (!current && cachedUserId !== null) {
+    cachedUser = null;
+    cachedUserId = null;
+  }
+  return cachedUser;
 }
 
 export default function PaymentPage() {

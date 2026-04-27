@@ -36,7 +36,7 @@ function SectionCard({ title, icon, color, children, defaultOpen = false }: {
 }
 
 export default function RPPViewer({ input, output }: RPPViewerProps) {
-  const { karakteristikPembelajar, desainPembelajaran, pengalamanBelajar, asesmen, pertanyaanRefleksiGuru, lembarKerjaPesertaDidik } = output;
+  const { karakteristikPembelajar, desainPembelajaran, pengalamanBelajar, asesmen, glosarium, pertanyaanRefleksiGuru, lembarKerjaPesertaDidik } = output;
 
   return (
     <div className="space-y-4">
@@ -53,8 +53,8 @@ export default function RPPViewer({ input, output }: RPPViewerProps) {
       </div>
 
       <SectionCard
-        title="A. Karakteristik Pembelajaran"
-        icon={<span>A</span>}
+        title="Karakteristik Pembelajaran"
+        icon={<span>A.</span>}
         color="bg-green-600"
         defaultOpen
       >
@@ -81,8 +81,8 @@ export default function RPPViewer({ input, output }: RPPViewerProps) {
       </SectionCard>
 
       <SectionCard
-        title="B. Desain Pembelajaran"
-        icon={<span>B</span>}
+        title="Desain Pembelajaran"
+        icon={<span>B.</span>}
         color="bg-purple-600"
         defaultOpen
       >
@@ -99,11 +99,11 @@ export default function RPPViewer({ input, output }: RPPViewerProps) {
           )}
           <div>
             <span className="font-semibold dark:text-white">Tujuan Pembelajaran:</span>
-            <ul className="mt-1 list-disc list-inside text-gray-700 dark:text-gray-300">
+            <ol className="mt-1 list-decimal list-inside text-gray-700 dark:text-gray-300">
               {desainPembelajaran.tujuanPembelajaran.map((tp, i) => (
-                <li key={i}>{tp}</li>
+                <li key={i}>{tp.replace(/^[0-9]+[\.\)]\s*/, "")}</li>
               ))}
-            </ul>
+            </ol>
           </div>
           <div>
             <span className="font-semibold dark:text-white">Topik Pembelajaran:</span>
@@ -131,11 +131,11 @@ export default function RPPViewer({ input, output }: RPPViewerProps) {
           )}
           <div>
             <span className="font-semibold dark:text-white">Kriteria Pencapaian TP:</span>
-            <ul className="mt-1 list-disc list-inside text-gray-700 dark:text-gray-300">
+            <ol className="mt-1 list-decimal list-inside text-gray-700 dark:text-gray-300">
               {desainPembelajaran.kriteriaPencapaianTP.map((k, i) => (
-                <li key={i}>{k}</li>
+                <li key={i}>{k.replace(/^[0-9]+[\.\)]\s*/, "")}</li>
               ))}
-            </ul>
+            </ol>
           </div>
           <div>
             <span className="font-semibold dark:text-white">Dimensi Profil Lulusan:</span>
@@ -145,8 +145,8 @@ export default function RPPViewer({ input, output }: RPPViewerProps) {
       </SectionCard>
 
       <SectionCard
-        title="C. Pengalaman Belajar"
-        icon={<span>C</span>}
+        title="Pengalaman Belajar"
+        icon={<span>C.</span>}
         color="bg-orange-500"
         defaultOpen
       >
@@ -204,8 +204,8 @@ export default function RPPViewer({ input, output }: RPPViewerProps) {
       </SectionCard>
 
       <SectionCard
-        title="D. Asesmen Pembelajaran"
-        icon={<span>D</span>}
+        title="Asesmen Pembelajaran"
+        icon={<span>D.</span>}
         color="bg-red-500"
         defaultOpen
       >
@@ -229,8 +229,24 @@ export default function RPPViewer({ input, output }: RPPViewerProps) {
       </SectionCard>
 
       <SectionCard
-        title="E. Pertanyaan Refleksi Guru"
-        icon={<span>E</span>}
+        title="Glosarium"
+        icon={<span>E.</span>}
+        color="bg-pink-600"
+        defaultOpen
+      >
+        <div className="space-y-3 text-sm">
+          {glosarium?.terms?.map((term, i) => (
+            <div key={i} className="border-b border-gray-100 dark:border-gray-700 pb-2 last:border-0">
+              <span className="font-semibold dark:text-white">{term.istilah}:</span>
+              <p className="text-gray-700 dark:text-gray-300">{term.definisi}</p>
+            </div>
+          ))}
+        </div>
+      </SectionCard>
+
+      <SectionCard
+        title="Pertanyaan Refleksi Guru"
+        icon={<span>F.</span>}
         color="bg-teal-600"
         defaultOpen
       >
@@ -238,15 +254,15 @@ export default function RPPViewer({ input, output }: RPPViewerProps) {
           <p className="text-gray-600 dark:text-gray-400 italic">{pertanyaanRefleksiGuru?.tujuan}</p>
           <ol className="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300">
             {pertanyaanRefleksiGuru?.pertanyaan?.map((p, i) => (
-              <li key={i}>{p}</li>
+              <li key={i}>{p.replace(/^\d+\.\s*/, "")}</li>
             ))}
           </ol>
         </div>
       </SectionCard>
 
       <SectionCard
-        title="F. Lembar Kerja Peserta Didik"
-        icon={<span>F</span>}
+        title="Lembar Kerja Peserta Didik"
+        icon={<span>G.</span>}
         color="bg-indigo-600"
         defaultOpen
       >

@@ -76,6 +76,9 @@ export interface RPPOutput {
     pertanyaan: string[];
     tujuan: string;
   };
+  glosarium: {
+   terms: Array<{ istilah: string; definisi: string }>;
+  };
   lembarKerjaPesertaDidik: {
     namaLembarKerja: string;
     instruksi: string;

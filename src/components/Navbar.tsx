@@ -12,32 +12,77 @@ interface UserData {
   isAdmin?: boolean;
 }
 
+let cachedUser: UserData | null = null;
+let cachedUserId: string | null = null;
+
 function getStoredUser(): UserData | null {
   if (typeof window === "undefined") return null;
+  const token = localStorage.getItem("token");
+  if (!token) {
+    cachedUser = null;
+    cachedUserId = null;
+    return null;
+  }
   const stored = localStorage.getItem("user");
   if (!stored) return null;
   try {
-    return JSON.parse(stored);
+    const parsed = JSON.parse(stored);
+    return parsed;
   } catch {
     return null;
   }
 }
 
-function subscribeToUser() {
-  return () => {};
+function subscribeToUser(callback: () => void) {
+  const handler = () => {
+    const newUser = getStoredUser();
+    cachedUser = newUser;
+    cachedUserId = newUser?.id || null;
+    callback();
+  };
+  cachedUser = getStoredUser();
+  cachedUserId = cachedUser?.id || null;
+  window.addEventListener("user-logged-out", handler);
+  window.addEventListener("user-logged-in", handler);
+  window.addEventListener("storage", handler);
+  return () => {
+    window.removeEventListener("user-logged-out", handler);
+    window.removeEventListener("user-logged-in", handler);
+    window.removeEventListener("storage", handler);
+  };
 }
 
 function getUserSnapshot(): UserData | null {
-  return getStoredUser();
+  if (cachedUser === null) {
+    cachedUser = getStoredUser();
+    cachedUserId = cachedUser?.id || null;
+  }
+  const current = getStoredUser();
+  if (current && current.id !== cachedUserId) {
+    cachedUser = current;
+    cachedUserId = current.id;
+  }
+  if (!current && cachedUserId !== null) {
+    cachedUser = null;
+    cachedUserId = null;
+  }
+  return cachedUser;
+}
+
+let cachedPathname = "";
+
+function subscribeToPathname(callback: () => void) {
+  const handler = () => {
+    cachedPathname = window.location.pathname;
+    callback();
+  };
+  window.addEventListener("popstate", handler);
+  return () => window.removeEventListener("popstate", handler);
 }
 
 function getPathname(): string {
   if (typeof window === "undefined") return "";
-  return window.location.pathname;
-}
-
-function subscribeToPathname() {
-  return () => {};
+  return cachedPathname || window.location.pathname;
 }
 
 export default function Navbar() {

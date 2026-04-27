@@ -100,6 +100,18 @@ Kembalikan JSON dengan struktur PERSIS seperti ini (isi semua field dengan konte
     "pertanyaan": ["1. ...", "2. ...", "3. ...", "4. ...", "5. ..."],
     "tujuan": "Membantu guru merefleksikan keberhasilan pembelajaran dan perbaikan untuk pertemuan berikutnya"
   },
+  "glosarium": {
+    "terms": [
+      {
+        "istilah": "Istilah 1",
+        "definisi": "Definisi dari istilah 1"
+      },
+      {
+        "istilah": "Istilah 2",
+        "definisi": "Definisi dari istilah 2"
+      }
+    ]
+  },
   "lembarKerjaPesertaDidik": {
     "namaLembarKerja": "Lembar Kerja [Nama Materi]",
     "instruksi": "Isilah atau kerjakan tugas berikut dengan tulisan tangan yang rapi.",

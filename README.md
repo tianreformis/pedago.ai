@@ -9,9 +9,16 @@ Generator RPP (Rencana Pembelajaran Pembelajaran) dan Prota (Program Tahunan) be
 - Format resmi Kemendikdasmen Indonesia
 - Pembelajaran Mendalam (BERKESADARAN, BERMAKNA, MENGGEMBIRAKAN)
 - Integrasi 8 Dimensi Profil Pelajar Pancasila
-- Asesmen AS, FOR, dan OF Learning
+- 7 Bagian RPP:
+  - A. Karakteristik Pembelajaran
+  - B. Desain Pembelajaran (Tujuan Pembelajaran, Kriteria Pencapaian TP)
+  - C. Pengalaman Belajar (Awal, Inti, Penutup)
+  - D. Asesmen Pembelajaran (Awal, Formatif, Sumatif)
+  - E. Glosarium (istilah dan definisi)
+  - F. Pertanyaan Refleksi Guru
+  - G. Lembar Kerja Peserta Didik
+- Export ke Word dengan nomor yang benar (tidak ada duplikasi)
 - Lembar Kerja Peserta Didik
-- Export ke Word/PDF
 
 ### Program Tahunan (Prota)
 - Generate Program Tahunan otomatis via AI

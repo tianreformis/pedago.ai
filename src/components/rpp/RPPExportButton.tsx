@@ -52,7 +52,7 @@ export default function RPPExportButton({ rppInput, rppOutput }: RPPExportButton
 }
 
 function createRPPDocument(input: RPPInput, output: RPPOutput): Document {
-  const { karakteristikPembelajar, desainPembelajaran, pengalamanBelajar, asesmen } = output;
+  const { karakteristikPembelajar, desainPembelajaran, pengalamanBelajar, asesmen, glosarium, pertanyaanRefleksiGuru, lembarKerjaPesertaDidik } = output;
 
   const children: Paragraph[] = [];
 
@@ -200,7 +200,7 @@ function createRPPDocument(input: RPPInput, output: RPPOutput): Document {
   
   // Use simple text instead of bullet
   for (const tp of desainPembelajaran.tujuanPembelajaran) {
-    children.push(new Paragraph({ text: `• ${tp}` }));
+    children.push(new Paragraph({ text: tp.replace(/^[0-9]+[\.\)]\s*/, "") }));
   }
   children.push(new Paragraph({ text: "" }));
 
@@ -228,6 +228,14 @@ function createRPPDocument(input: RPPInput, output: RPPOutput): Document {
       ],
     })
   );
+  children.push(
+    new Paragraph({
+      children: [new TextRun({ text: "Kriteria Pencapaian TP:", bold: true })],
+    })
+  );
+  for (const k of desainPembelajaran.kriteriaPencapaianTP) {
+    children.push(new Paragraph({ text: k.replace(/^[0-9]+[\.\)]\s*/, "") }));
+  }
   children.push(new Paragraph({ text: "" }));
 
   // C. Pengalaman Belajar
@@ -432,6 +440,96 @@ function createRPPDocument(input: RPPInput, output: RPPOutput): Document {
       ],
     })
   );
+  children.push(new Paragraph({ text: "" }));
+
+  // E. Glosarium
+  children.push(
+    new Paragraph({
+      text: "E. GLOSARIUM",
+      heading: HeadingLevel.HEADING_2,
+    })
+  );
+  if (glosarium?.terms) {
+    for (const term of glosarium.terms) {
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({ text: `${term.istilah}: `, bold: true }),
+            new TextRun(term.definisi),
+          ],
+        })
+      );
+    }
+  }
+  children.push(new Paragraph({ text: "" }));
+
+  // F. Pertanyaan Refleksi Guru
+  children.push(
+    new Paragraph({
+      text: "F. PERTANYAAN REFLEKSI GURU",
+      heading: HeadingLevel.HEADING_2,
+    })
+  );
+  if (pertanyaanRefleksiGuru?.tujuan) {
+    children.push(
+      new Paragraph({
+        children: [
+          new TextRun({ text: pertanyaanRefleksiGuru.tujuan, italics: true }),
+        ],
+      })
+    );
+  }
+  if (pertanyaanRefleksiGuru?.pertanyaan) {
+    for (let i = 0; i < pertanyaanRefleksiGuru.pertanyaan.length; i++) {
+      let question = pertanyaanRefleksiGuru.pertanyaan[i];
+      question = question.replace(/^\d+\.\s*/, "");
+      children.push(new Paragraph({ text: `${i + 1}. ${question}` }));
+    }
+  }
+  children.push(new Paragraph({ text: "" }));
+
+  // F. Lembar Kerja Peserta Didik
+  children.push(
+    new Paragraph({
+      text: "G. LEMBAR KERJA PESERTA DIDIK",
+      heading: HeadingLevel.HEADING_2,
+    })
+  );
+  if (lembarKerjaPesertaDidik?.namaLembarKerja) {
+    children.push(
+      new Paragraph({
+        children: [
+          new TextRun({ text: "Nama Lembar Kerja: ", bold: true }),
+          new TextRun(lembarKerjaPesertaDidik.namaLembarKerja),
+        ],
+      })
+    );
+  }
+  if (lembarKerjaPesertaDidik?.instruksi) {
+    children.push(
+      new Paragraph({
+        children: [
+          new TextRun({ text: "Instruksi: ", bold: true }),
+          new TextRun(lembarKerjaPesertaDidik.instruksi),
+        ],
+      })
+    );
+  }
+  if (lembarKerjaPesertaDidik?.tugas) {
+    children.push(new Paragraph({ text: "Tugas:", bold: true }));
+    for (const tugas of lembarKerjaPesertaDidik.tugas) {
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({ text: `${tugas.nomor}. ${tugas.pertanyaan}`, bold: true }),
+          ],
+        })
+      );
+      if (tugas.ruangJawaban) {
+        children.push(new Paragraph({ text: `   Jawaban: ${tugas.ruangJawaban}` }));
+      }
+    }
+  }
 
   return new Document({
     sections: [{ children }],
