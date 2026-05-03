@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prismaClient } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { createToken } from "@/lib/jwt";
 
 export async function POST(req: NextRequest) {
   try {
@@ -26,7 +27,24 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({ success: true, message: "Registrasi berhasil. Silakan login." });
+    const token = createToken(user.id, user.email, user.isAdmin);
+
+    const response = NextResponse.json({
+      success: true,
+      data: {
+        user: { id: user.id, email: user.email, name: user.name, school: user.school, isAdmin: user.isAdmin },
+      },
+    });
+
+    response.cookies.set("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 7,
+      path: "/",
+    });
+
+    return response;
   } catch (error) {
     console.error("Register error:", error);
     return NextResponse.json({ error: "Registrasi gagal" }, { status: 500 });

@@ -92,7 +92,8 @@ export default function Navbar() {
   const user = useSyncExternalStore(subscribeToUser, getUserSnapshot, () => null);
   const pathname = useSyncExternalStore(subscribeToPathname, getPathname, () => "");
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     setShowUserMenu(false);
@@ -106,9 +107,6 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-4 md:gap-8">
             <Link href="/" className="font-bold text-xl">PedagoAI</Link>
-            <div className="hidden md:flex items-center gap-6">
-              <Link href="/dashboard" className="hover:text-blue-200 transition-colors">Dashboard</Link>
-            </div>
           </div>
           <div className="hidden md:flex items-center gap-4">
             {user ? (
@@ -123,6 +121,14 @@ export default function Navbar() {
                 </button>
                 {showUserMenu && (
                   <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
+                    <Link
+                      href="/dashboard"
+                      className="flex items-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      onClick={() => setShowUserMenu(false)}
+                    >
+                      <Settings size={16} />
+                      Dashboard
+                    </Link>
                     <Link
                       href="/settings"
                       className="flex items-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -158,16 +164,16 @@ export default function Navbar() {
       {isOpen && (
         <div className="md:hidden border-t border-blue-500">
           <div className="px-4 py-4 space-y-3">
-            <Link
-              href="/dashboard"
-              className="block hover:text-blue-200 transition-colors"
-              onClick={() => setIsOpen(false)}
-            >
-              Dashboard
-            </Link>
             <div className="pt-3 border-t border-blue-500">
               {user ? (
                 <div className="space-y-3">
+                  <Link
+                    href="/dashboard"
+                    className="block hover:text-blue-200 transition-colors"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Dashboard
+                  </Link>
                   <div className="flex items-center gap-2 text-gray-200">
                     <User size={16} />
                     <span className="text-sm truncate">{user.email}</span>

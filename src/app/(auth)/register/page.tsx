@@ -29,7 +29,9 @@ export default function RegisterPage() {
       const data = await res.json();
       
       if (data.success) {
-        router.push("/login");
+        localStorage.setItem("user", JSON.stringify(data.data.user));
+        window.dispatchEvent(new Event("user-logged-in"));
+        router.push("/dashboard");
       } else {
         setError(data.error || "Registrasi gagal");
       }

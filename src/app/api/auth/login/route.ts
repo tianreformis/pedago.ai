@@ -27,13 +27,22 @@ export async function POST(req: NextRequest) {
 
     const token = createToken(user.id, user.email, user.isAdmin);
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       data: {
         user: { id: user.id, email: user.email, name: user.name, school: user.school, isAdmin: user.isAdmin },
-        token,
       },
     });
+
+    response.cookies.set("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+      path: "/",
+    });
+
+    return response;
   } catch (error) {
     console.error("Login error:", error);
     return NextResponse.json({ error: "Login gagal" }, { status: 500 });
