@@ -3,12 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "dev": "cross-env NODE_OPTIONS=\"--dns-result-order=ipv4first\" next dev",
+    "build": "cross-env NODE_OPTIONS=\"--dns-result-order=ipv4first\" next build",
+    "start": "cross-env NODE_OPTIONS=\"--dns-result-order=ipv4first\" next start",
     "lint": "eslint",
-    "db:push": "prisma db push",
-    "seed": "npx tsx prisma/seed.ts"
+    "db:push": "cross-env NODE_OPTIONS=\"--dns-result-order=ipv4first\" prisma db push",
+    "seed": "cross-env NODE_OPTIONS=\"--dns-result-order=ipv4first\" npx tsx prisma/seed.ts"
   },
   "dependencies": {
     "@mistralai/mistralai": "^2.2.0",
@@ -32,6 +32,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "cross-env": "^10.1.0",
     "eslint": "^9",
     "eslint-config-next": "16.2.3",
     "prisma": "^5.22.0",
