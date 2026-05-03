@@ -358,9 +358,10 @@ export default function Home() {
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Gratis</h3>
               <div className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Rp 0<span className="text-base font-normal text-gray-500">/bulan</span></div>
               <ul className="space-y-2 mb-6">
-                <li className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400"><CheckCircle size={16} className="text-green-500" />3 RPP per bulan</li>
-                <li className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400"><CheckCircle size={16} className="text-green-500" />Format dasar</li>
+                <li className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400"><CheckCircle size={16} className="text-green-500" />1 RPP per hari</li>
+                <li className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400"><CheckCircle size={16} className="text-green-500" />1 Prota per hari</li>
                 <li className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400"><CheckCircle size={16} className="text-green-500" />Export PDF</li>
+                <li className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400"><CheckCircle size={16} className="text-green-500" />Export Word</li>
               </ul>
               {user ? (
                 <Link href="/dashboard" className="block text-center bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-semibold px-4 py-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">Dashboard</Link>
@@ -371,12 +372,12 @@ export default function Home() {
             <div className="bg-blue-600 dark:bg-blue-700 rounded-2xl p-6 border border-blue-500 shadow-lg relative">
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-yellow-400 text-gray-900 text-xs font-bold px-3 py-1 rounded-full">POPULER</div>
               <h3 className="text-lg font-semibold text-white mb-2">Premium</h3>
-              <div className="text-3xl font-bold text-white mb-4">Rp 49K<span className="text-base font-normal text-blue-200">/bulan</span></div>
+              <div className="text-3xl font-bold text-white mb-4">Rp 30K<span className="text-base font-normal text-blue-200">/bulan</span></div>
               <ul className="space-y-2 mb-6">
                 <li className="flex items-center gap-2 text-sm text-blue-100"><CheckCircle size={16} className="text-yellow-300" />RPP unlimited</li>
                 <li className="flex items-center gap-2 text-sm text-blue-100"><CheckCircle size={16} className="text-yellow-300" />Export Word & PDF</li>
                 <li className="flex items-center gap-2 text-sm text-blue-100"><CheckCircle size={16} className="text-yellow-300" />Generate Prota</li>
-                <li className="flex items-center gap-2 text-sm text-blue-100"><CheckCircle size={16} className="text-yellow-300" />Template premium</li>
+                <li className="flex items-center gap-2 text-sm text-blue-100"><CheckCircle size={16} className="text-yellow-300" />Custom RPP</li>
               </ul>
               {user ? (
                 <Link href="/dashboard" className="block text-center bg-white text-blue-700 font-semibold px-4 py-3 rounded-lg hover:bg-blue-50 transition-colors">Dashboard</Link>
@@ -384,12 +385,12 @@ export default function Home() {
                 <Link href="/login" className="block text-center bg-white text-blue-700 font-semibold px-4 py-3 rounded-lg hover:bg-blue-50 transition-colors">Upgrade Premium</Link>
               )}
             </div>
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Sekolah</h3>
-              <div className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Rp 299K<span className="text-base font-normal text-gray-500">/tahun</span></div>
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm relative">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full">HEMAT 30RB</div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Premium Tahunan</h3>
+              <div className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Rp 330K<span className="text-base font-normal text-gray-500">/tahun</span></div>
               <ul className="space-y-2 mb-6">
                 <li className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400"><CheckCircle size={16} className="text-green-500" />Semua fitur Premium</li>
-                <li className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400"><CheckCircle size={16} className="text-green-500" />Hingga 50 guru</li>
                 <li className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400"><CheckCircle size={16} className="text-green-500" />Dashboard admin</li>
                 <li className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400"><CheckCircle size={16} className="text-green-500" />Support prioritas</li>
               </ul>
