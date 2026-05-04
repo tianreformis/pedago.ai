@@ -19,9 +19,10 @@ export interface RPPOutput {
   };
   desainPembelajaran: {
     capaianPembelajaran: string;
+    topikPembelajaran: string;
     lintasDisiplinIlmu?: string;
     tujuanPembelajaran: string[];
-    topikPembelajaran: string;
+    pertanyaanPenuntunPemahaman?: string[];
     praktikPedagogis: string;
     kemitraanPembelajaran?: string;
     lingkunganBelajar: string;
@@ -72,6 +73,8 @@ export interface RPPOutput {
       teknik: string;
       instrumen: string;
     };
+    pengayaan: string;
+    remedial: string;
   };
   pertanyaanRefleksiGuru: {
     pertanyaan: string[];

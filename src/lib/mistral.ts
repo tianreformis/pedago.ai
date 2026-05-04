@@ -49,9 +49,10 @@ Return JSON with exactly this structure (fill all fields with real and detailed 
   },
   "desainPembelajaran": {
     "capaianPembelajaran": "...",
+    "topikPembelajaran": "...",
     "lintasDisiplinIlmu": "...",
     "tujuanPembelajaran": ["1. ...", "2. ...", "3. ..."],
-    "topikPembelajaran": "...",
+    "pertanyaanPenuntunPemahaman": ["1. ...", "2. ...", "3. ..."],
     "praktikPedagogis": "...",
     "kemitraanPembelajaran": "...",
     "lingkunganBelajar": "...",
@@ -101,7 +102,9 @@ Return JSON with exactly this structure (fill all fields with real and detailed 
     "asesmenSumatif": {
       "teknik": "...",
       "instrumen": "..."
-    }
+    },
+    "pengayaan": "...",
+    "remedial": "..."
   },
   "pertanyaanRefleksiGuru": {
     "pertanyaan": ["1. ...", "2. ...", "3. ...", "4. ...", "5. ..."],
@@ -177,9 +180,10 @@ Kembalikan JSON dengan struktur PERSIS seperti ini (isi semua field dengan konte
   },
   "desainPembelajaran": {
     "capaianPembelajaran": "...",
+    "topikPembelajaran": "...",
     "lintasDisiplinIlmu": "...",
     "tujuanPembelajaran": ["1. ...", "2. ...", "3. ..."],
-    "topikPembelajaran": "...",
+    "pertanyaanPenuntunPemahaman": ["1. ...", "2. ...", "3. ..."],
     "praktikPedagogis": "...",
     "kemitraanPembelajaran": "...",
     "lingkunganBelajar": "...",
@@ -229,7 +233,9 @@ Kembalikan JSON dengan struktur PERSIS seperti ini (isi semua field dengan konte
     "asesmenSumatif": {
       "teknik": "...",
       "instrumen": "..."
-    }
+    },
+    "pengayaan": "...",
+    "remedial": "..."
   },
   "pertanyaanRefleksiGuru": {
     "pertanyaan": ["1. ...", "2. ...", "3. ...", "4. ...", "5. ..."],

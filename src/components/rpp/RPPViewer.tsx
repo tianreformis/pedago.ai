@@ -91,9 +91,13 @@ export default function RPPViewer({ input, output }: RPPViewerProps) {
             <span className="font-semibold dark:text-white">Capaian Pembelajaran:</span>
             <p className="mt-1 text-gray-700 dark:text-gray-300">{desainPembelajaran.capaianPembelajaran}</p>
           </div>
+          <div>
+            <span className="font-semibold dark:text-white">Topik Pembelajaran:</span>
+            <p className="mt-1 text-gray-700 dark:text-gray-300">{desainPembelajaran.topikPembelajaran}</p>
+          </div>
           {desainPembelajaran.lintasDisiplinIlmu && (
             <div>
-              <span className="font-semibold dark:text-white">Lintas Disciplin Ilmu:</span>
+              <span className="font-semibold dark:text-white">Lintas Disiplin Ilmu:</span>
               <p className="mt-1 text-gray-700 dark:text-gray-300">{desainPembelajaran.lintasDisiplinIlmu}</p>
             </div>
           )}
@@ -105,10 +109,16 @@ export default function RPPViewer({ input, output }: RPPViewerProps) {
               ))}
             </ol>
           </div>
-          <div>
-            <span className="font-semibold dark:text-white">Topik Pembelajaran:</span>
-            <p className="mt-1 text-gray-700 dark:text-gray-300">{desainPembelajaran.topikPembelajaran}</p>
-          </div>
+          {desainPembelajaran.pertanyaanPenuntunPemahaman && desainPembelajaran.pertanyaanPenuntunPemahaman.length > 0 && (
+            <div>
+              <span className="font-semibold dark:text-white">Pertanyaan Penuntun Pemahaman:</span>
+              <ol className="mt-1 list-decimal list-inside text-gray-700 dark:text-gray-300">
+                {desainPembelajaran.pertanyaanPenuntunPemahaman.map((p, i) => (
+                  <li key={i}>{p.replace(/^[0-9]+[\.\)]\s*/, "")}</li>
+                ))}
+              </ol>
+            </div>
+          )}
           <div>
             <span className="font-semibold dark:text-white">Praktik Pedagogis:</span>
             <p className="mt-1 text-gray-700 dark:text-gray-300">{desainPembelajaran.praktikPedagogis}</p>
@@ -224,6 +234,14 @@ export default function RPPViewer({ input, output }: RPPViewerProps) {
             <h4 className="font-semibold text-red-800 dark:text-red-300">Asesmen Sumatif (Assessment of Learning)</h4>
             <p className="mt-2 dark:text-gray-200"><span className="font-medium">Teknik:</span> {asesmen.asesmenSumatif.teknik}</p>
             <p className="mt-1 dark:text-gray-200"><span className="font-medium">Instrumen:</span> {asesmen.asesmenSumatif.instrumen}</p>
+          </div>
+          <div className="bg-emerald-50 dark:bg-emerald-900/20 p-3 rounded-lg border-l-4 border-emerald-400">
+            <h4 className="font-semibold text-emerald-800 dark:text-emerald-300">Pengayaan</h4>
+            <p className="mt-2 dark:text-gray-200">{asesmen.pengayaan}</p>
+          </div>
+          <div className="bg-amber-50 dark:bg-amber-900/20 p-3 rounded-lg border-l-4 border-amber-400">
+            <h4 className="font-semibold text-amber-800 dark:text-amber-300">Remedial</h4>
+            <p className="mt-2 dark:text-gray-200">{asesmen.remedial}</p>
           </div>
         </div>
       </SectionCard>

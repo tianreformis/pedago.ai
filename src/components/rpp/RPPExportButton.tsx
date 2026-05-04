@@ -140,6 +140,16 @@ function createRPPDocument(input: RPPInput, output: RPPOutput): Document {
       })
     );
   }
+  if (input.semester) {
+    children.push(
+      new Paragraph({
+        children: [
+          new TextRun({ text: "Semester: ", bold: true }),
+          new TextRun(input.semester),
+        ],
+      })
+    );
+  }
   children.push(new Paragraph({ text: "" }));
 
   // A. Karakteristik Pembelajaran
@@ -191,18 +201,6 @@ function createRPPDocument(input: RPPInput, output: RPPOutput): Document {
     })
   );
   children.push(new Paragraph({ text: "" }));
-  
-  children.push(
-    new Paragraph({
-      children: [new TextRun({ text: "Tujuan Pembelajaran:", bold: true })],
-    })
-  );
-  
-  // Use simple text instead of bullet
-  for (const tp of desainPembelajaran.tujuanPembelajaran) {
-    children.push(new Paragraph({ text: tp.replace(/^[0-9]+[\.\)]\s*/, "") }));
-  }
-  children.push(new Paragraph({ text: "" }));
 
   children.push(
     new Paragraph({
@@ -212,6 +210,43 @@ function createRPPDocument(input: RPPInput, output: RPPOutput): Document {
       ],
     })
   );
+  children.push(new Paragraph({ text: "" }));
+
+  if (desainPembelajaran.lintasDisiplinIlmu) {
+    children.push(
+      new Paragraph({
+        children: [
+          new TextRun({ text: "Lintas Disiplin Ilmu: ", bold: true }),
+          new TextRun(desainPembelajaran.lintasDisiplinIlmu),
+        ],
+      })
+    );
+  }
+
+  children.push(
+    new Paragraph({
+      children: [new TextRun({ text: "Tujuan Pembelajaran:", bold: true })],
+    })
+  );
+
+  // Use simple text instead of bullet
+  for (const tp of desainPembelajaran.tujuanPembelajaran) {
+    children.push(new Paragraph({ text: tp.replace(/^[0-9]+[\.\)]\s*/, "") }));
+  }
+  children.push(new Paragraph({ text: "" }));
+
+  if (desainPembelajaran.pertanyaanPenuntunPemahaman && desainPembelajaran.pertanyaanPenuntunPemahaman.length > 0) {
+    children.push(
+      new Paragraph({
+        children: [new TextRun({ text: "Pertanyaan Penuntun Pemahaman:", bold: true })],
+      })
+    );
+    for (const p of desainPembelajaran.pertanyaanPenuntunPemahaman) {
+      children.push(new Paragraph({ text: p.replace(/^[0-9]+[\.\)]\s*/, "") }));
+    }
+    children.push(new Paragraph({ text: "" }));
+  }
+
   children.push(
     new Paragraph({
       children: [
@@ -228,6 +263,29 @@ function createRPPDocument(input: RPPInput, output: RPPOutput): Document {
       ],
     })
   );
+
+  if (desainPembelajaran.kemitraanPembelajaran) {
+    children.push(
+      new Paragraph({
+        children: [
+          new TextRun({ text: "Kemitraan Pembelajaran: ", bold: true }),
+          new TextRun(desainPembelajaran.kemitraanPembelajaran),
+        ],
+      })
+    );
+  }
+
+  if (desainPembelajaran.pemanfaatanTeknologi) {
+    children.push(
+      new Paragraph({
+        children: [
+          new TextRun({ text: "Pemanfaatan Teknologi: ", bold: true }),
+          new TextRun(desainPembelajaran.pemanfaatanTeknologi),
+        ],
+      })
+    );
+  }
+
   children.push(
     new Paragraph({
       children: [new TextRun({ text: "Kriteria Pencapaian TP:", bold: true })],
@@ -236,6 +294,16 @@ function createRPPDocument(input: RPPInput, output: RPPOutput): Document {
   for (const k of desainPembelajaran.kriteriaPencapaianTP) {
     children.push(new Paragraph({ text: k.replace(/^[0-9]+[\.\)]\s*/, "") }));
   }
+  children.push(new Paragraph({ text: "" }));
+
+  children.push(
+    new Paragraph({
+      children: [
+        new TextRun({ text: "Dimensi Profil Lulusan: ", bold: true }),
+        new TextRun(desainPembelajaran.dimensiProfilLulusan),
+      ],
+    })
+  );
   children.push(new Paragraph({ text: "" }));
 
   // C. Pengalaman Belajar
@@ -440,6 +508,24 @@ function createRPPDocument(input: RPPInput, output: RPPOutput): Document {
       ],
     })
   );
+  children.push(new Paragraph({ text: "" }));
+
+  // Pengayaan
+  children.push(
+    new Paragraph({
+      children: [new TextRun({ text: "Pengayaan", bold: true })],
+    })
+  );
+  children.push(new Paragraph({ text: asesmen.pengayaan }));
+  children.push(new Paragraph({ text: "" }));
+
+  // Remedial
+  children.push(
+    new Paragraph({
+      children: [new TextRun({ text: "Remedial", bold: true })],
+    })
+  );
+  children.push(new Paragraph({ text: asesmen.remedial }));
   children.push(new Paragraph({ text: "" }));
 
   // E. Glosarium
