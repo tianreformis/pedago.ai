@@ -25,8 +25,8 @@ export default function LoginPage() {
       const data = await res.json();
       
       if (data.success) {
+        localStorage.setItem("token", data.data.token);
         localStorage.setItem("user", JSON.stringify(data.data.user));
-        window.dispatchEvent(new Event("user-logged-in"));
         router.push("/dashboard");
       } else {
         setError(data.error || "Login gagal");
