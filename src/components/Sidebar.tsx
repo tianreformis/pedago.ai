@@ -174,7 +174,7 @@ export default function Sidebar() {
         >
           <Link
             href="/dashboard/rpp"
-            className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-sm ${
+            className={`flex items-center gap-3 px-2 md:px-4 py-2 rounded-lg transition-colors text-sm ${
               pathname === "/dashboard/rpp"
                 ? "bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 font-medium"
                 : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
@@ -185,7 +185,7 @@ export default function Sidebar() {
           </Link>
           <Link
             href="/generate"
-            className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-sm ${
+            className={`flex items-center gap-3 px-2 md:px-4 py-2 rounded-lg transition-colors text-sm ${
               pathname === "/generate"
                 ? "bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 font-medium"
                 : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
@@ -204,7 +204,7 @@ export default function Sidebar() {
         >
           <Link
             href="/dashboard/prota"
-            className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-sm ${
+            className={`flex items-center gap-3 px-2 md:px-4 py-2 rounded-lg transition-colors text-sm ${
               pathname === "/dashboard/prota"
                 ? "bg-emerald-50 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-300 font-medium"
                 : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
@@ -215,7 +215,7 @@ export default function Sidebar() {
           </Link>
           <Link
             href="/generate-prota"
-            className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-sm ${
+            className={`flex items-center gap-3 px-2 md:px-4 py-2 rounded-lg transition-colors text-sm ${
               pathname === "/generate-prota"
                 ? "bg-emerald-50 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-300 font-medium"
                 : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
@@ -234,7 +234,7 @@ export default function Sidebar() {
         >
           <Link
             href="/dashboard/promes"
-            className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-sm ${
+            className={`flex items-center gap-3 px-2 md:px-4 py-2 rounded-lg transition-colors text-sm ${
               pathname.startsWith("/dashboard/promes")
                 ? "bg-purple-50 dark:bg-purple-900/40 text-purple-600 dark:text-purple-300 font-medium"
                 : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
@@ -245,7 +245,7 @@ export default function Sidebar() {
           </Link>
           <Link
             href="/generate-promes"
-            className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-sm ${
+            className={`flex items-center gap-3 px-2 md:px-4 py-2 rounded-lg transition-colors text-sm ${
               pathname === "/generate-promes"
                 ? "bg-purple-50 dark:bg-purple-900/40 text-purple-600 dark:text-purple-300 font-medium"
                 : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
