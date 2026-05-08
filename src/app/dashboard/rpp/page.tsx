@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Plus, FileText, Clock, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 
 interface RPP {
   id: string;
@@ -26,6 +27,7 @@ export default function DashboardRppPage() {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const itemsPerPage = 5;
 
   useEffect(() => {
@@ -57,7 +59,6 @@ export default function DashboardRppPage() {
   const handleDelete = async (id: string) => {
     const token = localStorage.getItem("token");
     if (!token) return;
-    if (!confirm("Yakin ingin menghapus RPP ini?")) return;
     try {
       await fetch(`/api/rpp?id=${id}`, {
         method: "DELETE",
@@ -66,6 +67,8 @@ export default function DashboardRppPage() {
       setRpps(rpps.filter((r) => r.id !== id));
     } catch (error) {
       console.error("Failed to delete RPP:", error);
+    } finally {
+      setDeleteTarget(null);
     }
   };
 
@@ -146,7 +149,7 @@ export default function DashboardRppPage() {
                     Lihat
                   </Link>
                   <button
-                    onClick={() => handleDelete(rpp.id)}
+                    onClick={() => setDeleteTarget(rpp.id)}
                     className="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
                   >
                     <Trash2 size={18} />
@@ -179,6 +182,15 @@ export default function DashboardRppPage() {
           )}
         </>
       )}
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="Hapus RPP?"
+        message="Tindakan ini tidak dapat dibatalkan. RPP yang dihapus akan hilang permanen."
+        confirmLabel="Hapus"
+        onConfirm={() => deleteTarget && handleDelete(deleteTarget)}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }

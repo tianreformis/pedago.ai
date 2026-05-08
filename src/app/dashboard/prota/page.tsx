@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Calendar, Plus, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 
 interface ProtaData {
   id: string;
@@ -55,8 +56,6 @@ export default function DashboardProtaPage() {
   }, [router]);
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Apakah Anda yakin ingin menghapus Program Tahunan ini?")) return;
-
     setIsDeleting(id);
     const token = localStorage.getItem("token");
     try {
@@ -72,8 +71,11 @@ export default function DashboardProtaPage() {
       console.error("Failed to delete prota:", error);
     } finally {
       setIsDeleting(null);
+      setDeleteTarget(null);
     }
   };
+
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   const totalPages = Math.ceil(protas.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -169,7 +171,7 @@ export default function DashboardProtaPage() {
                     Lihat
                   </Link>
                   <button
-                    onClick={() => handleDelete(prota.id)}
+                    onClick={() => setDeleteTarget(prota.id)}
                     disabled={isDeleting === prota.id}
                     className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                   >
@@ -203,6 +205,16 @@ export default function DashboardProtaPage() {
           )}
         </>
       )}
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="Hapus Program Tahunan?"
+        message="Tindakan ini tidak dapat dibatalkan. Prota yang dihapus akan hilang permanen."
+        confirmLabel="Hapus"
+        onConfirm={() => deleteTarget && handleDelete(deleteTarget)}
+        onCancel={() => setDeleteTarget(null)}
+        loading={!!isDeleting}
+      />
     </div>
   );
 }

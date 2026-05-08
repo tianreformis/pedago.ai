@@ -146,7 +146,7 @@ export default function DashboardProtaDetailPage() {
     <div className="max-w-5xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
         <button
-          onClick={() => router.push("/dashboard-prota")}
+          onClick={() => router.push("/dashboard/prota")}
           className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400"
         >
           <ArrowLeft size={20} />
