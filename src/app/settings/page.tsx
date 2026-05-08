@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { User, Lock, Moon, Sun, Loader2, ArrowLeft } from "lucide-react";
+import { User, Lock, Moon, Sun, Loader2, ArrowLeft, School, Edit, Check, X } from "lucide-react";
 
 interface UserData {
   id: string;
   email: string;
   name?: string;
+  school?: string;
   isAdmin?: boolean;
 }
 
@@ -19,6 +20,10 @@ export default function SettingsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [darkMode, setDarkMode] = useState(false);
+  const [editingName, setEditingName] = useState(false);
+  const [editingSchool, setEditingSchool] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [editSchool, setEditSchool] = useState("");
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -27,7 +32,10 @@ export default function SettingsPage() {
       return;
     }
     try {
-      setUser(JSON.parse(storedUser));
+      const parsed = JSON.parse(storedUser);
+      setUser(parsed);
+      setEditName(parsed.name || "");
+      setEditSchool(parsed.school || "");
     } catch {
       router.push("/login");
     } finally {
@@ -39,6 +47,39 @@ export default function SettingsPage() {
     const isDark = document.documentElement.classList.contains("dark");
     setDarkMode(isDark);
   }, []);
+
+  const handleUpdateProfile = async () => {
+    setIsSaving(true);
+    setMessage(null);
+
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch("/api/auth/update-profile", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ name: editName, school: editSchool }),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        const updatedUser = data.data;
+        setUser(updatedUser);
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+        setEditingName(false);
+        setEditingSchool(false);
+        setMessage({ type: "success", text: "Profil berhasil diperbarui" });
+      } else {
+        setMessage({ type: "error", text: data.error || "Gagal memperbarui profil" });
+      }
+    } catch {
+      setMessage({ type: "error", text: "Terjadi kesalahan" });
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -114,19 +155,95 @@ export default function SettingsPage() {
 
       <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-8">Settings</h1>
 
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 mb-6">
-        <div className="flex items-center gap-3 mb-4">
-          <User className="text-blue-600" size={24} />
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Profil</h2>
+      {message && (
+        <div className={`p-3 rounded-lg mb-6 text-sm ${
+          message.type === "success"
+            ? "bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400"
+            : "bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400"
+        }`}>
+          {message.text}
         </div>
-        <div className="space-y-2">
-          <p className="text-sm text-gray-500 dark:text-gray-400">Email</p>
-          <p className="text-gray-900 dark:text-white">{user?.email}</p>
-          {user?.name && (
-            <>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Nama</p>
-              <p className="text-gray-900 dark:text-white">{user.name}</p>
-            </>
+      )}
+
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <User className="text-blue-600" size={24} />
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Profil</h2>
+          </div>
+        </div>
+        <div className="space-y-4">
+          <div>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Email</p>
+            <p className="text-gray-900 dark:text-white">{user?.email}</p>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <p className="text-sm text-gray-500 dark:text-gray-400">Nama</p>
+              {editingName ? (
+                <input
+                  type="text"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  className="w-full mt-1 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-3 py-2"
+                  placeholder="Masukkan nama"
+                />
+              ) : (
+                <p className="text-gray-900 dark:text-white">{user?.name || "-"}</p>
+              )}
+            </div>
+            <button
+              onClick={() => editingName ? handleUpdateProfile() : setEditingName(true)}
+              disabled={isSaving}
+              className="ml-2 p-2 text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 transition-colors"
+            >
+              {editingName ? <Check size={18} /> : <Edit size={18} />}
+            </button>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <p className="text-sm text-gray-500 dark:text-gray-400">Sekolah</p>
+              {editingSchool ? (
+                <input
+                  type="text"
+                  value={editSchool}
+                  onChange={(e) => setEditSchool(e.target.value)}
+                  className="w-full mt-1 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-3 py-2"
+                  placeholder="Masukkan nama sekolah"
+                />
+              ) : (
+                <p className="text-gray-900 dark:text-white">{user?.school || "-"}</p>
+              )}
+            </div>
+            <button
+              onClick={() => editingSchool ? handleUpdateProfile() : setEditingSchool(true)}
+              disabled={isSaving}
+              className="ml-2 p-2 text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 transition-colors"
+            >
+              {editingSchool ? <Check size={18} /> : <Edit size={18} />}
+            </button>
+          </div>
+
+          {(editingName || editingSchool) && (
+            <div className="flex gap-2 pt-2">
+              <button
+                onClick={handleUpdateProfile}
+                disabled={isSaving}
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+              >
+                {isSaving ? <Loader2 className="animate-spin" size={16} /> : <Check size={16} />}
+                Simpan
+              </button>
+              <button
+                onClick={() => { setEditingName(false); setEditingSchool(false); setEditName(user?.name || ""); setEditSchool(user?.school || ""); }}
+                className="flex items-center gap-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+              >
+                <X size={16} />
+                Batal
+              </button>
+            </div>
           )}
         </div>
       </div>
@@ -145,7 +262,7 @@ export default function SettingsPage() {
           </button>
         </div>
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          Klik tombol di atas untuk切换 antara mode terang dan gelap.
+          Klik tombol di atas untuk beralih antara mode terang dan gelap.
         </p>
       </div>
 
@@ -154,16 +271,6 @@ export default function SettingsPage() {
           <Lock className="text-blue-600" size={24} />
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Ubah Password</h2>
         </div>
-
-        {message && (
-          <div className={`p-3 rounded-lg mb-4 text-sm ${
-            message.type === "success"
-              ? "bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400"
-              : "bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400"
-          }`}>
-            {message.text}
-          </div>
-        )}
 
         <form onSubmit={handleChangePassword} className="space-y-4">
           <div>

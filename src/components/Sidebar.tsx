@@ -3,11 +3,13 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { FileText, Calendar, LayoutDashboard, ChevronDown, LogOut, CreditCard, Users } from "lucide-react";
+import { FileText, Calendar, LayoutDashboard, ChevronDown, LogOut, CreditCard, Users, Plus, Save, School } from "lucide-react";
 
 interface User {
   id?: string;
   name?: string;
+  school?: string;
+  email?: string;
   subscriptionStatus?: string;
   subscriptionExpiry?: string;
   isAdmin?: boolean;
@@ -88,7 +90,7 @@ function NavGroup({
     <div>
       <button
         onClick={onToggle}
-        className="w-full flex items-center justify-between px-2 py-3 md:px-4 rounded-lg transition-colors text-gray-600 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
+        className="w-full flex items-center justify-between px-2 py-3 md:px-4 rounded-lg transition-colors text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
       >
         <div className="flex items-center gap-3">
           {icon}
@@ -126,14 +128,35 @@ export default function Sidebar() {
   const protaExpanded = protaRoutes.includes(pathname) || !protaManuallyCollapsed;
 
   return (
-    <aside className="w-16 md:w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col fixed inset-y-0 left-0 z-10 pt-16">
+    <aside className="w-16 md:w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 flex flex-col fixed inset-y-0 left-0 z-10 pt-16">
+      <div className="hidden md:block p-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center gap-3 mb-1">
+          <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center text-blue-600 dark:text-blue-300 font-semibold text-sm">
+            {user?.name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || "U"}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
+              {user?.name || "Pengguna"}
+            </p>
+            {user?.school && (
+              <div className="flex items-center gap-1 mt-0.5">
+                <School size={10} className="text-gray-400 dark:text-gray-400 flex-shrink-0" />
+                <p className="text-xs text-gray-500 dark:text-gray-300 truncate">
+                  {user.school}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
       <nav className="flex-1 p-2 md:p-4 space-y-2 overflow-y-auto">
         <Link
           href="/dashboard"
           className={`flex items-center gap-3 px-2 py-3 md:px-4 rounded-lg transition-colors ${
             pathname === "/dashboard" || pathname === "/dashboard/"
-              ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
-              : "text-gray-600 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
+              ? "bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300"
+              : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
           }`}
         >
           <LayoutDashboard size={18} />
@@ -148,23 +171,25 @@ export default function Sidebar() {
         >
           <Link
             href="/dashboard/rpp"
-            className={`block px-4 py-2 rounded-lg transition-colors text-sm ${
+            className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-sm ${
               pathname === "/dashboard/rpp"
-                ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-medium"
-                : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                ? "bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 font-medium"
+                : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
             }`}
           >
-            RPP Saya
+            <Save size={16} />
+            <span className="hidden md:inline">RPP Saya</span>
           </Link>
           <Link
             href="/generate"
-            className={`block px-4 py-2 rounded-lg transition-colors text-sm ${
+            className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-sm ${
               pathname === "/generate"
-                ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-medium"
-                : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                ? "bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 font-medium"
+                : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
             }`}
           >
-            Buat RPP
+            <Plus size={16} />
+            <span className="hidden md:inline">Buat RPP</span>
           </Link>
         </NavGroup>
 
@@ -176,23 +201,25 @@ export default function Sidebar() {
         >
           <Link
             href="/dashboard/prota"
-            className={`block px-4 py-2 rounded-lg transition-colors text-sm ${
+            className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-sm ${
               pathname === "/dashboard/prota"
-                ? "bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 font-medium"
-                : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                ? "bg-emerald-50 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-300 font-medium"
+                : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
             }`}
           >
-            Prota Saya
+            <Save size={16} />
+            <span className="hidden md:inline">Prota Saya</span>
           </Link>
           <Link
             href="/generate-prota"
-            className={`block px-4 py-2 rounded-lg transition-colors text-sm ${
+            className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-sm ${
               pathname === "/generate-prota"
-                ? "bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 font-medium"
-                : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                ? "bg-emerald-50 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-300 font-medium"
+                : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
             }`}
           >
-            Buat Prota
+            <Plus size={16} />
+            <span className="hidden md:inline">Buat Prota</span>
           </Link>
         </NavGroup>
 
@@ -200,7 +227,7 @@ export default function Sidebar() {
           {user?.isAdmin && (
             <Link
               href="/dashboard/user"
-              className="flex items-center gap-3 px-2 py-3 md:px-4 rounded-lg text-gray-600 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              className="flex items-center gap-3 px-2 py-3 md:px-4 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
               <Users size={18} />
               <span className="hidden md:inline font-medium">User</span>
@@ -209,7 +236,7 @@ export default function Sidebar() {
           {user?.subscriptionStatus !== "active" && !user?.isAdmin && (
             <Link
               href="/payment"
-              className="flex items-center gap-3 px-2 py-3 md:px-4 rounded-lg text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 transition-colors"
+              className="flex items-center gap-3 px-2 py-3 md:px-4 rounded-lg text-purple-600 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/40 transition-colors"
             >
               <CreditCard size={18} />
               <span className="hidden md:inline font-medium">Upgrade</span>
@@ -217,7 +244,7 @@ export default function Sidebar() {
           )}
           <button
             onClick={handleLogout}
-            className="flex items-center gap-3 w-full px-2 py-3 md:px-4 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
+            className="flex items-center gap-3 w-full px-2 py-3 md:px-4 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/40 transition-colors"
           >
             <LogOut size={18} />
             <span className="hidden md:inline font-medium">Keluar</span>

@@ -56,6 +56,18 @@ export default function ProtaInputForm({ onGenerate, isLoading }: ProtaInputForm
   useEffect(() => {
     setMounted(true);
     fetchData();
+    
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      try {
+        const user = JSON.parse(storedUser);
+        setForm(prev => ({
+          ...prev,
+          namaGuru: user.name || "",
+          sekolah: user.school || "",
+        }));
+      } catch {}
+    }
   }, []);
 
   const fetchData = async () => {
@@ -235,7 +247,7 @@ export default function ProtaInputForm({ onGenerate, isLoading }: ProtaInputForm
             name="namaGuru"
             value={form.namaGuru}
             onChange={handleChange}
-            placeholder="e.g. Ibu Dewi Lestari, S.Pd"
+            placeholder="Diambil dari profil Anda (bisa diedit)"
             className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded-lg px-3 py-2"
           />
         </div>
@@ -246,7 +258,7 @@ export default function ProtaInputForm({ onGenerate, isLoading }: ProtaInputForm
             name="sekolah"
             value={form.sekolah}
             onChange={handleChange}
-            placeholder="e.g. SMP Negeri 1 Banjarmasin"
+            placeholder="Diambil dari profil Anda (bisa diedit)"
             className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded-lg px-3 py-2"
           />
         </div>

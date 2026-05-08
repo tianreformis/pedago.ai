@@ -1,5 +1,9 @@
 {
-    "editor.fontSize": 18,
-    "terminal.integrated.fontSize": 14,
-    "window.zoomLevel": -2
+    "editor.fontSize": 26,
+    "terminal.integrated.fontSize": 20,
+    "window.zoomLevel": -2,
+    "terminal.integrated.env.windows": 
+    {
+    "PROMPT": "$G "
+    }
 }
