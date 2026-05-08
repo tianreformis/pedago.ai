@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { FileText, Calendar, LayoutDashboard, ChevronDown, LogOut, CreditCard, Users, Plus, Save, School } from "lucide-react";
+import { FileText, Calendar, LayoutDashboard, ChevronDown, LogOut, CreditCard, Users, Plus, Save, School, Table } from "lucide-react";
 
 interface User {
   id?: string;
@@ -113,6 +113,7 @@ export default function Sidebar() {
   const pathname = usePathname();
   const [rppManuallyCollapsed, setRppManuallyCollapsed] = useState(false);
   const [protaManuallyCollapsed, setProtaManuallyCollapsed] = useState(false);
+  const [promesManuallyCollapsed, setPromesManuallyCollapsed] = useState(false);
 
   const user = getStoredUser();
   const handleLogout = () => {
@@ -123,9 +124,11 @@ export default function Sidebar() {
 
   const rppRoutes = ["/dashboard/rpp", "/generate"];
   const protaRoutes = ["/dashboard/prota", "/generate-prota"];
+  const promesRoutes = ["/dashboard/promes", "/generate-promes", "/dashboard/promes"];
 
   const rppExpanded = rppRoutes.includes(pathname) || !rppManuallyCollapsed;
   const protaExpanded = protaRoutes.includes(pathname) || !protaManuallyCollapsed;
+  const promesExpanded = promesRoutes.includes(pathname) || !promesManuallyCollapsed;
 
   return (
     <aside className="w-16 md:w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 flex flex-col fixed inset-y-0 left-0 z-10 pt-16">
@@ -220,6 +223,36 @@ export default function Sidebar() {
           >
             <Plus size={16} />
             <span className="hidden md:inline">Buat Prota</span>
+          </Link>
+        </NavGroup>
+
+        <NavGroup
+          label="Promes"
+          icon={<Table size={18} />}
+          isExpanded={promesExpanded}
+          onToggle={() => setPromesManuallyCollapsed(!promesManuallyCollapsed)}
+        >
+          <Link
+            href="/dashboard/promes"
+            className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-sm ${
+              pathname.startsWith("/dashboard/promes")
+                ? "bg-purple-50 dark:bg-purple-900/40 text-purple-600 dark:text-purple-300 font-medium"
+                : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+            }`}
+          >
+            <Save size={16} />
+            <span className="hidden md:inline">Promes Saya</span>
+          </Link>
+          <Link
+            href="/generate-promes"
+            className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-sm ${
+              pathname === "/generate-promes"
+                ? "bg-purple-50 dark:bg-purple-900/40 text-purple-600 dark:text-purple-300 font-medium"
+                : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+            }`}
+          >
+            <Plus size={16} />
+            <span className="hidden md:inline">Buat Promes</span>
           </Link>
         </NavGroup>
 

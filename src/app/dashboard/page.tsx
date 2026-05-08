@@ -3,11 +3,12 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { FileText, Calendar, Users, Plus } from "lucide-react";
+import { FileText, Calendar, Users, Plus, Table } from "lucide-react";
 
 interface Stats {
   rppCount: number;
   protaCount: number;
+  promesCount: number;
   userCount?: number;
 }
 
@@ -33,23 +34,26 @@ useEffect(() => {
       }
 
       try {
-        const [rppRes, protaRes, adminRes] = await Promise.all([
+        const [rppRes, protaRes, promesRes, adminRes] = await Promise.all([
           fetch("/api/rpp", { headers: { Authorization: `Bearer ${token}` } }),
           fetch("/api/prota", { headers: { Authorization: `Bearer ${token}` } }),
+          fetch("/api/promes", { headers: { Authorization: `Bearer ${token}` } }),
           fetch("/api/admin/users", { headers: { Authorization: `Bearer ${token}` } }),
         ]);
 
-        const [rppData, protaData, adminData] = await Promise.all([
+        const [rppData, protaData, promesData, adminData] = await Promise.all([
           rppRes.json(),
           protaRes.json(),
+          promesRes.json(),
           adminRes.json(),
         ]);
 
         const rppCount = rppData.success ? rppData.data.length : 0;
         const protaCount = protaData.success ? protaData.data.length : 0;
+        const promesCount = promesData.success ? promesData.data.length : 0;
         const userCount = (adminRes.ok && adminData.success) ? adminData.data.length : 0;
 
-        setStats({ rppCount, protaCount, userCount });
+        setStats({ rppCount, protaCount, promesCount, userCount });
         setUser(rppData.user);
       } catch (error) {
         console.error("Failed to fetch stats:", error);
@@ -82,7 +86,7 @@ useEffect(() => {
         </p>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-6 mb-8">
+      <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
         <Link
           href="/dashboard/rpp"
           className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow"
@@ -113,6 +117,21 @@ useEffect(() => {
           </div>
         </Link>
 
+        <Link
+          href="/dashboard/promes"
+          className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow"
+        >
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 bg-purple-100 dark:bg-purple-900 rounded-xl flex items-center justify-center">
+              <Table className="text-purple-600 dark:text-purple-400" size={28} />
+            </div>
+            <div>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Promes</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats?.promesCount || 0}</p>
+            </div>
+          </div>
+        </Link>
+
         {isAdmin && (
           <Link
             href="/dashboard/user"
@@ -131,7 +150,7 @@ useEffect(() => {
         )}
       </div>
 
-      <div className="grid md:grid-cols-2 gap-4">
+      <div className="grid md:grid-cols-3 gap-4">
         <Link
           href="/dashboard/rpp"
           className="flex items-center justify-center gap-3 bg-blue-600 hover:bg-blue-700 text-white px-6 py-4 rounded-xl font-medium transition-colors"
@@ -146,6 +165,14 @@ useEffect(() => {
         >
           <Plus size={24} />
           Buat Prota Baru
+        </Link>
+
+        <Link
+          href="/generate-promes"
+          className="flex items-center justify-center gap-3 bg-purple-600 hover:bg-purple-700 text-white px-6 py-4 rounded-xl font-medium transition-colors"
+        >
+          <Plus size={24} />
+          Buat Promes Baru
         </Link>
       </div>
     </div>

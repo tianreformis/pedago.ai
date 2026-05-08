@@ -496,3 +496,194 @@ Kembalikan JSON dengan struktur PERSIS seperti ini:
 
   return JSON.parse(clean) as ProtaOutput;
 }
+
+export interface PromesInput {
+  mataPelajaran: string;
+  fase: string;
+  kelas: string;
+  semester: string;
+  jpPerMinggu: number;
+  namaGuru?: string;
+  sekolah?: string;
+  tahunAjaran?: string;
+  materiProta: Array<{
+    nomor: number;
+    materi: string;
+    alokasiJp: number;
+    keterangan: string;
+  }>;
+  mingguEfektifBulan: Record<string, number>;
+  mingguNonEfektif: Array<{ bulan: string; minggu: string; alasan: string }>;
+}
+
+export interface PromesOutput {
+  identitas: {
+    satuanPendidikan: string;
+    mataPelajaran: string;
+    faseKelas: string;
+    tahunPelajaran: string;
+    semester: string;
+  };
+  tabelPromes: Array<{
+    no: number;
+    bab: string;
+    tujuanPembelajaran: string;
+    alokasiJp: number;
+    distribusi: Record<string, Record<string, number>>;
+    aktivitasUtama: string;
+  }>;
+  totalJp: number;
+  validasi: {
+    totalJpPromes: number;
+    totalJpProta: number;
+    sesuai: boolean;
+  };
+}
+
+export async function generatePromes(input: PromesInput): Promise<PromesOutput> {
+  const apiKey = process.env.MISTRAL_API_KEY;
+
+  if (!apiKey) {
+    throw new Error("Mistral API key not configured");
+  }
+
+  const bulanSemester = input.semester === "1" || input.semester.toLowerCase().includes("ganjil")
+    ? { ganjil: ["Juli", "Agustus", "September", "Oktober", "November", "Desember"], genap: ["Januari", "Februari", "Maret", "April", "Mei", "Juni"] }
+    : { ganjil: [], genap: ["Januari", "Februari", "Maret", "April", "Mei", "Juni"] };
+
+  const bulanList = input.semester === "1" || input.semester.toLowerCase().includes("ganjil")
+    ? bulanSemester.ganjil
+    : bulanSemester.genap;
+
+  const totalJpProta = input.materiProta.reduce((sum, m) => sum + m.alokasiJp, 0);
+
+  const materiList = input.materiProta.map((m, i) =>
+    `${m.nomor}. ${m.materi} - ${m.alokasiJp} JP - ${m.keterangan}`
+  ).join("\n");
+
+  const mingguEfektifList = bulanList.map(b => {
+    const jml = input.mingguEfektifBulan[b] || 4;
+    return `${b}: ${jml} minggu efektif`;
+  }).join("\n");
+
+  const nonEfektifList = input.mingguNonEfektif.map(n =>
+    `- ${n.bulan} Minggu ke-${n.minggu}: ${n.alasan}`
+  ).join("\n") || "Tidak ada";
+
+  const bulanColumns = bulanList.map(b => {
+    const jml = input.mingguEfektifBulan[b] || 4;
+    return `${b} (Minggu 1 - Minggu ${jml})`;
+  }).join(", ");
+
+  const systemPrompt = `Kamu adalah asisten pendidikan ahli Kurikulum Merdeka Indonesia yang berpengalaman dalam manajemen waktu pembelajaran.
+Tugasmu adalah membuat PROGRAM SEMESTER (PROMES) yang rapi, logis, dan siap digunakan guru.
+
+ATURAN PENYUSUNAN:
+1. Ambil materi dari data Prota yang diberikan, distribusikan ke minggu-minggu efektif secara berurutan
+2. Setiap minggu efektif hanya diisi dengan jumlah JP yang sama dengan atau kurang dari beban JP per minggu
+3. Jika satu TP memiliki JP lebih besar dari JP per minggu, pecah ke minggu berikutnya hingga sisa JP habis
+4. JANGAN mengisi materi pada minggu yang ditandai sebagai Non-Efektif (STS, SAS, Libur) - isi 0
+5. Total JP yang terdistribusi HARUS sama persis dengan total JP di Prota
+6. Jika ada sisa JP yang belum terpakai setelah semua TP masuk, tambahkan baris "Cadangan/Penguatan Materi"
+7. Untuk kolom "Aktivitas Utama", ringkas kegiatan pembelajaran yang relevan dengan materi tersebut
+
+FORMAT OUTPUT: Kembalikan HANYA JSON valid, tanpa penjelasan, tanpa markdown, tanpa komentar.
+
+Struktur distribusi:
+- "distribusi" adalah object dengan key = nama bulan, value = object dengan key = "Minggu 1", "Minggu 2", dst, value = angka JP yang diajarkan di minggu tersebut
+- Minggu yang non-efektif harus diisi 0
+- Pastikan total semua angka di distribusi = total alokasiJp per TP`;
+
+  const userPrompt = `Buatkan PROGRAM SEMESTER (PROMES) berdasarkan data berikut:
+
+IDENTITAS:
+- Mata Pelajaran: ${input.mataPelajaran}
+- Fase/Kelas: ${input.fase} / ${input.kelas}
+- Semester: ${input.semester === "1" || input.semester.toLowerCase().includes("ganjil") ? "Ganjil (Juli - Desember)" : "Genap (Januari - Juni)"}
+- Tahun Ajaran: ${input.tahunAjaran || "2025/2026"}
+- Beban JP per Minggu: ${input.jpPerMinggu} JP
+
+DATA MATERI DARI PROTA:
+${materiList}
+
+KONFIGURASI MINGGU EFEKTIF:
+${mingguEfektifList}
+
+MINGGU TIDAK EFEKTIF:
+${nonEfektifList}
+
+Bulan yang harus dicakup: ${bulanList.join(", ")}
+Kolom yang dibutuhkan: ${bulanColumns}
+
+Kembalikan JSON dengan struktur PERSIS seperti ini:
+
+{
+  "identitas": {
+    "satuanPendidikan": "${input.sekolah || "-"}",
+    "mataPelajaran": "${input.mataPelajaran}",
+    "faseKelas": "${input.fase} / ${input.kelas}",
+    "tahunPelajaran": "${input.tahunAjaran || "2025/2026"}",
+    "semester": "${input.semester === "1" || input.semester.toLowerCase().includes("ganjil") ? "Ganjil" : "Genap"}"
+  },
+  "tabelPromes": [
+    {
+      "no": 1,
+      "bab": "Bab 1",
+      "tujuanPembelajaran": "Tujuan Pembelajaran 1.1",
+      "alokasiJp": 9,
+      "distribusi": {
+        "Juli": { "Minggu 1": 2, "Minggu 2": 2, "Minggu 3": 2, "Minggu 4": 2, "Minggu 5": 1 },
+        "Agustus": { "Minggu 1": 0, "Minggu 2": 0, "Minggu 3": 0, "Minggu 4": 0, "Minggu 5": 0 }
+      },
+      "aktivitasUtama": "Diskusi kelompok tentang konsep dasar"
+    }
+  ],
+  "totalJp": ${totalJpProta},
+  "validasi": {
+    "totalJpPromes": ${totalJpProta},
+    "totalJpProta": ${totalJpProta},
+    "sesuai": true
+  }
+}
+
+PENTING:
+- Setiap baris tabelPromes mewakili satu Tujuan Pembelajaran (TP) dari Prota
+- "bab" diisi sesuai nama Bab dari Prota
+- "distribusi" harus mencakup SEMUA bulan yang relevan dengan semester ini
+- Jumlah minggu per bulan sesuai konfigurasi minggu efektif yang diberikan
+- Minggu non-efektif (STS, SAS, Libur) diisi 0
+- Total semua angka di "distribusi" untuk semua baris HARUS = totalJpProta
+- Isi "aktivitasUtama" dengan ringkasan aktivitas pembelajaran yang sesuai`;
+
+  const response = await fetch("https://api.mistral.ai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: "mistral-large-latest",
+      temperature: 0.3,
+      max_tokens: 8000,
+      response_format: { type: "json_object" },
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Mistral API error: ${response.status} - ${errorText}`);
+  }
+
+  const data = await response.json();
+  const text = data.choices?.[0]?.message?.content ?? "";
+
+  const clean = (typeof text === "string" ? text : "")
+    .replace(/```json\n?|\n?```/g, "")
+    .trim();
+
+  return JSON.parse(clean) as PromesOutput;
+}

@@ -1,0 +1,169 @@
+import { NextRequest, NextResponse } from "next/server";
+import { generatePromes } from "@/lib/mistral";
+import { prismaClient } from "@/lib/prisma";
+import { verifyToken } from "@/lib/jwt";
+
+function getClientIP(req: NextRequest): string {
+  return req.headers.get("x-forwarded-for")?.split(",")[0] ||
+         req.headers.get("x-real-ip") ||
+         "unknown";
+}
+
+const FREE_LIMIT = 1;
+
+async function checkUserDailyLimit(userId: string): Promise<{ allowed: boolean; remaining: number }> {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  const count = await prismaClient.promes.count({
+    where: {
+      userId,
+      createdAt: { gte: today },
+    },
+  });
+  
+  if (count >= FREE_LIMIT) {
+    return { allowed: false, remaining: 0 };
+  }
+  
+  return { allowed: true, remaining: FREE_LIMIT - count - 1 };
+}
+
+async function checkFreeLimit(ip: string): Promise<{ allowed: boolean; remaining: number }> {
+  let usage = await prismaClient.freeUsage.findUnique({ where: { ipAddress: ip } });
+  
+  if (!usage) {
+    await prismaClient.freeUsage.create({ data: { ipAddress: ip, count: 1 } });
+    return { allowed: true, remaining: 0 };
+  }
+  
+  if (usage.count < FREE_LIMIT) {
+    usage = await prismaClient.freeUsage.update({
+      where: { ipAddress: ip },
+      data: { count: usage.count + 1 },
+    });
+    return { allowed: true, remaining: FREE_LIMIT - usage.count };
+  }
+  
+  return { allowed: false, remaining: 0 };
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const {
+      mataPelajaran,
+      fase,
+      kelas,
+      semester,
+      jpPerMinggu,
+      namaGuru,
+      sekolah,
+      tahunAjaran,
+      materiProta,
+      mingguEfektifBulan,
+      mingguNonEfektif,
+    } = body;
+
+    if (!mataPelajaran || !fase || !semester || !materiProta || materiProta.length === 0) {
+      return NextResponse.json(
+        { error: "Data Prota dan semester wajib diisi" },
+        { status: 400 }
+      );
+    }
+
+    const authHeader = req.headers.get("authorization");
+    let userId: string | null = null;
+    let isSubscriber = false;
+    let isAdmin = false;
+
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      const token = authHeader.substring(7);
+      const payload = verifyToken(token);
+      if (payload) {
+        isAdmin = payload.isAdmin === true;
+        if (isAdmin) {
+          userId = payload.userId;
+        } else {
+          const user = await prismaClient.user.findUnique({ where: { id: payload.userId } });
+          if (user) {
+            userId = payload.userId;
+            if (user.subscriptionStatus === "active" &&
+                user.subscriptionExpiry && user.subscriptionExpiry > new Date()) {
+              isSubscriber = true;
+            }
+          }
+        }
+      }
+    }
+
+    if (!isAdmin && !isSubscriber) {
+      if (userId) {
+        const { allowed } = await checkUserDailyLimit(userId);
+        if (!allowed) {
+          return NextResponse.json(
+            {
+              error: "Batas penggunaan gratis tercapai (1 Promes per hari). Silakan upgrade ke premium untuk unlimited.",
+              requireLogin: true,
+              freeLimitReached: true
+            },
+            { status: 403 }
+          );
+        }
+      } else {
+        const clientIP = getClientIP(req);
+        const { allowed } = await checkFreeLimit(clientIP);
+        
+        if (!allowed) {
+          return NextResponse.json(
+            {
+              error: "Batas penggunaan gratis tercapai. Silakan login atau langganan untuk melanjutkan.",
+              requireLogin: true,
+              freeLimitReached: true
+            },
+            { status: 403 }
+          );
+        }
+      }
+    }
+
+    const promesOutput = await generatePromes({
+      mataPelajaran,
+      fase,
+      kelas,
+      semester,
+      jpPerMinggu: jpPerMinggu || 4,
+      namaGuru,
+      sekolah,
+      tahunAjaran,
+      materiProta,
+      mingguEfektifBulan: mingguEfektifBulan || {},
+      mingguNonEfektif: mingguNonEfektif || [],
+    });
+
+    if (userId) {
+      await prismaClient.promes.create({
+        data: {
+          userId,
+          mataPelajaran,
+          fase,
+          kelas: kelas || null,
+          sekolah: sekolah || null,
+          namaGuru: namaGuru || null,
+          tahunAjaran: tahunAjaran || null,
+          semester: String(semester),
+          jpPerMinggu: String(jpPerMinggu || 4),
+          rawOutput: promesOutput as any,
+        },
+      });
+    }
+
+    return NextResponse.json({ success: true, data: promesOutput });
+  } catch (error) {
+    console.error("Generate Promes error:", error);
+    return NextResponse.json(
+      { error: "Gagal generate Promes. Silakan coba lagi." },
+      { status: 500 }
+    );
+  }
+}

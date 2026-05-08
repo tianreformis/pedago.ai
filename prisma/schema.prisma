@@ -24,6 +24,7 @@ model User {
   createdAt DateTime @default(now())
   rpps      RPP[]
   protas    Prota[]
+  promes    Promes[]
 }
 
 model FreeUsage {
@@ -69,6 +70,29 @@ model Prota {
   sekolah        String?
   namaGuru       String?
   tahunAjaran    String?
+
+  rawOutput      Json
+  status         String   @default("draft")
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model Promes {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+
+  mataPelajaran  String
+  fase           String
+  kelas          String?
+  sekolah        String?
+  namaGuru       String?
+  tahunAjaran    String?
+  semester       String
+  jpPerMinggu    String?
 
   rawOutput      Json
   status         String   @default("draft")
