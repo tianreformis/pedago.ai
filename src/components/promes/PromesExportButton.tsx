@@ -2,7 +2,11 @@
 
 import { useState } from "react";
 import { PromesOutput } from "@/types/promes";
-import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, Table, TableRow, TableCell, WidthType, BorderStyle, ShadingType } from "docx";
+import {
+  Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType,
+  Table, TableRow, TableCell, WidthType, BorderStyle, ShadingType,
+  PageOrientation, TableLayoutType, VerticalAlign
+} from "docx";
 import { FileDown, FileText, Loader2 } from "lucide-react";
 
 interface PromesExportButtonProps {
@@ -47,71 +51,143 @@ export default function PromesExportButton({ output }: PromesExportButtonProps) 
     }
   });
 
+  const defaultBorder = {
+    style: BorderStyle.SINGLE,
+    size: 4,
+    color: "000000",
+  };
+
+  const cellBorders = {
+    top: defaultBorder,
+    bottom: defaultBorder,
+    left: defaultBorder,
+    right: defaultBorder,
+  };
+
+  const createHeaderCell = (text: string, width?: number) =>
+    new TableCell({
+      children: [
+        new Paragraph({
+          children: [new TextRun({ text, bold: true, font: "Times New Roman", size: 18 })],
+          alignment: AlignmentType.CENTER,
+          spacing: { before: 0, after: 0 },
+        }),
+      ],
+      shading: { fill: "D9D9D9", type: ShadingType.CLEAR },
+      borders: cellBorders,
+      verticalAlign: VerticalAlign.CENTER,
+      width: width ? { size: width, type: WidthType.PERCENTAGE } : undefined,
+    });
+
+  const createDataCell = (text: string, align?: typeof AlignmentType[keyof typeof AlignmentType]) =>
+    new TableCell({
+      children: [
+        new Paragraph({
+          children: [new TextRun({ text, font: "Times New Roman", size: 20 })],
+          alignment: align || AlignmentType.LEFT,
+          spacing: { before: 0, after: 0 },
+        }),
+      ],
+      borders: cellBorders,
+      verticalAlign: VerticalAlign.CENTER,
+    });
+
   const exportDocx = async () => {
     const children: (Paragraph | Table)[] = [];
 
     children.push(
       new Paragraph({
-        text: "PROGRAM SEMESTER (PROMES)",
-        heading: HeadingLevel.HEADING_1,
+        children: [new TextRun({ text: "PROGRAM SEMESTER (PROMES)", bold: true, font: "Times New Roman", size: 28 })],
         alignment: AlignmentType.CENTER,
+        spacing: { after: 200 },
       })
     );
-    children.push(new Paragraph({ text: "" }));
 
     children.push(
       new Paragraph({
-        text: output.identitas.satuanPendidikan,
+        children: [new TextRun({ text: output.identitas.satuanPendidikan, font: "Times New Roman", size: 24 })],
         alignment: AlignmentType.CENTER,
+        spacing: { after: 200 },
       })
     );
-    children.push(new Paragraph({ text: "" }));
 
-    children.push(new Paragraph({ text: "IDENTITAS", heading: HeadingLevel.HEADING_2 }));
-    children.push(new Paragraph({ children: [new TextRun({ text: "Mata Pelajaran: ", bold: true }), new TextRun(output.identitas.mataPelajaran)] }));
-    children.push(new Paragraph({ children: [new TextRun({ text: "Fase/Kelas: ", bold: true }), new TextRun(output.identitas.faseKelas)] }));
-    children.push(new Paragraph({ children: [new TextRun({ text: "Tahun Pelajaran: ", bold: true }), new TextRun(output.identitas.tahunPelajaran)] }));
-    children.push(new Paragraph({ children: [new TextRun({ text: "Semester: ", bold: true }), new TextRun(output.identitas.semester)] }));
-    children.push(new Paragraph({ children: [new TextRun({ text: "Total JP: ", bold: true }), new TextRun(`${output.totalJp} JP`)] }));
-    children.push(new Paragraph({ text: "" }));
+    children.push(
+      new Paragraph({
+        children: [new TextRun({ text: "IDENTITAS", bold: true, font: "Times New Roman", size: 22 })],
+        spacing: { before: 200, after: 100 },
+      })
+    );
 
-    children.push(new Paragraph({ text: "DISTRIBUSI PEMBELAJARAN", heading: HeadingLevel.HEADING_2 }));
-    children.push(new Paragraph({ text: "" }));
+    const identitasItems = [
+      { label: "Mata Pelajaran", value: output.identitas.mataPelajaran },
+      { label: "Fase/Kelas", value: output.identitas.faseKelas },
+      { label: "Tahun Pelajaran", value: output.identitas.tahunPelajaran },
+      { label: "Semester", value: output.identitas.semester },
+      { label: "Total JP", value: `${output.totalJp} JP` },
+    ];
+
+    identitasItems.forEach((item) => {
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({ text: `${item.label}: `, bold: true, font: "Times New Roman", size: 22 }),
+            new TextRun({ text: item.value, font: "Times New Roman", size: 22 }),
+          ],
+          spacing: { after: 60 },
+        })
+      );
+    });
+
+    children.push(
+      new Paragraph({
+        children: [new TextRun({ text: "DISTRIBUSI PEMBELAJARAN", bold: true, font: "Times New Roman", size: 22 })],
+        spacing: { before: 300, after: 150 },
+      })
+    );
 
     const headerRow = new TableRow({
       children: [
-        new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "No", bold: true })] })], shading: { fill: "E8E8E8" } }),
-        new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "Bab", bold: true })] })], shading: { fill: "E8E8E8" } }),
-        new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "Tujuan Pembelajaran", bold: true })] })], shading: { fill: "E8E8E8" } }),
-        new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "JP", bold: true })], alignment: AlignmentType.CENTER })], shading: { fill: "E8E8E8" } }),
+        createHeaderCell("No", 3),
+        createHeaderCell("Bab", 8),
+        createHeaderCell("Tujuan Pembelajaran", 25),
+        createHeaderCell("JP", 3),
         ...allBulan.flatMap((bulan) =>
           Array.from({ length: maxMingguPerBulan[bulan] }, (_, i) => i + 1).map((w) =>
             new TableCell({
-              children: [new Paragraph({ children: [new TextRun({ text: `${bulan}\nM${w}`, bold: true })], alignment: AlignmentType.CENTER })],
-              shading: { fill: "E8E8E8" },
+              children: [
+                new Paragraph({
+                  children: [new TextRun({ text: `${bulan}\nM${w}`, bold: true, font: "Times New Roman", size: 16 })],
+                  alignment: AlignmentType.CENTER,
+                  spacing: { before: 0, after: 0 },
+                }),
+              ],
+              shading: { fill: "D9D9D9", type: ShadingType.CLEAR },
+              borders: cellBorders,
+              verticalAlign: VerticalAlign.CENTER,
             })
           )
         ),
-        new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "Aktivitas Utama", bold: true })] })], shading: { fill: "E8E8E8" } }),
+        createHeaderCell("Aktivitas Utama", 18),
       ],
+      tableHeader: true,
     });
 
     const tableRows = [headerRow];
 
     for (const row of output.tabelPromes) {
       const cells = [
-        new TableCell({ children: [new Paragraph({ text: String(row.no), alignment: AlignmentType.CENTER })] }),
-        new TableCell({ children: [new Paragraph({ text: row.bab })] }),
-        new TableCell({ children: [new Paragraph({ text: row.tujuanPembelajaran })] }),
-        new TableCell({ children: [new Paragraph({ text: String(row.alokasiJp), alignment: AlignmentType.CENTER })] }),
+        createDataCell(String(row.no), AlignmentType.CENTER),
+        createDataCell(row.bab),
+        createDataCell(row.tujuanPembelajaran),
+        createDataCell(String(row.alokasiJp), AlignmentType.CENTER),
         ...allBulan.flatMap((bulan) => {
           const weekKeys = Object.keys(row.distribusi[bulan] || {}).sort();
           return weekKeys.map((wk) => {
             const val = row.distribusi[bulan][wk] || 0;
-            return new TableCell({ children: [new Paragraph({ text: String(val), alignment: AlignmentType.CENTER })] });
+            return createDataCell(String(val), AlignmentType.CENTER);
           });
         }),
-        new TableCell({ children: [new Paragraph({ text: row.aktivitasUtama })] }),
+        createDataCell(row.aktivitasUtama),
       ];
 
       tableRows.push(new TableRow({ children: cells }));
@@ -120,29 +196,81 @@ export default function PromesExportButton({ output }: PromesExportButtonProps) 
     children.push(
       new Table({
         rows: tableRows,
+        layout: TableLayoutType.FIXED,
         width: { size: 100, type: WidthType.PERCENTAGE },
       })
     );
-    children.push(new Paragraph({ text: "" }));
 
-    children.push(new Paragraph({
-      children: [new TextRun({ text: `Total JP: ${output.totalJp} JP`, bold: true })],
-    }));
+    children.push(new Paragraph({ text: "", spacing: { after: 200 } }));
+
+    children.push(
+      new Paragraph({
+        children: [new TextRun({ text: `Total JP: ${output.totalJp} JP`, bold: true, font: "Times New Roman", size: 22 })],
+      })
+    );
 
     if (output.validasi) {
-      children.push(new Paragraph({
-        children: [
-          new TextRun({ text: `Validasi: Total JP Promes (${output.validasi.totalJpPromes}) ${output.validasi.sesuai ? "=" : "≠"} Total JP Prota (${output.validasi.totalJpProta})`, italics: true }),
-        ],
-      }));
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: `Validasi: Total JP Promes (${output.validasi.totalJpPromes}) ${output.validasi.sesuai ? "=" : "≠"} Total JP Prota (${output.validasi.totalJpProta})`,
+              italics: true,
+              font: "Times New Roman",
+              size: 20,
+            }),
+          ],
+        })
+      );
     }
 
-    children.push(new Paragraph({ text: "" }));
-    children.push(new Paragraph({
-      children: [new TextRun({ text: "Keterangan: M1 = Minggu 1, M2 = Minggu 2, dst. Angka 0 menandakan minggu tidak efektif (libur, STS, atau SAS).", italics: true, size: 18 })],
-    }));
+    children.push(new Paragraph({ text: "", spacing: { after: 200 } }));
+    children.push(
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: "Keterangan: M1 = Minggu 1, M2 = Minggu 2, dst. Angka 0 menandakan minggu tidak efektif (libur, STS, atau SAS).",
+            italics: true,
+            font: "Times New Roman",
+            size: 18,
+          }),
+        ],
+      })
+    );
 
-    const doc = new Document({ sections: [{ children }] });
+    const doc = new Document({
+      sections: [
+        {
+          properties: {
+            page: {
+              size: {
+                orientation: PageOrientation.LANDSCAPE,
+                width: 16838,
+                height: 11906,
+              },
+              margin: {
+                top: 720,
+                right: 720,
+                bottom: 720,
+                left: 720,
+              },
+            },
+          },
+          children,
+        },
+      ],
+      styles: {
+        default: {
+          document: {
+            run: {
+              font: "Times New Roman",
+              size: 22,
+            },
+          },
+        },
+      },
+    });
+
     const blob = await Packer.toBlob(doc);
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
