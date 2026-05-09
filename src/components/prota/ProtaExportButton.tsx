@@ -2,7 +2,11 @@
 
 import { useState } from "react";
 import { ProtaOutput } from "@/lib/mistral";
-import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, Table, TableRow, TableCell, WidthType, BorderStyle, ShadingType } from "docx";
+import {
+  Document, Packer, Paragraph, TextRun, AlignmentType,
+  Table, TableRow, TableCell, WidthType, BorderStyle, ShadingType,
+  PageOrientation, VerticalAlign
+} from "docx";
 import { FileDown, FileText, Loader2 } from "lucide-react";
 
 interface ProtaExportButtonProps {
@@ -32,6 +36,57 @@ export default function ProtaExportButton({ input, output }: ProtaExportButtonPr
     }
   };
 
+  const defaultBorder = {
+    style: BorderStyle.SINGLE,
+    size: 4,
+    color: "000000",
+  };
+
+  const cellBorders = {
+    top: defaultBorder,
+    bottom: defaultBorder,
+    left: defaultBorder,
+    right: defaultBorder,
+  };
+
+  const createHeaderCell = (text: string, widthDxa?: number) =>
+    new TableCell({
+      children: [
+        new Paragraph({
+          children: [new TextRun({ text, bold: true, font: "Times New Roman", size: 20 })],
+          alignment: AlignmentType.CENTER,
+          spacing: { before: 60, after: 60 },
+        }),
+      ],
+      shading: { fill: "D9D9D9", type: ShadingType.CLEAR },
+      borders: cellBorders,
+      verticalAlign: VerticalAlign.CENTER,
+      width: widthDxa ? { size: widthDxa, type: WidthType.DXA } : undefined,
+    });
+
+  const createDataCell = (text: string, align?: typeof AlignmentType[keyof typeof AlignmentType]) =>
+    new TableCell({
+      children: [
+        new Paragraph({
+          children: [new TextRun({ text, font: "Times New Roman", size: 20 })],
+          alignment: align || AlignmentType.LEFT,
+          spacing: { before: 40, after: 40 },
+        }),
+      ],
+      borders: cellBorders,
+      verticalAlign: VerticalAlign.CENTER,
+    });
+
+  const createTextParagraph = (children: (TextRun | { text: string; bold?: boolean })[]) =>
+    new Paragraph({
+      children: children.map((child) =>
+        "text" in child
+          ? new TextRun({ text: child.text, bold: child.bold, font: "Times New Roman", size: 22 })
+          : child
+      ),
+      spacing: { after: 80 },
+    });
+
   const exportDocx = async () => {
     const { identitas, capaianPembelajaran, alokasiWaktu, distribusiMateri, kalenderPendidikan, catatan } = output;
 
@@ -39,139 +94,106 @@ export default function ProtaExportButton({ input, output }: ProtaExportButtonPr
 
     children.push(
       new Paragraph({
-        text: "PROGRAM TAHUNAN (PROTA)",
-        heading: HeadingLevel.HEADING_1,
+        children: [new TextRun({ text: "PROGRAM TAHUNAN (PROTA)", bold: true, font: "Times New Roman", size: 32 })],
         alignment: AlignmentType.CENTER,
+        spacing: { after: 200 },
       })
     );
-    children.push(new Paragraph({ text: "" }));
 
     children.push(
       new Paragraph({
-        text: identitas.satuanPendidikan,
+        children: [new TextRun({ text: identitas.satuanPendidikan, font: "Times New Roman", size: 24 })],
         alignment: AlignmentType.CENTER,
+        spacing: { after: 300 },
       })
     );
-    children.push(new Paragraph({ text: "" }));
 
     children.push(
       new Paragraph({
-        text: "IDENTITAS",
-        heading: HeadingLevel.HEADING_2,
+        children: [new TextRun({ text: "IDENTITAS", bold: true, font: "Times New Roman", size: 24 })],
+        spacing: { before: 200, after: 100 },
       })
     );
-    children.push(
-      new Paragraph({
-        children: [
-          new TextRun({ text: "Mata Pelajaran: ", bold: true }),
-          new TextRun(identitas.mataPelajaran),
-        ],
-      })
-    );
-    children.push(
-      new Paragraph({
-        children: [
-          new TextRun({ text: "Fase/Kelas: ", bold: true }),
-          new TextRun(identitas.faseKelas),
-        ],
-      })
-    );
-    children.push(
-      new Paragraph({
-        children: [
-          new TextRun({ text: "Tahun Pelajaran: ", bold: true }),
-          new TextRun(identitas.tahunPelajaran),
-        ],
-      })
-    );
-    children.push(new Paragraph({ text: "" }));
+
+    children.push(createTextParagraph([
+      { text: "Mata Pelajaran: ", bold: true },
+      { text: identitas.mataPelajaran },
+    ]));
+    children.push(createTextParagraph([
+      { text: "Fase/Kelas: ", bold: true },
+      { text: identitas.faseKelas },
+    ]));
+    children.push(createTextParagraph([
+      { text: "Tahun Pelajaran: ", bold: true },
+      { text: identitas.tahunPelajaran },
+    ]));
+    children.push(new Paragraph({ text: "", spacing: { after: 200 } }));
 
     children.push(
       new Paragraph({
-        text: "CAPAIAN PEMBELAJARAN",
-        heading: HeadingLevel.HEADING_2,
+        children: [new TextRun({ text: "CAPAIAN PEMBELAJARAN", bold: true, font: "Times New Roman", size: 24 })],
+        spacing: { before: 200, after: 100 },
       })
     );
     for (const cp of capaianPembelajaran) {
-      children.push(new Paragraph({ text: `• ${cp}` }));
+      children.push(
+        new Paragraph({
+          children: [new TextRun({ text: `• ${cp}`, font: "Times New Roman", size: 20 })],
+          spacing: { after: 60 },
+        })
+      );
     }
-    children.push(new Paragraph({ text: "" }));
+    children.push(new Paragraph({ text: "", spacing: { after: 200 } }));
 
     children.push(
       new Paragraph({
-        text: "ALOKASI WAKTU",
-        heading: HeadingLevel.HEADING_2,
+        children: [new TextRun({ text: "ALOKASI WAKTU", bold: true, font: "Times New Roman", size: 24 })],
+        spacing: { before: 200, after: 100 },
       })
     );
-    children.push(
-      new Paragraph({
-        children: [
-          new TextRun({ text: "Jumlah Minggu Efektif: ", bold: true }),
-          new TextRun(`${alokasiWaktu.mingguEfektif} minggu`),
-        ],
-      })
-    );
-    children.push(
-      new Paragraph({
-        children: [
-          new TextRun({ text: "JP per Minggu: ", bold: true }),
-          new TextRun(`${alokasiWaktu.jpPerMinggu} JP`),
-        ],
-      })
-    );
-    children.push(
-      new Paragraph({
-        children: [
-          new TextRun({ text: "Total JP per Tahun: ", bold: true }),
-          new TextRun(`${alokasiWaktu.totalJpPertahun} JP`),
-        ],
-      })
-    );
-    children.push(new Paragraph({ text: "" }));
+    children.push(createTextParagraph([
+      { text: "Jumlah Minggu Efektif: ", bold: true },
+      { text: `${alokasiWaktu.mingguEfektif} minggu` },
+    ]));
+    children.push(createTextParagraph([
+      { text: "JP per Minggu: ", bold: true },
+      { text: `${alokasiWaktu.jpPerMinggu} JP` },
+    ]));
+    children.push(createTextParagraph([
+      { text: "Total JP per Tahun: ", bold: true },
+      { text: `${alokasiWaktu.totalJpPertahun} JP` },
+    ]));
+    children.push(new Paragraph({ text: "", spacing: { after: 200 } }));
 
     children.push(
       new Paragraph({
-        text: "DISTRIBUSI MATERI / TUJUAN PEMBELAJARAN",
-        heading: HeadingLevel.HEADING_2,
+        children: [new TextRun({ text: "DISTRIBUSI MATERI / TUJUAN PEMBELAJARAN", bold: true, font: "Times New Roman", size: 24 })],
+        spacing: { before: 200, after: 150 },
       })
     );
 
-    const tableRows = [
-      new TableRow({
-        children: [
-          new TableCell({
-            children: [new Paragraph({ children: [new TextRun({ text: "No", bold: true })] })],
-            shading: { fill: "E8E8E8" },
-          }),
-          new TableCell({
-            children: [new Paragraph({ children: [new TextRun({ text: "Materi", bold: true })] })],
-            shading: { fill: "E8E8E8" },
-          }),
-          new TableCell({
-            children: [new Paragraph({ children: [new TextRun({ text: "Semester", bold: true })] })],
-            shading: { fill: "E8E8E8" },
-          }),
-          new TableCell({
-            children: [new Paragraph({ children: [new TextRun({ text: "Alokasi JP", bold: true })] })],
-            shading: { fill: "E8E8E8" },
-          }),
-          new TableCell({
-            children: [new Paragraph({ children: [new TextRun({ text: "Keterangan", bold: true })] })],
-            shading: { fill: "E8E8E8" },
-          }),
-        ],
-      }),
-    ];
+    const headerRow = new TableRow({
+      children: [
+        createHeaderCell("No", 400),
+        createHeaderCell("Materi / Tujuan Pembelajaran", 5000),
+        createHeaderCell("Semester", 1500),
+        createHeaderCell("Alokasi JP", 1200),
+        createHeaderCell("Keterangan", 2500),
+      ],
+      tableHeader: true,
+    });
+
+    const tableRows = [headerRow];
 
     for (const item of distribusiMateri) {
       tableRows.push(
         new TableRow({
           children: [
-            new TableCell({ children: [new Paragraph({ text: String(item.nomor) })] }),
-            new TableCell({ children: [new Paragraph({ text: item.materi })] }),
-            new TableCell({ children: [new Paragraph({ text: item.semester })] }),
-            new TableCell({ children: [new Paragraph({ text: `${item.alokasiJp} JP` })] }),
-            new TableCell({ children: [new Paragraph({ text: item.keterangan })] }),
+            createDataCell(String(item.nomor), AlignmentType.CENTER),
+            createDataCell(item.materi),
+            createDataCell(item.semester, AlignmentType.CENTER),
+            createDataCell(`${item.alokasiJp} JP`, AlignmentType.CENTER),
+            createDataCell(item.keterangan),
           ],
         })
       );
@@ -183,54 +205,68 @@ export default function ProtaExportButton({ input, output }: ProtaExportButtonPr
         width: { size: 100, type: WidthType.PERCENTAGE },
       })
     );
-    children.push(new Paragraph({ text: "" }));
+    children.push(new Paragraph({ text: "", spacing: { after: 200 } }));
 
     children.push(
       new Paragraph({
-        text: "KALENDER PENDIDIKAN",
-        heading: HeadingLevel.HEADING_2,
+        children: [new TextRun({ text: "KALENDER PENDIDIKAN", bold: true, font: "Times New Roman", size: 24 })],
+        spacing: { before: 200, after: 100 },
       })
     );
-    children.push(
-      new Paragraph({
-        children: [
-          new TextRun({ text: "Awal Tahun Ajaran: ", bold: true }),
-          new TextRun(kalenderPendidikan.awalTahunAjaran),
-        ],
-      })
-    );
-    children.push(
-      new Paragraph({
-        children: [
-          new TextRun({ text: "Pembagian Semester: ", bold: true }),
-          new TextRun(kalenderPendidikan.pembagianSemester),
-        ],
-      })
-    );
-    children.push(
-      new Paragraph({
-        children: [
-          new TextRun({ text: "Perkiraan Asesmen: ", bold: true }),
-          new TextRun(kalenderPendidikan.perkiraanAsesmen),
-        ],
-      })
-    );
-    children.push(new Paragraph({ text: "" }));
+    children.push(createTextParagraph([
+      { text: "Awal Tahun Ajaran: ", bold: true },
+      { text: kalenderPendidikan.awalTahunAjaran },
+    ]));
+    children.push(createTextParagraph([
+      { text: "Pembagian Semester: ", bold: true },
+      { text: kalenderPendidikan.pembagianSemester },
+    ]));
+    children.push(createTextParagraph([
+      { text: "Perkiraan Asesmen: ", bold: true },
+      { text: kalenderPendidikan.perkiraanAsesmen },
+    ]));
+    children.push(new Paragraph({ text: "", spacing: { after: 200 } }));
 
     if (catatan && catatan.length > 0) {
       children.push(
         new Paragraph({
-          text: "CATATAN",
-          heading: HeadingLevel.HEADING_2,
+          children: [new TextRun({ text: "CATATAN", bold: true, font: "Times New Roman", size: 24 })],
+          spacing: { before: 200, after: 100 },
         })
       );
       for (const cat of catatan) {
-        children.push(new Paragraph({ text: `• ${cat}` }));
+        children.push(
+          new Paragraph({
+            children: [new TextRun({ text: `• ${cat}`, font: "Times New Roman", size: 20 })],
+            spacing: { after: 60 },
+          })
+        );
       }
     }
 
     const doc = new Document({
-      sections: [{ children }],
+      sections: [
+        {
+          properties: {
+            page: {
+              size: {
+                width: 16838,
+                height: 11906,
+                orientation: PageOrientation.LANDSCAPE,
+              },
+              margin: {
+                top: 1000,
+                right: 1000,
+                bottom: 1000,
+                left: 1000,
+                header: 720,
+                footer: 720,
+              },
+            },
+          },
+          children,
+        },
+      ],
     });
 
     const blob = await Packer.toBlob(doc);
