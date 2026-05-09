@@ -64,7 +64,7 @@ export default function PromesExportButton({ output }: PromesExportButtonProps) 
     right: defaultBorder,
   };
 
-  const createHeaderCell = (text: string, width?: number) =>
+  const createHeaderCell = (text: string, widthDxa?: number) =>
     new TableCell({
       children: [
         new Paragraph({
@@ -76,7 +76,7 @@ export default function PromesExportButton({ output }: PromesExportButtonProps) 
       shading: { fill: "D9D9D9", type: ShadingType.CLEAR },
       borders: cellBorders,
       verticalAlign: VerticalAlign.CENTER,
-      width: width ? { size: width, type: WidthType.PERCENTAGE } : undefined,
+      width: widthDxa ? { size: widthDxa, type: WidthType.DXA } : undefined,
     });
 
   const createDataCell = (text: string, align?: typeof AlignmentType[keyof typeof AlignmentType]) =>
@@ -147,10 +147,10 @@ export default function PromesExportButton({ output }: PromesExportButtonProps) 
 
     const headerRow = new TableRow({
       children: [
-        createHeaderCell("No", 3),
-        createHeaderCell("Bab", 8),
-        createHeaderCell("Tujuan Pembelajaran", 25),
-        createHeaderCell("JP", 3),
+        createHeaderCell("No", 300),
+        createHeaderCell("Bab", 800),
+        createHeaderCell("Tujuan Pembelajaran", 3000),
+        createHeaderCell("JP", 350),
         ...allBulan.flatMap((bulan) =>
           Array.from({ length: maxMingguPerBulan[bulan] }, (_, i) => i + 1).map((w) =>
             new TableCell({
@@ -164,10 +164,11 @@ export default function PromesExportButton({ output }: PromesExportButtonProps) 
               shading: { fill: "D9D9D9", type: ShadingType.CLEAR },
               borders: cellBorders,
               verticalAlign: VerticalAlign.CENTER,
+              width: { size: 400, type: WidthType.DXA },
             })
           )
         ),
-        createHeaderCell("Aktivitas Utama", 18),
+        createHeaderCell("Aktivitas Utama", 2000),
       ],
       tableHeader: true,
     });
@@ -196,7 +197,6 @@ export default function PromesExportButton({ output }: PromesExportButtonProps) 
     children.push(
       new Table({
         rows: tableRows,
-        layout: TableLayoutType.FIXED,
         width: { size: 100, type: WidthType.PERCENTAGE },
       })
     );
@@ -244,31 +244,23 @@ export default function PromesExportButton({ output }: PromesExportButtonProps) 
           properties: {
             page: {
               size: {
-                orientation: PageOrientation.LANDSCAPE,
                 width: 16838,
                 height: 11906,
+                orientation: PageOrientation.LANDSCAPE,
               },
               margin: {
-                top: 720,
-                right: 720,
-                bottom: 720,
-                left: 720,
+                top: 1000,
+                right: 1000,
+                bottom: 1000,
+                left: 1000,
+                header: 720,
+                footer: 720,
               },
             },
           },
           children,
         },
       ],
-      styles: {
-        default: {
-          document: {
-            run: {
-              font: "Times New Roman",
-              size: 22,
-            },
-          },
-        },
-      },
     });
 
     const blob = await Packer.toBlob(doc);
