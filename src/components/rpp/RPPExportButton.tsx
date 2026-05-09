@@ -2,8 +2,9 @@
 
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from "docx";
 import { RPPInput, RPPOutput } from "@/types/rpp";
-import { FileDown, Loader2 } from "lucide-react";
+import { FileDown, FileText, Loader2 } from "lucide-react";
 import { useState } from "react";
+import * as XLSX from "xlsx";
 
 interface RPPExportButtonProps {
   rppInput: RPPInput;
@@ -12,42 +13,229 @@ interface RPPExportButtonProps {
 
 export default function RPPExportButton({ rppInput, rppOutput }: RPPExportButtonProps) {
   const [isExporting, setIsExporting] = useState(false);
+  const [exportType, setExportType] = useState<"docx" | "xlsx" | null>(null);
 
-  const handleExport = async () => {
+  const handleExport = async (type: "docx" | "xlsx") => {
     setIsExporting(true);
+    setExportType(type);
     try {
-      console.log("Creating document...");
-      const doc = createRPPDocument(rppInput, rppOutput);
-      console.log("Generating blob...");
-      const blob = await Packer.toBlob(doc);
-      console.log("Creating download link...");
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `RPP_${rppInput.mataPelajaran}_${rppInput.fase}.docx`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      console.log("Download triggered");
+      if (type === "xlsx") {
+        await exportExcel();
+      } else {
+        await exportDocx();
+      }
     } catch (error) {
       console.error("Export error:", error);
       alert("Gagal mengekspor dokumen: " + (error as Error).message);
     } finally {
       setIsExporting(false);
+      setExportType(null);
     }
   };
 
+  const exportDocx = async () => {
+    const doc = createRPPDocument(rppInput, rppOutput);
+    const blob = await Packer.toBlob(doc);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `RPP_${rppInput.mataPelajaran}_${rppInput.fase}.docx`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const exportExcel = async () => {
+    const wb = XLSX.utils.book_new();
+
+    const boldStyle = { font: { bold: true, name: "Times New Roman", size: 11 } };
+    const normalStyle = { font: { name: "Times New Roman", size: 11 } };
+    const cellStyle = {
+      font: { name: "Times New Roman", size: 11 },
+      border: {
+        top: { style: "thin", color: { rgb: "000000" } },
+        bottom: { style: "thin", color: { rgb: "000000" } },
+        left: { style: "thin", color: { rgb: "000000" } },
+        right: { style: "thin", color: { rgb: "000000" } },
+      },
+    };
+
+    const { karakteristikPembelajar, desainPembelajaran, pengalamanBelajar, asesmen, glosarium, pertanyaanRefleksiGuru, lembarKerjaPesertaDidik } = rppOutput;
+
+    const sheetData: any[] = [];
+
+    sheetData.push([{ t: "s", v: "RENCANA PEMBELAJARAN MENDALAM (RPM)", s: { font: { bold: true, name: "Times New Roman", size: 16 }, alignment: { horizontal: "center" as const } } }]);
+    if (rppInput.sekolah) {
+      sheetData.push([{ t: "s", v: rppInput.sekolah, s: { font: { name: "Times New Roman", size: 12 }, alignment: { horizontal: "center" as const } } }]);
+    }
+    sheetData.push([{}]);
+
+    sheetData.push([{ t: "s", v: "IDENTITAS", s: boldStyle }]);
+    sheetData.push([{ t: "s", v: "Mata Pelajaran", s: boldStyle }, { t: "s", v: rppInput.mataPelajaran, s: cellStyle }]);
+    sheetData.push([{ t: "s", v: "Fase", s: boldStyle }, { t: "s", v: rppInput.fase, s: cellStyle }]);
+    if (rppInput.kelas) sheetData.push([{ t: "s", v: "Kelas", s: boldStyle }, { t: "s", v: rppInput.kelas, s: cellStyle }]);
+    if (rppInput.namaGuru) sheetData.push([{ t: "s", v: "Guru", s: boldStyle }, { t: "s", v: rppInput.namaGuru, s: cellStyle }]);
+    if (rppInput.tahunAjaran) sheetData.push([{ t: "s", v: "Tahun Ajaran", s: boldStyle }, { t: "s", v: rppInput.tahunAjaran, s: cellStyle }]);
+    if (rppInput.alokasWaktu) sheetData.push([{ t: "s", v: "Alokasi Waktu", s: boldStyle }, { t: "s", v: rppInput.alokasWaktu, s: cellStyle }]);
+    if (rppInput.semester) sheetData.push([{ t: "s", v: "Semester", s: boldStyle }, { t: "s", v: rppInput.semester, s: cellStyle }]);
+    sheetData.push([{}]);
+
+    sheetData.push([{ t: "s", v: "A. KARAKTERISTIK PEMBELAJARAN", s: boldStyle }]);
+    sheetData.push([{ t: "s", v: "Kesiapan Peserta Didik", s: boldStyle }]);
+    sheetData.push([karakteristikPembelajar.kesiapanPesertaDidik].map(v => ({ t: "s", v, s: cellStyle })));
+    sheetData.push([{ t: "s", v: "Karakteristik Materi", s: boldStyle }]);
+    sheetData.push([karakteristikPembelajar.karakteristikMateri].map(v => ({ t: "s", v, s: cellStyle })));
+    sheetData.push([{ t: "s", v: "Dimensi Profil Lulusan", s: boldStyle }]);
+    sheetData.push([karakteristikPembelajar.dimensiProfilLulusan.join(", ")].map(v => ({ t: "s", v, s: cellStyle })));
+    sheetData.push([{}]);
+
+    sheetData.push([{ t: "s", v: "B. DESAIN PEMBELAJARAN", s: boldStyle }]);
+    sheetData.push([{ t: "s", v: "Capaian Pembelajaran", s: boldStyle }]);
+    sheetData.push([desainPembelajaran.capaianPembelajaran].map(v => ({ t: "s", v, s: cellStyle })));
+    sheetData.push([{ t: "s", v: "Topik Pembelajaran", s: boldStyle }]);
+    sheetData.push([desainPembelajaran.topikPembelajaran].map(v => ({ t: "s", v, s: cellStyle })));
+    if (desainPembelajaran.lintasDisiplinIlmu) {
+      sheetData.push([{ t: "s", v: "Lintas Disiplin Ilmu", s: boldStyle }]);
+      sheetData.push([desainPembelajaran.lintasDisiplinIlmu].map(v => ({ t: "s", v, s: cellStyle })));
+    }
+    sheetData.push([{ t: "s", v: "Tujuan Pembelajaran", s: boldStyle }]);
+    desainPembelajaran.tujuanPembelajaran.forEach((tp) => {
+      sheetData.push([`• ${tp.replace(/^[0-9]+[\.\)]\s*/, "")}`].map(v => ({ t: "s", v, s: cellStyle })));
+    });
+    sheetData.push([{}]);
+
+    sheetData.push([{ t: "s", v: "C. PENGALAMAN BELAJAR", s: boldStyle }]);
+    sheetData.push([{ t: "s", v: "Fase Awal", s: boldStyle }]);
+    sheetData.push([{ t: "s", v: "Prinsip", s: boldStyle }, { t: "s", v: pengalamanBelajar.awal.prinsip, s: cellStyle }]);
+    sheetData.push([{ t: "s", v: "Orientasi", s: boldStyle }, { t: "s", v: pengalamanBelajar.awal.orientasi, s: cellStyle }]);
+    sheetData.push([{ t: "s", v: "Apersepsi", s: boldStyle }, { t: "s", v: pengalamanBelajar.awal.apersepsi, s: cellStyle }]);
+    sheetData.push([{ t: "s", v: "Motivasi", s: boldStyle }, { t: "s", v: pengalamanBelajar.awal.motivasi, s: cellStyle }]);
+    sheetData.push([{}]);
+
+    sheetData.push([{ t: "s", v: "Fase Inti - Memahami", s: boldStyle }]);
+    sheetData.push([{ t: "s", v: "Prinsip", s: boldStyle }, { t: "s", v: pengalamanBelajar.inti.memahami.prinsip, s: cellStyle }]);
+    sheetData.push([{ t: "s", v: "Langkah Kegiatan", s: boldStyle }]);
+    ((pengalamanBelajar.inti.memahami as any).kegitan || []).forEach((activity: string) => {
+      sheetData.push([`• ${activity}`].map(v => ({ t: "s", v, s: cellStyle })));
+    });
+    sheetData.push([{}]);
+
+    sheetData.push([{ t: "s", v: "Fase Inti - Mengaplikasi", s: boldStyle }]);
+    sheetData.push([{ t: "s", v: "Prinsip", s: boldStyle }, { t: "s", v: pengalamanBelajar.inti.mengaplikasi.prinsip, s: cellStyle }]);
+    sheetData.push([{ t: "s", v: "Langkah Kegiatan", s: boldStyle }]);
+    ((pengalamanBelajar.inti.mengaplikasi as any).kegitan || []).forEach((activity: string) => {
+      sheetData.push([`• ${activity}`].map(v => ({ t: "s", v, s: cellStyle })));
+    });
+    sheetData.push([{}]);
+
+    sheetData.push([{ t: "s", v: "Fase Inti - Merefleksi", s: boldStyle }]);
+    sheetData.push([{ t: "s", v: "Prinsip", s: boldStyle }, { t: "s", v: pengalamanBelajar.inti.merefleksi.prinsip, s: cellStyle }]);
+    sheetData.push([{ t: "s", v: "Langkah Kegiatan", s: boldStyle }]);
+    ((pengalamanBelajar.inti.merefleksi as any).kegitan || []).forEach((activity: string) => {
+      sheetData.push([`• ${activity}`].map(v => ({ t: "s", v, s: cellStyle })));
+    });
+    sheetData.push([{}]);
+
+    sheetData.push([{ t: "s", v: "Fase Penutup", s: boldStyle }]);
+    sheetData.push([{ t: "s", v: "Langkah Kegiatan", s: boldStyle }]);
+    ((pengalamanBelajar.penutup as any).kegitan || []).forEach((activity: string) => {
+      sheetData.push([`• ${activity}`].map(v => ({ t: "s", v, s: cellStyle })));
+    });
+    sheetData.push([{}]);
+
+    sheetData.push([{ t: "s", v: "D. ASESMEN PEMBELAJARAN", s: boldStyle }]);
+    sheetData.push([{ t: "s", v: "Asesmen Awal (Assessment as Learning)", s: boldStyle }]);
+    sheetData.push([{ t: "s", v: "Teknik", s: boldStyle }, { t: "s", v: asesmen.asesmenAwal.teknik, s: cellStyle }]);
+    sheetData.push([{ t: "s", v: "Instrumen", s: boldStyle }, { t: "s", v: asesmen.asesmenAwal.instrumen, s: cellStyle }]);
+    sheetData.push([{}]);
+    sheetData.push([{ t: "s", v: "Asesmen Formatif (Assessment for Learning)", s: boldStyle }]);
+    sheetData.push([{ t: "s", v: "Teknik", s: boldStyle }, { t: "s", v: asesmen.asesmenFormatif.teknik, s: cellStyle }]);
+    sheetData.push([{ t: "s", v: "Instrumen", s: boldStyle }, { t: "s", v: asesmen.asesmenFormatif.instrumen, s: cellStyle }]);
+    sheetData.push([{}]);
+    sheetData.push([{ t: "s", v: "Asesmen Sumatif (Assessment of Learning)", s: boldStyle }]);
+    sheetData.push([{ t: "s", v: "Teknik", s: boldStyle }, { t: "s", v: asesmen.asesmenSumatif.teknik, s: cellStyle }]);
+    sheetData.push([{ t: "s", v: "Instrumen", s: boldStyle }, { t: "s", v: asesmen.asesmenSumatif.instrumen, s: cellStyle }]);
+    sheetData.push([{}]);
+    sheetData.push([{ t: "s", v: "Pengayaan", s: boldStyle }]);
+    sheetData.push([asesmen.pengayaan].map(v => ({ t: "s", v, s: cellStyle })));
+    sheetData.push([{ t: "s", v: "Remedial", s: boldStyle }]);
+    sheetData.push([asesmen.remedial].map(v => ({ t: "s", v, s: cellStyle })));
+    sheetData.push([{}]);
+
+    if (glosarium?.terms) {
+      sheetData.push([{ t: "s", v: "E. GLOSARIUM", s: boldStyle }]);
+      glosarium.terms.forEach((term) => {
+        sheetData.push([{ t: "s", v: term.istilah, s: boldStyle }, { t: "s", v: term.definisi, s: cellStyle }]);
+      });
+      sheetData.push([{}]);
+    }
+
+    if (pertanyaanRefleksiGuru?.pertanyaan) {
+      sheetData.push([{ t: "s", v: "F. PERTANYAAN REFLEKSI GURU", s: boldStyle }]);
+      if (pertanyaanRefleksiGuru.tujuan) {
+        sheetData.push([pertanyaanRefleksiGuru.tujuan].map(v => ({ t: "s", v, s: { ...cellStyle, font: { ...cellStyle.font, italic: true } } })));
+      }
+      pertanyaanRefleksiGuru.pertanyaan.forEach((q, i) => {
+        sheetData.push([`${i + 1}. ${q.replace(/^\d+\.\s*/, "")}`].map(v => ({ t: "s", v, s: cellStyle })));
+      });
+      sheetData.push([{}]);
+    }
+
+    if (lembarKerjaPesertaDidik?.namaLembarKerja) {
+      sheetData.push([{ t: "s", v: "G. LEMBAR KERJA PESERTA DIDIK", s: boldStyle }]);
+      sheetData.push([{ t: "s", v: "Nama Lembar Kerja", s: boldStyle }, { t: "s", v: lembarKerjaPesertaDidik.namaLembarKerja, s: cellStyle }]);
+      if (lembarKerjaPesertaDidik.instruksi) {
+        sheetData.push([{ t: "s", v: "Instruksi", s: boldStyle }, { t: "s", v: lembarKerjaPesertaDidik.instruksi, s: cellStyle }]);
+      }
+      if (lembarKerjaPesertaDidik.tugas) {
+        sheetData.push([{ t: "s", v: "Tugas", s: boldStyle }]);
+        lembarKerjaPesertaDidik.tugas.forEach((tugas) => {
+          sheetData.push([`${tugas.nomor}. ${tugas.pertanyaan}`].map(v => ({ t: "s", v, s: cellStyle })));
+          if (tugas.ruangJawaban) {
+            sheetData.push([`   Jawaban: ${tugas.ruangJawaban}`].map(v => ({ t: "s", v, s: cellStyle })));
+          }
+        });
+      }
+    }
+
+    const ws = XLSX.utils.aoa_to_sheet(sheetData);
+    ws["!cols"] = [{ wch: 30 }, { wch: 80 }];
+    XLSX.utils.book_append_sheet(wb, ws, "RPP");
+
+    const wbOut = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+    const blob = new Blob([wbOut], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `RPP_${rppInput.mataPelajaran}_${rppInput.fase}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   return (
-    <button
-      onClick={handleExport}
-      disabled={isExporting}
-      className="flex items-center gap-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg font-medium transition-colors cursor-pointer"
-      type="button"
-    >
-      {isExporting ? <Loader2 className="animate-spin" size={18} /> : <FileDown size={18} />}
-      {isExporting ? "Mengekspor..." : "Export Word"}
-    </button>
+    <div className="flex gap-2">
+      <button
+        onClick={() => handleExport("docx")}
+        disabled={isExporting}
+        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg font-medium transition-colors cursor-pointer"
+        type="button"
+      >
+        {isExporting && exportType === "docx" ? <Loader2 className="animate-spin" size={18} /> : <FileDown size={18} />}
+        Word
+      </button>
+      <button
+        onClick={() => handleExport("xlsx")}
+        disabled={isExporting}
+        className="flex items-center gap-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg font-medium transition-colors cursor-pointer"
+        type="button"
+      >
+        {isExporting && exportType === "xlsx" ? <Loader2 className="animate-spin" size={18} /> : <FileText size={18} />}
+        Excel
+      </button>
+    </div>
   );
 }
 
