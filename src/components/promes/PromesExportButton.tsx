@@ -2,11 +2,7 @@
 
 import { useState } from "react";
 import { PromesOutput } from "@/types/promes";
-import {
-  Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType,
-  Table, TableRow, TableCell, WidthType, BorderStyle, ShadingType,
-  PageOrientation, TableLayoutType, VerticalAlign
-} from "docx";
+import * as XLSX from "xlsx";
 import { FileDown, FileText, Loader2 } from "lucide-react";
 
 interface PromesExportButtonProps {
@@ -15,14 +11,14 @@ interface PromesExportButtonProps {
 
 export default function PromesExportButton({ output }: PromesExportButtonProps) {
   const [isExporting, setIsExporting] = useState(false);
-  const [exportType, setExportType] = useState<"docx" | "pdf" | null>(null);
+  const [exportType, setExportType] = useState<"xlsx" | "pdf" | null>(null);
 
-  const handleExport = async (type: "docx" | "pdf") => {
+  const handleExport = async (type: "xlsx" | "pdf") => {
     setIsExporting(true);
     setExportType(type);
     try {
-      if (type === "docx") {
-        await exportDocx();
+      if (type === "xlsx") {
+        await exportExcel();
       } else {
         await exportPdf();
       }
@@ -44,230 +40,125 @@ export default function PromesExportButton({ output }: PromesExportButtonProps) 
     });
   });
 
-  const headerWeeks: string[] = [];
-  allBulan.forEach((bulan) => {
-    for (let w = 1; w <= maxMingguPerBulan[bulan]; w++) {
-      headerWeeks.push(`M${w}`);
-    }
-  });
+  const exportExcel = async () => {
+    const wb = XLSX.utils.book_new();
 
-  const defaultBorder = {
-    style: BorderStyle.SINGLE,
-    size: 4,
-    color: "000000",
-  };
+    const cellStyle = {
+      font: { name: "Times New Roman", size: 10 },
+      alignment: { vertical: "center" as const },
+      border: {
+        top: { style: "thin", color: { rgb: "000000" } },
+        bottom: { style: "thin", color: { rgb: "000000" } },
+        left: { style: "thin", color: { rgb: "000000" } },
+        right: { style: "thin", color: { rgb: "000000" } },
+      },
+    };
 
-  const cellBorders = {
-    top: defaultBorder,
-    bottom: defaultBorder,
-    left: defaultBorder,
-    right: defaultBorder,
-  };
+    const headerStyle = {
+      ...cellStyle,
+      font: { bold: true, name: "Times New Roman", size: 10 },
+      alignment: { horizontal: "center" as const, vertical: "center" as const },
+      fill: { fgColor: { rgb: "D9D9D9" } },
+    };
 
-  const createHeaderCell = (text: string, widthDxa?: number) =>
-    new TableCell({
-      children: [
-        new Paragraph({
-          children: [new TextRun({ text, bold: true, font: "Times New Roman", size: 18 })],
-          alignment: AlignmentType.CENTER,
-          spacing: { before: 0, after: 0 },
-        }),
-      ],
-      shading: { fill: "D9D9D9", type: ShadingType.CLEAR },
-      borders: cellBorders,
-      verticalAlign: VerticalAlign.CENTER,
-      width: widthDxa ? { size: widthDxa, type: WidthType.DXA } : undefined,
-    });
+    const centerStyle = {
+      ...cellStyle,
+      alignment: { horizontal: "center" as const, vertical: "center" as const },
+    };
 
-  const createDataCell = (text: string, align?: typeof AlignmentType[keyof typeof AlignmentType]) =>
-    new TableCell({
-      children: [
-        new Paragraph({
-          children: [new TextRun({ text, font: "Times New Roman", size: 20 })],
-          alignment: align || AlignmentType.LEFT,
-          spacing: { before: 0, after: 0 },
-        }),
-      ],
-      borders: cellBorders,
-      verticalAlign: VerticalAlign.CENTER,
-    });
+    const wsIdentitas = XLSX.utils.aoa_to_sheet([
+      [{ t: "s", v: "PROGRAM SEMESTER (PROMES)", s: { font: { bold: true, name: "Times New Roman", size: 16 }, alignment: { horizontal: "center" } } }],
+      [output.identitas.satuanPendidikan],
+      [],
+      [{ t: "s", v: "IDENTITAS", s: { font: { bold: true, name: "Times New Roman", size: 12 } } }],
+      [{ t: "s", v: "Mata Pelajaran", s: { font: { bold: true, name: "Times New Roman", size: 11 } } }, { t: "s", v: output.identitas.mataPelajaran, s: cellStyle }],
+      [{ t: "s", v: "Fase/Kelas", s: { font: { bold: true, name: "Times New Roman", size: 11 } } }, { t: "s", v: output.identitas.faseKelas, s: cellStyle }],
+      [{ t: "s", v: "Tahun Pelajaran", s: { font: { bold: true, name: "Times New Roman", size: 11 } } }, { t: "s", v: output.identitas.tahunPelajaran, s: cellStyle }],
+      [{ t: "s", v: "Semester", s: { font: { bold: true, name: "Times New Roman", size: 11 } } }, { t: "s", v: output.identitas.semester, s: cellStyle }],
+      [{ t: "s", v: "Total JP", s: { font: { bold: true, name: "Times New Roman", size: 11 } } }, { t: "s", v: `${output.totalJp} JP`, s: cellStyle }],
+    ]);
+    wsIdentitas["!cols"] = [{ wch: 20 }, { wch: 40 }];
+    XLSX.utils.book_append_sheet(wb, wsIdentitas, "Identitas");
 
-  const exportDocx = async () => {
-    const children: (Paragraph | Table)[] = [];
-
-    children.push(
-      new Paragraph({
-        children: [new TextRun({ text: "PROGRAM SEMESTER (PROMES)", bold: true, font: "Times New Roman", size: 28 })],
-        alignment: AlignmentType.CENTER,
-        spacing: { after: 200 },
-      })
-    );
-
-    children.push(
-      new Paragraph({
-        children: [new TextRun({ text: output.identitas.satuanPendidikan, font: "Times New Roman", size: 24 })],
-        alignment: AlignmentType.CENTER,
-        spacing: { after: 200 },
-      })
-    );
-
-    children.push(
-      new Paragraph({
-        children: [new TextRun({ text: "IDENTITAS", bold: true, font: "Times New Roman", size: 22 })],
-        spacing: { before: 200, after: 100 },
-      })
-    );
-
-    const identitasItems = [
-      { label: "Mata Pelajaran", value: output.identitas.mataPelajaran },
-      { label: "Fase/Kelas", value: output.identitas.faseKelas },
-      { label: "Tahun Pelajaran", value: output.identitas.tahunPelajaran },
-      { label: "Semester", value: output.identitas.semester },
-      { label: "Total JP", value: `${output.totalJp} JP` },
+    const distribusiHeader: any[] = [
+      { t: "s", v: "No", s: headerStyle },
+      { t: "s", v: "Bab", s: headerStyle },
+      { t: "s", v: "Tujuan Pembelajaran", s: headerStyle },
+      { t: "s", v: "JP", s: headerStyle },
     ];
 
-    identitasItems.forEach((item) => {
-      children.push(
-        new Paragraph({
-          children: [
-            new TextRun({ text: `${item.label}: `, bold: true, font: "Times New Roman", size: 22 }),
-            new TextRun({ text: item.value, font: "Times New Roman", size: 22 }),
-          ],
-          spacing: { after: 60 },
-        })
-      );
+    allBulan.forEach((bulan) => {
+      for (let w = 1; w <= maxMingguPerBulan[bulan]; w++) {
+        distribusiHeader.push({ t: "s", v: `${bulan}\nM${w}`, s: headerStyle });
+      }
     });
 
-    children.push(
-      new Paragraph({
-        children: [new TextRun({ text: "DISTRIBUSI PEMBELAJARAN", bold: true, font: "Times New Roman", size: 22 })],
-        spacing: { before: 300, after: 150 },
-      })
-    );
+    distribusiHeader.push({ t: "s", v: "Aktivitas Utama", s: headerStyle });
 
-    const headerRow = new TableRow({
-      children: [
-        createHeaderCell("No", 300),
-        createHeaderCell("Bab", 800),
-        createHeaderCell("Tujuan Pembelajaran", 3000),
-        createHeaderCell("JP", 350),
-        ...allBulan.flatMap((bulan) =>
-          Array.from({ length: maxMingguPerBulan[bulan] }, (_, i) => i + 1).map((w) =>
-            new TableCell({
-              children: [
-                new Paragraph({
-                  children: [new TextRun({ text: `${bulan}\nM${w}`, bold: true, font: "Times New Roman", size: 16 })],
-                  alignment: AlignmentType.CENTER,
-                  spacing: { before: 0, after: 0 },
-                }),
-              ],
-              shading: { fill: "D9D9D9", type: ShadingType.CLEAR },
-              borders: cellBorders,
-              verticalAlign: VerticalAlign.CENTER,
-              width: { size: 400, type: WidthType.DXA },
-            })
-          )
-        ),
-        createHeaderCell("Aktivitas Utama", 2000),
-      ],
-      tableHeader: true,
-    });
-
-    const tableRows = [headerRow];
+    const distribusiRows: any[][] = [distribusiHeader];
 
     for (const row of output.tabelPromes) {
-      const cells = [
-        createDataCell(String(row.no), AlignmentType.CENTER),
-        createDataCell(row.bab),
-        createDataCell(row.tujuanPembelajaran),
-        createDataCell(String(row.alokasiJp), AlignmentType.CENTER),
-        ...allBulan.flatMap((bulan) => {
-          const weekKeys = Object.keys(row.distribusi[bulan] || {}).sort();
-          return weekKeys.map((wk) => {
-            const val = row.distribusi[bulan][wk] || 0;
-            return createDataCell(String(val), AlignmentType.CENTER);
-          });
-        }),
-        createDataCell(row.aktivitasUtama),
+      const dataRow: any[] = [
+        { t: "n", v: row.no, s: centerStyle },
+        { t: "s", v: row.bab, s: cellStyle },
+        { t: "s", v: row.tujuanPembelajaran, s: cellStyle },
+        { t: "n", v: row.alokasiJp, s: centerStyle },
       ];
 
-      tableRows.push(new TableRow({ children: cells }));
+      allBulan.forEach((bulan) => {
+        const weekKeys = Object.keys(row.distribusi[bulan] || {}).sort();
+        weekKeys.forEach((wk) => {
+          const val = row.distribusi[bulan][wk] || 0;
+          dataRow.push({ t: "n", v: val, s: centerStyle });
+        });
+      });
+
+      dataRow.push({ t: "s", v: row.aktivitasUtama, s: cellStyle });
+      distribusiRows.push(dataRow);
     }
 
-    children.push(
-      new Table({
-        rows: tableRows,
-        width: { size: 100, type: WidthType.PERCENTAGE },
-      })
-    );
+    const wsDistribusi = XLSX.utils.aoa_to_sheet(distribusiRows);
 
-    children.push(new Paragraph({ text: "", spacing: { after: 200 } }));
+    const colWidths: { wch: number }[] = [
+      { wch: 5 },
+      { wch: 12 },
+      { wch: 40 },
+      { wch: 6 },
+    ];
 
-    children.push(
-      new Paragraph({
-        children: [new TextRun({ text: `Total JP: ${output.totalJp} JP`, bold: true, font: "Times New Roman", size: 22 })],
-      })
-    );
-
-    if (output.validasi) {
-      children.push(
-        new Paragraph({
-          children: [
-            new TextRun({
-              text: `Validasi: Total JP Promes (${output.validasi.totalJpPromes}) ${output.validasi.sesuai ? "=" : "≠"} Total JP Prota (${output.validasi.totalJpProta})`,
-              italics: true,
-              font: "Times New Roman",
-              size: 20,
-            }),
-          ],
-        })
-      );
-    }
-
-    children.push(new Paragraph({ text: "", spacing: { after: 200 } }));
-    children.push(
-      new Paragraph({
-        children: [
-          new TextRun({
-            text: "Keterangan: M1 = Minggu 1, M2 = Minggu 2, dst. Angka 0 menandakan minggu tidak efektif (libur, STS, atau SAS).",
-            italics: true,
-            font: "Times New Roman",
-            size: 18,
-          }),
-        ],
-      })
-    );
-
-    const doc = new Document({
-      sections: [
-        {
-          properties: {
-            page: {
-              size: {
-                width: 16838,
-                height: 11906,
-                orientation: PageOrientation.LANDSCAPE,
-              },
-              margin: {
-                top: 1000,
-                right: 1000,
-                bottom: 1000,
-                left: 1000,
-                header: 720,
-                footer: 720,
-              },
-            },
-          },
-          children,
-        },
-      ],
+    allBulan.forEach((bulan) => {
+      for (let w = 1; w <= maxMingguPerBulan[bulan]; w++) {
+        colWidths.push({ wch: 8 });
+      }
     });
 
-    const blob = await Packer.toBlob(doc);
+    colWidths.push({ wch: 30 });
+
+    wsDistribusi["!cols"] = colWidths;
+    wsDistribusi["!rows"] = [{ hpt: 30 }, ...distribusiRows.slice(1).map(() => ({ hpt: 40 }))];
+
+    XLSX.utils.book_append_sheet(wb, wsDistribusi, "Distribusi Pembelajaran");
+
+    const footerRows: any[] = [
+      [{ t: "s", v: `Total JP: ${output.totalJp} JP`, s: { font: { bold: true, name: "Times New Roman", size: 11 } } }],
+    ];
+
+    if (output.validasi) {
+      footerRows.push([{ t: "s", v: `Validasi: Total JP Promes (${output.validasi.totalJpPromes}) ${output.validasi.sesuai ? "=" : "≠"} Total JP Prota (${output.validasi.totalJpProta})`, s: { font: { italic: true, name: "Times New Roman", size: 10 } } }]);
+    }
+
+    footerRows.push([{ t: "s", v: "Keterangan: M1 = Minggu 1, M2 = Minggu 2, dst. Angka 0 menandakan minggu tidak efektif (libur, STS, atau SAS).", s: { font: { italic: true, name: "Times New Roman", size: 9 } } }]);
+
+    const wsFooter = XLSX.utils.aoa_to_sheet(footerRows);
+    wsFooter["!cols"] = [{ wch: 80 }];
+    XLSX.utils.book_append_sheet(wb, wsFooter, "Keterangan");
+
+    const wbOut = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+    const blob = new Blob([wbOut], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `Promes_${output.identitas.mataPelajaran.replace(/\s+/g, "_")}_Semester_${output.identitas.semester}.docx`;
+    a.download = `Promes_${output.identitas.mataPelajaran.replace(/\s+/g, "_")}_Semester_${output.identitas.semester}.xlsx`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -321,11 +212,6 @@ export default function PromesExportButton({ output }: PromesExportButtonProps) 
       x += w;
     };
 
-    const drawRowBg = (w: number, h: number) => {
-      doc.setFillColor(240, 240, 240);
-      doc.rect(x, y, w, h, "F");
-    };
-
     writeCell("No", colWidths.no, "center");
     writeCell("Bab", colWidths.bab);
     writeCell("TP", colWidths.tp);
@@ -345,7 +231,6 @@ export default function PromesExportButton({ output }: PromesExportButtonProps) 
       }
     });
 
-    const tpColX = x;
     const aktivitasW = 35;
     writeCell("Aktivitas Utama", aktivitasW);
 
@@ -438,12 +323,12 @@ export default function PromesExportButton({ output }: PromesExportButtonProps) 
   return (
     <div className="flex gap-2">
       <button
-        onClick={() => handleExport("docx")}
+        onClick={() => handleExport("xlsx")}
         disabled={isExporting}
         className="flex items-center gap-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg font-medium transition-colors"
       >
-        {isExporting && exportType === "docx" ? <Loader2 className="animate-spin" size={18} /> : <FileDown size={18} />}
-        Word
+        {isExporting && exportType === "xlsx" ? <Loader2 className="animate-spin" size={18} /> : <FileDown size={18} />}
+        Excel
       </button>
       <button
         onClick={() => handleExport("pdf")}
