@@ -66,19 +66,45 @@ export default function PromesExportButton({ output }: PromesExportButtonProps) 
       alignment: { horizontal: "center" as const, vertical: "center" as const },
     };
 
-    const wsIdentitas = XLSX.utils.aoa_to_sheet([
-      [{ t: "s", v: "PROGRAM SEMESTER (PROMES)", s: { font: { bold: true, name: "Times New Roman", size: 16 }, alignment: { horizontal: "center" } } }],
-      [output.identitas.satuanPendidikan],
-      [],
-      [{ t: "s", v: "IDENTITAS", s: { font: { bold: true, name: "Times New Roman", size: 12 } } }],
-      [{ t: "s", v: "Mata Pelajaran", s: { font: { bold: true, name: "Times New Roman", size: 11 } } }, { t: "s", v: output.identitas.mataPelajaran, s: cellStyle }],
-      [{ t: "s", v: "Fase/Kelas", s: { font: { bold: true, name: "Times New Roman", size: 11 } } }, { t: "s", v: output.identitas.faseKelas, s: cellStyle }],
-      [{ t: "s", v: "Tahun Pelajaran", s: { font: { bold: true, name: "Times New Roman", size: 11 } } }, { t: "s", v: output.identitas.tahunPelajaran, s: cellStyle }],
-      [{ t: "s", v: "Semester", s: { font: { bold: true, name: "Times New Roman", size: 11 } } }, { t: "s", v: output.identitas.semester, s: cellStyle }],
-      [{ t: "s", v: "Total JP", s: { font: { bold: true, name: "Times New Roman", size: 11 } } }, { t: "s", v: `${output.totalJp} JP`, s: cellStyle }],
+    const titleStyle = {
+      font: { bold: true, name: "Times New Roman", size: 14 },
+      alignment: { horizontal: "center" as const },
+    };
+
+    const boldStyle = {
+      font: { bold: true, name: "Times New Roman", size: 11 },
+    };
+
+    const sheetData: any[] = [];
+
+    sheetData.push([{ t: "s", v: "PROGRAM SEMESTER (PROMES)", s: titleStyle }]);
+    sheetData.push([{ t: "s", v: output.identitas.satuanPendidikan, s: { font: { name: "Times New Roman", size: 12 }, alignment: { horizontal: "center" as const } } }]);
+    sheetData.push([{}]);
+
+    sheetData.push([{ t: "s", v: "IDENTITAS", s: boldStyle }]);
+    sheetData.push([
+      { t: "s", v: "Mata Pelajaran", s: boldStyle },
+      { t: "s", v: output.identitas.mataPelajaran, s: cellStyle },
     ]);
-    wsIdentitas["!cols"] = [{ wch: 20 }, { wch: 40 }];
-    XLSX.utils.book_append_sheet(wb, wsIdentitas, "Identitas");
+    sheetData.push([
+      { t: "s", v: "Fase/Kelas", s: boldStyle },
+      { t: "s", v: output.identitas.faseKelas, s: cellStyle },
+    ]);
+    sheetData.push([
+      { t: "s", v: "Tahun Pelajaran", s: boldStyle },
+      { t: "s", v: output.identitas.tahunPelajaran, s: cellStyle },
+    ]);
+    sheetData.push([
+      { t: "s", v: "Semester", s: boldStyle },
+      { t: "s", v: output.identitas.semester, s: cellStyle },
+    ]);
+    sheetData.push([
+      { t: "s", v: "Total JP", s: boldStyle },
+      { t: "s", v: `${output.totalJp} JP`, s: cellStyle },
+    ]);
+    sheetData.push([{}]);
+
+    sheetData.push([{ t: "s", v: "DISTRIBUSI PEMBELAJARAN", s: boldStyle }]);
 
     const distribusiHeader: any[] = [
       { t: "s", v: "No", s: headerStyle },
@@ -95,7 +121,7 @@ export default function PromesExportButton({ output }: PromesExportButtonProps) 
 
     distribusiHeader.push({ t: "s", v: "Aktivitas Utama", s: headerStyle });
 
-    const distribusiRows: any[][] = [distribusiHeader];
+    sheetData.push(distribusiHeader);
 
     for (const row of output.tabelPromes) {
       const dataRow: any[] = [
@@ -114,10 +140,19 @@ export default function PromesExportButton({ output }: PromesExportButtonProps) 
       });
 
       dataRow.push({ t: "s", v: row.aktivitasUtama, s: cellStyle });
-      distribusiRows.push(dataRow);
+      sheetData.push(dataRow);
     }
 
-    const wsDistribusi = XLSX.utils.aoa_to_sheet(distribusiRows);
+    sheetData.push([{}]);
+    sheetData.push([{ t: "s", v: `Total JP: ${output.totalJp} JP`, s: boldStyle }]);
+
+    if (output.validasi) {
+      sheetData.push([{ t: "s", v: `Validasi: Total JP Promes (${output.validasi.totalJpPromes}) ${output.validasi.sesuai ? "=" : "≠"} Total JP Prota (${output.validasi.totalJpProta})`, s: { font: { italic: true, name: "Times New Roman", size: 10 } } }]);
+    }
+
+    sheetData.push([{ t: "s", v: "Keterangan: M1 = Minggu 1, M2 = Minggu 2, dst. Angka 0 menandakan minggu tidak efektif (libur, STS, atau SAS).", s: { font: { italic: true, name: "Times New Roman", size: 9 } } }]);
+
+    const ws = XLSX.utils.aoa_to_sheet(sheetData);
 
     const colWidths: { wch: number }[] = [
       { wch: 5 },
@@ -134,24 +169,23 @@ export default function PromesExportButton({ output }: PromesExportButtonProps) 
 
     colWidths.push({ wch: 30 });
 
-    wsDistribusi["!cols"] = colWidths;
-    wsDistribusi["!rows"] = [{ hpt: 30 }, ...distribusiRows.slice(1).map(() => ({ hpt: 40 }))];
+    ws["!cols"] = colWidths;
 
-    XLSX.utils.book_append_sheet(wb, wsDistribusi, "Distribusi Pembelajaran");
+    const headerRowIndices: number[] = [];
+    let rowIdx = 0;
+    sheetData.forEach((row, i) => {
+      if (row.length > 0 && row[0].s?.fill?.fgColor?.rgb === "D9D9D9") {
+        headerRowIndices.push(i);
+      }
+    });
+    ws["!rows"] = sheetData.map((row, i) => {
+      if (headerRowIndices.includes(i)) {
+        return { hpt: 30 };
+      }
+      return { hpt: 25 };
+    });
 
-    const footerRows: any[] = [
-      [{ t: "s", v: `Total JP: ${output.totalJp} JP`, s: { font: { bold: true, name: "Times New Roman", size: 11 } } }],
-    ];
-
-    if (output.validasi) {
-      footerRows.push([{ t: "s", v: `Validasi: Total JP Promes (${output.validasi.totalJpPromes}) ${output.validasi.sesuai ? "=" : "≠"} Total JP Prota (${output.validasi.totalJpProta})`, s: { font: { italic: true, name: "Times New Roman", size: 10 } } }]);
-    }
-
-    footerRows.push([{ t: "s", v: "Keterangan: M1 = Minggu 1, M2 = Minggu 2, dst. Angka 0 menandakan minggu tidak efektif (libur, STS, atau SAS).", s: { font: { italic: true, name: "Times New Roman", size: 9 } } }]);
-
-    const wsFooter = XLSX.utils.aoa_to_sheet(footerRows);
-    wsFooter["!cols"] = [{ wch: 80 }];
-    XLSX.utils.book_append_sheet(wb, wsFooter, "Keterangan");
+    XLSX.utils.book_append_sheet(wb, ws, "Promes");
 
     const wbOut = XLSX.write(wb, { bookType: "xlsx", type: "array" });
     const blob = new Blob([wbOut], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
