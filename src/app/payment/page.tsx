@@ -3,10 +3,8 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Loader2, Crown } from "lucide-react";
-import { getClientKey } from "@/lib/midtrans";
-
-const MONTHLY_PRICE = 30000;
-const YEARLY_PRICE = 330000;
+import { getClientKey, getSnapUrl } from "@/lib/midtrans-client";
+import { MONTHLY_PRICE, YEARLY_PRICE } from "@/lib/pricing";
 
 interface UserData {
   id: string;
@@ -93,7 +91,7 @@ export default function PaymentPage() {
     if (!clientKey) return;
 
     const script = document.createElement("script");
-    script.src = "https://app.sandbox.midtrans.com/snap/snap.js";
+    script.src = getSnapUrl();
     script.setAttribute("data-client-key", clientKey);
     document.body.appendChild(script);
 

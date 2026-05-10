@@ -2,10 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prismaClient } from "@/lib/prisma";
 import { createPaymentLink } from "@/lib/midtrans";
 import { verifyToken } from "@/lib/jwt";
+import { PRICING } from "@/lib/pricing";
 import crypto from "crypto";
-
-const MONTHLY_PRICE = 30000;
-const YEARLY_PRICE = 330000;
 
 export async function POST(req: NextRequest) {
   try {
@@ -21,7 +19,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { plan } = body;
+    const plan: string = body.plan;
 
     if (!plan || !["monthly", "yearly"].includes(plan)) {
       return NextResponse.json({ error: "Pilih paket bulanan atau tahunan" }, { status: 400 });
@@ -42,7 +40,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const amount = plan === "monthly" ? MONTHLY_PRICE : YEARLY_PRICE;
+    const amount = PRICING[plan as keyof typeof PRICING].amount;
     const orderId = `RPP-${user.id}-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`;
 
     const midtransResponse = await createPaymentLink({

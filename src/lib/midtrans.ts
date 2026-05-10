@@ -1,8 +1,6 @@
 import crypto from "crypto";
 
 const MIDTRANS_SERVER_KEY = process.env.MIDTRANS_SERVER_KEY || "";
-const MIDTRANS_CLIENT_KEY = process.env.MIDTRANS_CLIENT_KEY || "";
-const MIDTRANS_MERCHANT_ID = process.env.MIDTRANS_MERCHANT_ID || "";
 const MIDTRANS_IS_PRODUCTION = process.env.MIDTRANS_IS_PRODUCTION === "true";
 const MIDTRANS_BASE_URL = MIDTRANS_IS_PRODUCTION 
   ? "https://app.midtrans.com" 
@@ -92,6 +90,3 @@ export function isPaymentSuccessful(status: string): boolean {
   return status === "capture" || status === "settlement";
 }
 
-export function getClientKey(): string {
-  return MIDTRANS_CLIENT_KEY;
-}

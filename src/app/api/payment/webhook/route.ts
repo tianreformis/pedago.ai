@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prismaClient } from "@/lib/prisma";
 import { verifyPaymentNotification, isPaymentSuccessful } from "@/lib/midtrans";
+import { MONTHLY_PRICE } from "@/lib/pricing";
 
 export async function POST(req: NextRequest) {
   try {
@@ -37,7 +38,7 @@ export async function POST(req: NextRequest) {
       }
 
       const amount = parseInt(gross_amount, 10);
-      const isYearly = amount >= 100000;
+      const isYearly = amount > MONTHLY_PRICE;
       const expiryDate = new Date();
       if (isYearly) {
         expiryDate.setFullYear(expiryDate.getFullYear() + 1);
