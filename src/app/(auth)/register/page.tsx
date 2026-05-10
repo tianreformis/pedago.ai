@@ -3,42 +3,88 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { toast } from "sonner";
 
 export default function RegisterPage() {
   const router = useRouter();
   const [form, setForm] = useState({
     email: "",
     password: "",
+    confirmPassword: "",
     name: "",
     school: "",
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+
+  const validate = () => {
+    const errs: Record<string, string> = {};
+
+    if (!form.name.trim()) {
+      errs.name = "Nama harus diisi";
+    }
+
+    if (!form.email.trim()) {
+      errs.email = "Email harus diisi";
+    }
+
+    if (!form.password) {
+      errs.password = "Password harus diisi";
+    } else if (form.password.length < 6) {
+      errs.password = "Minimal 6 karakter";
+    } else if (!/\d/.test(form.password)) {
+      errs.password = "Minimal 1 angka";
+    }
+
+    if (!form.confirmPassword) {
+      errs.confirmPassword = "Input ulang password";
+    } else if (form.password !== form.confirmPassword) {
+      errs.confirmPassword = "Password tidak cocok";
+    }
+
+    return errs;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const errs = validate();
+    setErrors(errs);
+    if (Object.keys(errs).length > 0) return;
+
     setIsLoading(true);
-    setError("");
 
     try {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ name: form.name, email: form.email, password: form.password, school: form.school }),
       });
       const data = await res.json();
       
       if (data.success) {
+        toast.success("Akun berhasil dibuat!");
+        localStorage.setItem("token", data.data.token);
         localStorage.setItem("user", JSON.stringify(data.data.user));
         window.dispatchEvent(new Event("user-logged-in"));
         router.push("/dashboard");
       } else {
-        setError(data.error || "Registrasi gagal");
+        toast.error(data.error || "Registrasi gagal");
       }
     } catch {
-      setError("Terjadi kesalahan");
+      toast.error("Terjadi kesalahan pada server");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const clearError = (field: string) => {
+    if (errors[field]) {
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next[field];
+        return next;
+      });
     }
   };
 
@@ -52,22 +98,19 @@ export default function RegisterPage() {
 
         <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
           <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <div className="p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-400 text-sm">
-                {error}
-              </div>
-            )}
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nama</label>
               <input
                 type="text"
                 value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                required
+                onChange={(e) => { setForm({ ...form, name: e.target.value }); clearError("name"); }}
                 className="w-full border dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Nama lengkap"
               />
+              {errors.name && (
+                <div className="mt-1 px-3 py-1 bg-red-600 text-white text-xs rounded-lg inline-block">{errors.name}</div>
+              )}
             </div>
 
             <div>
@@ -75,11 +118,13 @@ export default function RegisterPage() {
               <input
                 type="email"
                 value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-                required
+                onChange={(e) => { setForm({ ...form, email: e.target.value }); clearError("email"); }}
                 className="w-full border dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="email@example.com"
               />
+              {errors.email && (
+                <div className="mt-1 px-3 py-1 bg-red-600 text-white text-xs rounded-lg inline-block">{errors.email}</div>
+              )}
             </div>
 
             <div>
@@ -87,11 +132,27 @@ export default function RegisterPage() {
               <input
                 type="password"
                 value={form.password}
-                onChange={(e) => setForm({ ...form, password: e.target.value })}
-                required
+                onChange={(e) => { setForm({ ...form, password: e.target.value }); clearError("password"); }}
                 className="w-full border dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="••••••••"
               />
+              {errors.password && (
+                <div className="mt-1 px-3 py-1 bg-red-600 text-white text-xs rounded-lg inline-block">{errors.password}</div>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Input Ulang Password</label>
+              <input
+                type="password"
+                value={form.confirmPassword}
+                onChange={(e) => { setForm({ ...form, confirmPassword: e.target.value }); clearError("confirmPassword"); }}
+                className="w-full border dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="••••••••"
+              />
+              {errors.confirmPassword && (
+                <div className="mt-1 px-3 py-1 bg-red-600 text-white text-xs rounded-lg inline-block">{errors.confirmPassword}</div>
+              )}
             </div>
 
             <div>
@@ -108,7 +169,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white font-semibold py-3 rounded-xl transition-colors"
+              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white font-semibold py-3 rounded-lg transition-colors"
             >
               {isLoading ? "Mendaftarkan..." : "Daftar"}
             </button>

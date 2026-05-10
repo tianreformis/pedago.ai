@@ -23,6 +23,7 @@ interface UserData {
 
 export default function DashboardUserPage() {
   const router = useRouter();
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [users, setUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
@@ -38,7 +39,25 @@ export default function DashboardUserPage() {
       router.push("/login");
       return;
     }
-    fetchUsers(token);
+    const stored = localStorage.getItem("user");
+    if (stored) {
+      try {
+        const user = JSON.parse(stored);
+        if (user.isAdmin) {
+          setIsAdmin(true);
+          fetchUsers(token);
+        } else {
+          setIsAdmin(false);
+          setLoading(false);
+        }
+      } catch {
+        setIsAdmin(false);
+        setLoading(false);
+      }
+    } else {
+      setIsAdmin(false);
+      setLoading(false);
+    }
   }, [router]);
 
   const fetchUsers = async (token: string) => {
@@ -145,6 +164,23 @@ export default function DashboardUserPage() {
   const totalPages = Math.ceil(users.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentUsers = users.slice(startIndex, startIndex + itemsPerPage);
+
+  if (isAdmin === false) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
+          <h1 className="text-6xl font-bold text-gray-300 dark:text-gray-600 mb-4">404</h1>
+          <p className="text-xl text-gray-600 dark:text-gray-400 mb-6">Halaman yang Anda Kunjungi tidak ada...!</p>
+          <button
+            onClick={() => router.push("/")}
+            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+          >
+            Kembali ke Home
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
