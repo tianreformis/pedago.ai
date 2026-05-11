@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
     }
 
     const amount = PRICING[plan as keyof typeof PRICING].amount;
-    const orderId = `RPP-${user.id}-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`;
+    const orderId = `PED-${Date.now().toString(36)}-${crypto.randomBytes(4).toString("hex")}`;
 
     const midtransResponse = await createPaymentLink({
       orderId,
