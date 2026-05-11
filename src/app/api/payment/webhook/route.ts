@@ -36,23 +36,30 @@ export async function POST(req: NextRequest) {
 
       const amount = parseInt(gross_amount, 10);
       const isYearly = amount > MONTHLY_PRICE;
-      const expiryDate = new Date();
+
+      const now = new Date();
+      const existingExpiry = user.subscriptionExpiry;
+      const baseDate = (existingExpiry && existingExpiry > now) ? existingExpiry : now;
+      const newExpiry = new Date(baseDate);
+
       if (isYearly) {
-        expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+        newExpiry.setFullYear(newExpiry.getFullYear() + 1);
       } else {
-        expiryDate.setMonth(expiryDate.getMonth() + 1);
+        newExpiry.setMonth(newExpiry.getMonth() + 1);
       }
+
+      const finalPlan = isYearly ? "yearly" : "monthly";
 
       await prismaClient.user.update({
         where: { id: user.id },
         data: {
           subscriptionStatus: "active",
-          subscriptionPlan: isYearly ? "yearly" : "monthly",
-          subscriptionExpiry: expiryDate,
+          subscriptionPlan: finalPlan,
+          subscriptionExpiry: newExpiry,
         },
       });
 
-      console.log(`Subscription activated for user ${user.id}: ${isYearly ? "yearly" : "monthly"}`);
+      console.log(`Subscription ${existingExpiry && existingExpiry > now ? "extended" : "activated"} for user ${user.id}: ${finalPlan}, new expiry: ${newExpiry.toISOString()}`);
     }
 
     return NextResponse.json({ success: true });
