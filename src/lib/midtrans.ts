@@ -2,14 +2,7 @@ import crypto from "crypto";
 
 const MIDTRANS_SERVER_KEY = process.env.MIDTRANS_SERVER_KEY || "";
 const MIDTRANS_IS_PRODUCTION = process.env.MIDTRANS_IS_PRODUCTION === "true";
-const MIDTRANS_BASE_URL = MIDTRANS_IS_PRODUCTION 
-  ? "https://app.midtrans.com" 
-  : "https://app.sandbox.midtrans.com";
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-
-function getBasicAuth(): string {
-  return Buffer.from(MIDTRANS_SERVER_KEY + ":").toString("base64");
-}
 
 interface CreatePaymentParams {
   orderId: string;
@@ -24,22 +17,27 @@ interface PaymentResponse {
 }
 
 export async function createPaymentLink(params: CreatePaymentParams): Promise<PaymentResponse> {
-  const { orderId, amount, customerName, customerEmail } = params;
-  
-  const body = {
+  const { default: midtransClient } = await import("midtrans-client");
+
+  const snap = new midtransClient.Snap({
+    isProduction: MIDTRANS_IS_PRODUCTION,
+    serverKey: MIDTRANS_SERVER_KEY,
+  });
+
+  const parameters: Record<string, any> = {
     transaction_details: {
-      order_id: orderId,
-      gross_amount: amount,
+      order_id: params.orderId,
+      gross_amount: params.amount,
     },
     customer_details: {
-      first_name: customerName,
-      email: customerEmail,
+      first_name: params.customerName,
+      email: params.customerEmail,
     },
     item_details: [
       {
         id: "subscription",
         name: "Langganan PedagoAI - RPP Pembelajaran Mendalam",
-        price: amount,
+        price: params.amount,
         quantity: 1,
       },
     ],
@@ -55,24 +53,14 @@ export async function createPaymentLink(params: CreatePaymentParams): Promise<Pa
       unfinish: `${APP_URL}/payment/unfinish`,
       error: `${APP_URL}/payment/error`,
     },
-    notification_url: `${APP_URL}/api/payment/webhook`,
   };
 
-  const response = await fetch(`${MIDTRANS_BASE_URL}/snap/v1/transactions`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Basic ${getBasicAuth()}`,
-    },
-    body: JSON.stringify(body),
-  });
+  const transaction = await snap.createTransaction(parameters);
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Midtrans error: ${response.status} - ${errorText}`);
-  }
-
-  return response.json();
+  return {
+    token: transaction.token,
+    redirect_url: transaction.redirect_url,
+  };
 }
 
 export async function verifyPaymentNotification(
@@ -89,4 +77,3 @@ export async function verifyPaymentNotification(
 export function isPaymentSuccessful(status: string): boolean {
   return status === "capture" || status === "settlement";
 }
-

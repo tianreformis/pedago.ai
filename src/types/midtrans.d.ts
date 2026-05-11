@@ -1,18 +1,9 @@
-interface Snap {
-  pay(token: string, options: SnapOptions): void;
-}
-
-interface SnapOptions {
-  onSuccess?: () => void;
-  onPending?: () => void;
-  onError?: () => void;
-  onClose?: () => void;
-}
-
-declare global {
-  interface Window {
-    snap: Snap;
+declare module "midtrans-client" {
+  export class Snap {
+    constructor(config: { isProduction: boolean; serverKey: string });
+    createTransaction(parameters: Record<string, any>): Promise<{
+      token: string;
+      redirect_url: string;
+    }>;
   }
 }
-
-export {};
