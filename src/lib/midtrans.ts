@@ -58,7 +58,7 @@ export async function createPaymentLink(params: CreatePaymentParams): Promise<Pa
     notification_url: `${APP_URL}/api/payment/webhook`,
   };
 
-  const response = await fetch(`${MIDTRANS_BASE_URL}/v2/snap/token`, {
+  const response = await fetch(`${MIDTRANS_BASE_URL}/snap/v1/transactions`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
