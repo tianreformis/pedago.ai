@@ -12,13 +12,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing order_id" }, { status: 400 });
     }
 
-    const userIdMatch = order_id.match(/^RPP-([a-zA-Z0-9]+)-/);
-    if (!userIdMatch) {
-      return NextResponse.json({ error: "Invalid order_id format" }, { status: 400 });
-    }
-
-    const userId = userIdMatch[1];
-
     const isValid = verifyPaymentNotification(
       order_id,
       status_code?.toString() || "0",
@@ -32,8 +25,12 @@ export async function POST(req: NextRequest) {
     }
 
     if (isPaymentSuccessful(transaction_status)) {
-      const user = await prismaClient.user.findUnique({ where: { id: userId } });
+      const user = await prismaClient.user.findFirst({
+        where: { subscriptionMidtransId: order_id },
+      });
+
       if (!user) {
+        console.error("User not found for order:", order_id);
         return NextResponse.json({ error: "User not found" }, { status: 404 });
       }
 
@@ -47,7 +44,7 @@ export async function POST(req: NextRequest) {
       }
 
       await prismaClient.user.update({
-        where: { id: userId },
+        where: { id: user.id },
         data: {
           subscriptionStatus: "active",
           subscriptionPlan: isYearly ? "yearly" : "monthly",
@@ -55,7 +52,7 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      console.log(`Subscription activated for user ${userId}: ${isYearly ? "yearly" : "monthly"}`);
+      console.log(`Subscription activated for user ${user.id}: ${isYearly ? "yearly" : "monthly"}`);
     }
 
     return NextResponse.json({ success: true });

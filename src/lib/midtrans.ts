@@ -53,6 +53,7 @@ export async function createPaymentLink(params: CreatePaymentParams): Promise<Pa
       unfinish: `${APP_URL}/payment/unfinish`,
       error: `${APP_URL}/payment/error`,
     },
+    notification_url: `${APP_URL}/api/payment/webhook`,
   };
 
   const transaction = await snap.createTransaction(parameters);
