@@ -7,3 +7,16 @@ declare module "midtrans-client" {
     }>;
   }
 }
+
+interface SnapPayOptions {
+  onSuccess: () => void;
+  onPending: () => void;
+  onError: () => void;
+  onClose: () => void;
+}
+
+interface Window {
+  snap: {
+    pay: (token: string, options: SnapPayOptions) => void;
+  };
+}
