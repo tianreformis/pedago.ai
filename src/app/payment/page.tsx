@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Loader2, Crown } from "lucide-react";
+import { Check, Loader2, Crown, AlertTriangle, X, Copy, Smartphone } from "lucide-react";
 import { getClientKey, getSnapUrl } from "@/lib/midtrans-client";
 import { MONTHLY_PRICE, YEARLY_PRICE } from "@/lib/pricing";
 
@@ -76,6 +76,8 @@ export default function PaymentPage() {
   const router = useRouter();
   const [selectedPlan, setSelectedPlan] = useState<"monthly" | "yearly" | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [errorModal, setErrorModal] = useState<{ open: boolean; message: string }>({ open: false, message: "" });
+  const [copied, setCopied] = useState(false);
   const userData = useSyncExternalStore(subscribe, getSnapshot, () => null);
 
   useEffect(() => {
@@ -169,28 +171,32 @@ export default function PaymentPage() {
               window.location.href = "/payment/unfinish";
             },
             onError: () => {
-              window.location.href = "/payment/error";
+              setErrorModal({ open: true, message: "Pembayaran gagal diproses. Silakan coba lagi." });
+              setIsLoading(false);
             },
             onClose: () => {
+              setErrorModal({ open: true, message: "Pembayaran belum selesai. Jika mengalami kendala, silakan transfer langsung ke GoPay di bawah." });
               setIsLoading(false);
-              setSelectedPlan(null);
             },
           });
         } else {
-          alert(json.error || "Gagal membuat pembayaran");
+          setErrorModal({ open: true, message: json.error || "Gagal membuat pembayaran" });
           setIsLoading(false);
-          setSelectedPlan(null);
         }
       } else {
-        alert(json.error || "Gagal membuat pembayaran");
+        setErrorModal({ open: true, message: json.error || "Gagal membuat pembayaran" });
         setIsLoading(false);
-        setSelectedPlan(null);
       }
     } catch {
-      alert("Terjadi kesalahan");
+      setErrorModal({ open: true, message: "Terjadi kesalahan. Silakan coba lagi." });
       setIsLoading(false);
-      setSelectedPlan(null);
     }
+  };
+
+  const handleCopyGoPay = () => {
+    navigator.clipboard.writeText("085350346852");
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
@@ -277,6 +283,76 @@ export default function PaymentPage() {
       <p className="text-center text-gray-400 text-sm mt-8">
         Pembayaran aman via Midtrans · 7 hari uang kembali
       </p>
+
+      {errorModal.open ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setErrorModal({ open: false, message: "" })} />
+          <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-sm mx-4 p-6 animate-in zoom-in-95 duration-200">
+            <button
+              onClick={() => setErrorModal({ open: false, message: "" })}
+              className="absolute top-4 right-4 p-1 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            >
+              <X size={18} />
+            </button>
+
+            <div className="flex flex-col items-center text-center">
+              <div className="w-14 h-14 rounded-full bg-red-100 dark:bg-red-900/40 flex items-center justify-center mb-4">
+                <AlertTriangle size={28} className="text-red-600 dark:text-red-400" />
+              </div>
+
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                Pembayaran Gagal
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                {errorModal.message}
+              </p>
+
+              <div className="w-full bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4 mb-6">
+                <div className="flex items-center gap-2 mb-2">
+                  <Smartphone size={16} className="text-green-600" />
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                    Bayar via GoPay
+                  </span>
+                </div>
+                <div className="flex items-center justify-between bg-white dark:bg-gray-800 rounded-lg px-3 py-2 border border-gray-200 dark:border-gray-600">
+                  <div className="text-left">
+                    <p className="text-sm font-semibold text-gray-900 dark:text-white">085350346852</p>
+                    <p className="text-xs text-gray-500">a.n. Kristian Reformis</p>
+                  </div>
+                  <button
+                    onClick={handleCopyGoPay}
+                    className="flex items-center gap-1 text-xs font-medium text-purple-600 hover:text-purple-700 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/30 px-3 py-1.5 rounded-lg transition-colors"
+                  >
+                    <Copy size={14} />
+                    {copied ? "Tersalin!" : "Salin"}
+                  </button>
+                </div>
+                <p className="text-xs text-gray-400 mt-2 text-left">
+                  Kirim bukti transfer ke admin setelah pembayaran
+                </p>
+              </div>
+
+              <div className="flex gap-3 w-full">
+                <button
+                  onClick={() => setErrorModal({ open: false, message: "" })}
+                  className="flex-1 px-4 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                >
+                  Tutup
+                </button>
+                <button
+                  onClick={() => {
+                    setErrorModal({ open: false, message: "" });
+                    handleSubscribe(selectedPlan || "monthly");
+                  }}
+                  className="flex-1 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-medium transition-colors"
+                >
+                  Coba Lagi
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
