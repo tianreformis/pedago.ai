@@ -25,6 +25,8 @@
 *.crt
 *.key
 *.pem
+*.sql
+
 
 # debug
 npm-debug.log*

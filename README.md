@@ -67,7 +67,7 @@ Platform berbasis AI untuk membantu guru Indonesia menyusun perangkat ajar Kurik
 | Lapisan | Teknologi |
 |---------|-----------|
 | **Framework** | Next.js 16 (App Router, Turbopack) |
-| **Database** | PostgreSQL (Neon) + Prisma ORM |
+| **Database** | PostgreSQL + Prisma ORM |
 | **AI** | Mistral AI (`mistral-large-latest`) |
 | **Styling** | Tailwind CSS v4 |
 | **Auth** | JWT (jsonwebtoken) |
@@ -127,6 +127,9 @@ npx prisma db push
 # Seed curriculum data (Mata Pelajaran, Fase, CP)
 npm run seed
 
+# Seed admin user (email: admin@rpp-mendalam.id, password: adminRPP2024!)
+npx tsx prisma/seed-admin.ts
+
 # Run development server
 npm run dev
 ```
@@ -145,6 +148,61 @@ Open [http://localhost:3000](http://localhost:3000)
 | `npm run lint` | ESLint check |
 | `npm run db:push` | Update database schema |
 | `npm run seed` | Seed data kurikulum |
+| `npx tsx prisma/seed-admin.ts` | Seed admin user |
+
+---
+
+## Backup & Restore PostgreSQL
+
+```bash
+# Full backup (all databases + roles/globals) — requires superuser
+pg_dumpall -U postgres -h localhost > full-backup-$(date +%Y%m%d).sql
+sudo -u postgres pg_dumpall > full-backup-$(date +%Y%m%d).sql
+
+# Restore full backup
+psql -U postgres -h localhost -f full-backup-20250513.sql
+
+# Full backup with compression
+pg_dumpall -U postgres -h localhost | gzip > full-backup-$(date +%Y%m%d).sql.gz
+gunzip -c full-backup-20250513.sql.gz | psql -U postgres -h localhost
+
+# Database-only backup (no roles/globals, use if no superuser access)
+pg_dump -U pedago -h localhost pedagodb > backup-$(date +%Y%m%d).sql
+
+# Restore database-only backup
+psql -U pedago -h localhost -d pedagodb < backup-20250513.sql
+```
+
+---
+
+## Deployment with PM2 (Debian Server)
+
+```bash
+# Build production
+npm run build
+
+# Start with PM2
+pm2 start npm --name "nextjs" -- start
+
+# Restart
+pm2 restart nextjs
+
+# Stop
+pm2 stop nextjs
+
+# Save process list (so it restarts on server reboot)
+pm2 save
+pm2 startup
+
+# Monitor logs
+pm2 logs nextjs
+
+# Monitor resources
+pm2 monit
+
+# List all processes
+pm2 status
+```
 
 ---
 
