@@ -25,11 +25,15 @@ interface Exam {
   id: string;
   judul: string;
   mataPelajaran: string;
+  jenjang?: string | null;
+  kelas?: string | null;
   kodeUjian: string;
   tanggalMulai: string;
   tanggalSelesai: string;
+  createdAt: string;
+  _count: { questions: number; students: number };
   questions: Question[];
-  _count: { students: number };
+  user?: { id: string; name: string | null; email: string };
 }
 
 const JENIS_OPTIONS = [
@@ -62,9 +66,11 @@ export default function ExamDetailPage() {
   const [deleteQTarget, setDeleteQTarget] = useState<string | null>(null);
 
   const [showGenerateModal, setShowGenerateModal] = useState(false);
-  const [generateForm, setGenerateForm] = useState({ jumlah: "5", materi: "", jenis: "essay" });
+  const [generateForm, setGenerateForm] = useState({ jumlah: "5", materi: "", jenis: "essay", cp: "", jumlahPilihan: "4" });
   const [isGenerating, setIsGenerating] = useState(false);
   const [genError, setGenError] = useState("");
+  const [cpOptions, setCpOptions] = useState<{ id: string; nama: string; deskripsi: string }[]>([]);
+  const [showCpDropdown, setShowCpDropdown] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -330,7 +336,22 @@ export default function ExamDetailPage() {
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Daftar Soal</h2>
         <div className="flex gap-2">
           <button
-            onClick={() => { setShowGenerateModal(true); setGenError(""); setGenerateForm((p) => ({ ...p, jenis: "essay" })); }}
+            onClick={() => {
+              setShowGenerateModal(true);
+              setGenError("");
+              setGenerateForm((p) => ({ ...p, jenis: "essay" }));
+              setShowCpDropdown(false);
+              if (exam) {
+                let cpUrl = `/api/capaian-pembelajaran?mataPelajaran=${encodeURIComponent(exam.mataPelajaran)}`;
+                if (exam.jenjang && exam.kelas) {
+                  cpUrl += `&jenjang=${encodeURIComponent(exam.jenjang)}&kelas=${encodeURIComponent(exam.kelas)}`;
+                }
+                fetch(cpUrl)
+                  .then((r) => r.json())
+                  .then((d) => { if (d.success) setCpOptions(d.data); })
+                  .catch(() => {});
+              }
+            }}
             className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors"
           >
             <Sparkles size={16} />
@@ -607,10 +628,43 @@ export default function ExamDetailPage() {
                   type="number"
                   value={generateForm.jumlah}
                   onChange={(e) => setGenerateForm({ ...generateForm, jumlah: e.target.value })}
-                  min="1"
-                  max="20"
+                  min="1" max="10"
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
+              </div>
+              <div className="relative">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Capaian Pembelajaran (opsional)</label>
+                <input
+                  type="text"
+                  value={generateForm.cp}
+                  onChange={(e) => {
+                    setGenerateForm({ ...generateForm, cp: e.target.value });
+                    setShowCpDropdown(true);
+                  }}
+                  onFocus={() => setShowCpDropdown(true)}
+                  placeholder={cpOptions.length > 0 ? "Ketik atau pilih CP..." : "Tulis CP (opsional)"}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                {showCpDropdown && cpOptions.length > 0 && (
+                  <div className="absolute z-10 mt-1 w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                    {cpOptions
+                      .filter((cp) => !generateForm.cp || cp.nama.toLowerCase().includes(generateForm.cp.toLowerCase()) || cp.deskripsi.toLowerCase().includes(generateForm.cp.toLowerCase()))
+                      .map((cp) => (
+                        <button
+                          key={cp.id}
+                          type="button"
+                          className="w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 border-b border-gray-100 dark:border-gray-600 last:border-0"
+                          onClick={() => {
+                            setGenerateForm({ ...generateForm, cp: `${cp.nama} - ${cp.deskripsi}` });
+                            setShowCpDropdown(false);
+                          }}
+                        >
+                          <span className="font-medium">{cp.nama}</span>
+                          <span className="text-gray-400 dark:text-gray-500 ml-1">— {cp.deskripsi}</span>
+                        </button>
+                      ))}
+                  </div>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Materi (opsional)</label>
@@ -622,6 +676,18 @@ export default function ExamDetailPage() {
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
+              {(generateForm.jenis === "pilihan_ganda" || generateForm.jenis === "multiple_answer") && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Jumlah Pilihan Jawaban</label>
+                  <input
+                    type="number"
+                    value={generateForm.jumlahPilihan}
+                    onChange={(e) => setGenerateForm({ ...generateForm, jumlahPilihan: e.target.value })}
+                    min="3" max="10"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+              )}
               {genError && <p className="text-sm text-red-600 dark:text-red-400">{genError}</p>}
               <div className="flex gap-3 pt-2">
                 <button onClick={() => setShowGenerateModal(false)} className="flex-1 px-4 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">

@@ -92,6 +92,11 @@ export default function LoginPage() {
                 </button>
               </div>
             </div>
+            <div className="flex justify-end">
+              <Link href="/forgot-password" className="text-sm text-blue-600 hover:text-blue-700">
+                Lupa Password?
+              </Link>
+            </div>
 
             <Turnstile
               siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}

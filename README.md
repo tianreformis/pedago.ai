@@ -127,7 +127,7 @@ npx prisma db push
 # Seed curriculum data (Mata Pelajaran, Fase, CP)
 npm run seed
 
-# Seed admin user (email: admin@rpp-mendalam.id, password: adminRPP2024!)
+# Seed admin user
 npx tsx prisma/seed-admin.ts
 
 # Run development server

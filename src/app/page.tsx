@@ -78,8 +78,34 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
+      {/* Sticky Navbar */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-blue-600/70 dark:bg-blue-900/70 backdrop-blur-md">
+        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2 text-lg font-bold text-white">
+            <BookOpen size={24} />
+            <span>Pedago.ai</span>
+          </Link>
+          <div className="flex items-center gap-3">
+            {user ? (
+              <Link href="/dashboard" className="bg-white text-blue-700 hover:bg-blue-50 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                Dashboard
+              </Link>
+            ) : (
+              <>
+                <Link href="/login" className="text-white/80 hover:text-white px-3 py-2 text-sm font-medium transition-colors">
+                  Login
+                </Link>
+                <Link href="/register" className="bg-white text-blue-700 hover:bg-blue-50 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                  Daftar
+                </Link>
+              </>
+            )}
+          </div>
+        </div>
+      </nav>
+
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 dark:from-blue-900 dark:via-indigo-900 dark:to-purple-900 text-white">
+      <section className="relative overflow-hidden bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 dark:from-blue-900 dark:via-indigo-900 dark:to-purple-900 text-white pt-16">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=%2260%22 height=%2260%22 viewBox=%220 0 60 60%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cg fill=%22none%22 fill-rule=%22evenodd%22%3E%3Cg fill=%22%23ffffff%22 fill-opacity=%220.05%22%3E%3Cpath d=%22M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20"></div>
         <div className="max-w-6xl mx-auto px-4 py-20 md:py-32 relative z-10">
           <div className="text-center">
@@ -109,7 +135,7 @@ export default function Home() {
                   className="inline-flex items-center gap-2 bg-white text-blue-700 font-semibold px-8 py-4 rounded-xl text-lg hover:bg-blue-50 transition-colors shadow-lg"
                 >
                   <ArrowRight size={20} />
-                  Login Sekarang
+                  Buat RPP Sekarang
                 </Link>
               )}
               <a href="#fitur" className="inline-flex items-center gap-2 border-2 border-white/50 text-white font-semibold px-8 py-4 rounded-xl text-lg hover:bg-white/10 transition-colors">

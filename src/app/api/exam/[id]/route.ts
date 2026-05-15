@@ -60,10 +60,12 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     }
 
     const body = await req.json();
-    const { mataPelajaran, judul, tanggalMulai, tanggalSelesai } = body;
+    const { mataPelajaran, jenjang, kelas, judul, tanggalMulai, tanggalSelesai } = body;
 
     const updateData: Record<string, unknown> = {};
     if (mataPelajaran) updateData.mataPelajaran = mataPelajaran;
+    if (jenjang !== undefined) updateData.jenjang = jenjang || null;
+    if (kelas !== undefined) updateData.kelas = kelas || null;
     if (judul) updateData.judul = judul;
     if (tanggalMulai) updateData.tanggalMulai = new Date(tanggalMulai);
     if (tanggalSelesai) updateData.tanggalSelesai = new Date(tanggalSelesai);

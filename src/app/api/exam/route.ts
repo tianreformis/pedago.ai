@@ -32,6 +32,26 @@ export async function GET(req: NextRequest) {
       orderBy: { createdAt: "desc" },
     });
 
+    // Attach user info for admin view
+    if (isAdmin) {
+      const userIds = [...new Set(exams.map((e) => e.userId))];
+      const users = await prismaClient.user.findMany({
+        where: { id: { in: userIds } },
+        select: { id: true, name: true, email: true },
+      });
+      const userMap = Object.fromEntries(users.map((u) => [u.id, u]));
+      const enriched = exams.map((e) => ({
+        ...e,
+        user: userMap[e.userId] || null,
+      }));
+      enriched.sort((a, b) => {
+        const aName = (a.user?.name || a.user?.email || "").toLowerCase();
+        const bName = (b.user?.name || b.user?.email || "").toLowerCase();
+        return aName.localeCompare(bName) || new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      });
+      return NextResponse.json({ success: true, data: enriched });
+    }
+
     return NextResponse.json({ success: true, data: exams });
   } catch (error) {
     console.error("Get exams error:", error);
@@ -75,7 +95,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { mataPelajaran, judul, tanggalMulai, tanggalSelesai } = body;
+    const { mataPelajaran, jenjang, kelas, judul, tanggalMulai, tanggalSelesai } = body;
 
     if (!mataPelajaran || !judul || !tanggalMulai || !tanggalSelesai) {
       return NextResponse.json({ error: "Semua field harus diisi" }, { status: 400 });
@@ -95,7 +115,7 @@ export async function POST(req: NextRequest) {
     }
 
     const exam = await prismaClient.exam.create({
-      data: { userId, mataPelajaran, judul, kodeUjian, tanggalMulai: mulai, tanggalSelesai: selesai },
+      data: { userId, mataPelajaran, jenjang: jenjang || null, kelas: kelas || null, judul, kodeUjian, tanggalMulai: mulai, tanggalSelesai: selesai },
     });
 
     return NextResponse.json({

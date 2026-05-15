@@ -4,27 +4,34 @@ import bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 
 async function main() {
-  const adminEmail = "admin@rpp-mendalam.id";
-  const adminPassword = "adminRPP2024!"; // Change this!
-  
-  const existingAdmin = await prisma.user.findUnique({ where: { email: adminEmail } });
-  
-  if (existingAdmin) {
-    console.log("Admin user already exists");
-    await prisma.user.update({ where: { email: adminEmail }, data: { isAdmin: true } });
-    console.log("Admin status updated");
-  } else {
-    const hashedPassword = await bcrypt.hash(adminPassword, 10);
-    await prisma.user.create({
-      data: {
-        email: adminEmail,
-        password: hashedPassword,
-        name: "Administrator",
-        isAdmin: true,
-      },
+  const adminEmail = process.env.ADMIN_EMAIL || "admin@rpp-mendalam.id";
+  const adminPassword = process.env.ADMIN_PASSWORD || "adminRPP2024!";
+  const hashedPassword = await bcrypt.hash(adminPassword, 10);
+
+  const byEmail = await prisma.user.findUnique({ where: { email: adminEmail } });
+  if (byEmail) {
+    await prisma.user.update({
+      where: { id: byEmail.id },
+      data: { password: hashedPassword, isAdmin: true },
     });
-    console.log("Admin user created");
+    console.log(`Admin updated: ${adminEmail}`);
+    return;
   }
+
+  const anyAdmin = await prisma.user.findFirst({ where: { isAdmin: true } });
+  if (anyAdmin) {
+    await prisma.user.update({
+      where: { id: anyAdmin.id },
+      data: { email: adminEmail, password: hashedPassword },
+    });
+    console.log(`Admin reassigned to: ${adminEmail}`);
+    return;
+  }
+
+  await prisma.user.create({
+    data: { email: adminEmail, password: hashedPassword, name: "Administrator", isAdmin: true },
+  });
+  console.log(`Admin created: ${adminEmail}`);
 }
 
 main()

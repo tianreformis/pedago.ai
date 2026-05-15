@@ -110,6 +110,8 @@ model Exam {
   user            User     @relation(fields: [userId], references: [id])
 
   mataPelajaran   String
+  jenjang         String?
+  kelas           String?
   judul           String
   kodeUjian       String   @unique
   tanggalMulai    DateTime
@@ -239,4 +241,16 @@ model CapaianPembelajaran {
 
   @@index([faseId])
   @@unique([faseId, nama])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  email     String
+  token     String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@index([token])
 }

@@ -10,8 +10,6 @@ function getUserId(req: NextRequest): { userId: string | null; isAdmin: boolean 
   return { userId: decoded?.userId || null, isAdmin: decoded?.isAdmin === true };
 }
 
-const LABELS = ["a", "b", "c", "d", "e"];
-
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { userId } = getUserId(req);
@@ -26,13 +24,16 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     }
 
     const body = await req.json();
-    const { jumlah, materi, jenis } = body;
-    const count = Math.min(Math.max(parseInt(jumlah) || 5, 1), 20);
+    const { jumlah, materi, jenis, cp, jumlahPilihan } = body;
+    const count = Math.min(Math.max(parseInt(jumlah) || 5, 1), 10);
     const questionType = jenis || "essay";
+    const pilihanCount = Math.min(Math.max(parseInt(jumlahPilihan) || 4, 3), 10);
 
     if (!["essay", "pilihan_ganda", "multiple_answer"].includes(questionType)) {
       return NextResponse.json({ error: "Jenis soal tidak valid" }, { status: 400 });
     }
+
+    const choiceLabels = Array.from({ length: pilihanCount }, (_, i) => String.fromCharCode(97 + i));
 
     let formatInstructions: string;
     if (questionType === "essay") {
@@ -41,40 +42,41 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   { "pertanyaan": "teks soal", "point": 10, "kunciJawaban": { "text": "jawaban yang diharapkan" } }
 ]`;
     } else if (questionType === "pilihan_ganda") {
-      formatInstructions = `Buat 4 pilihan jawaban (a, b, c, d) untuk setiap soal. Tentukan satu jawaban benar.
+      const exampleChoices = choiceLabels.map((l) => `      { "label": "${l}", "teks": "pilihan ${l.toUpperCase()}" }`).join(",\n");
+      formatInstructions = `Buat ${pilihanCount} pilihan jawaban (${choiceLabels.join(", ")}) untuk setiap soal. Tentukan satu jawaban benar.
 Format output JSON array:
 [
   {
     "pertanyaan": "teks soal",
     "point": 10,
     "choices": [
-      { "label": "a", "teks": "pilihan A" },
-      { "label": "b", "teks": "pilihan B" },
-      { "label": "c", "teks": "pilihan C" },
-      { "label": "d", "teks": "pilihan D" }
+${exampleChoices}
     ],
-    "kunciJawaban": { "pilihan": "b" }
+    "kunciJawaban": { "pilihan": "${choiceLabels[0]}" }
   }
 ]`;
     } else {
-      formatInstructions = `Buat 4-5 pilihan jawaban (a, b, c, d/e) untuk setiap soal. Tentukan jawaban benar bisa lebih dari satu.
+      const exampleChoices = choiceLabels.map((l) => `      { "label": "${l}", "teks": "pilihan ${l.toUpperCase()}" }`).join(",\n");
+      formatInstructions = `Buat ${pilihanCount} pilihan jawaban (${choiceLabels.join(", ")}) untuk setiap soal. Tentukan jawaban benar bisa lebih dari satu.
 Format output JSON array:
 [
   {
     "pertanyaan": "teks soal",
     "point": 10,
     "choices": [
-      { "label": "a", "teks": "pilihan A" },
-      { "label": "b", "teks": "pilihan B" },
-      { "label": "c", "teks": "pilihan C" },
-      { "label": "d", "teks": "pilihan D" }
+${exampleChoices}
     ],
-    "kunciJawaban": { "pilihan": ["a", "c"] }
+    "kunciJawaban": { "pilihan": ["${choiceLabels[0]}"] }
   }
 ]`;
     }
 
-    const prompt = `Buatkan ${count} soal ujian tipe ${questionType} untuk mata pelajaran ${exam.mataPelajaran}${materi ? ` tentang materi: ${materi}` : ""}.
+    let cpContext = "";
+    if (cp) {
+      cpContext = `\nCapaian Pembelajaran: ${cp}`;
+    }
+
+    const prompt = `Buatkan ${count} soal ujian tipe ${questionType} untuk mata pelajaran ${exam.mataPelajaran}${materi ? ` tentang materi: ${materi}` : ""}${cpContext}.
 
 ${formatInstructions}
 
