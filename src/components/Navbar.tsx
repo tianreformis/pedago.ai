@@ -97,8 +97,7 @@ export default function Navbar() {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     setShowUserMenu(false);
-    window.dispatchEvent(new Event("user-logged-out"));
-    router.push("/login");
+    window.location.href = "/login";
   };
 
   return (

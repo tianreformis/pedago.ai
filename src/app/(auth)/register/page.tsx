@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
+import { Turnstile } from "@marsidev/react-turnstile";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -16,6 +17,7 @@ export default function RegisterPage() {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   const validate = () => {
     const errs: Record<string, string> = {};
@@ -51,6 +53,7 @@ export default function RegisterPage() {
     const errs = validate();
     setErrors(errs);
     if (Object.keys(errs).length > 0) return;
+    if (!turnstileToken) return;
 
     setIsLoading(true);
 
@@ -58,7 +61,7 @@ export default function RegisterPage() {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: form.name, email: form.email, password: form.password, school: form.school }),
+        body: JSON.stringify({ name: form.name, email: form.email, password: form.password, school: form.school, turnstileToken }),
       });
       const data = await res.json();
       
@@ -166,9 +169,17 @@ export default function RegisterPage() {
               />
             </div>
 
+            <Turnstile
+              siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
+              onSuccess={setTurnstileToken}
+              onError={() => setTurnstileToken(null)}
+              onExpire={() => setTurnstileToken(null)}
+              options={{ theme: 'auto' }}
+            />
+
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || !turnstileToken}
               className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white font-semibold py-3 rounded-lg transition-colors"
             >
               {isLoading ? "Mendaftarkan..." : "Daftar"}

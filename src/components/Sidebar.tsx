@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { FileText, Calendar, LayoutDashboard, ChevronDown, LogOut, CreditCard, Users, Plus, Save, School, Table } from "lucide-react";
+import { FileText, Calendar, LayoutDashboard, ChevronDown, LogOut, CreditCard, Users, Plus, Save, School, Table, ClipboardList } from "lucide-react";
 
 interface User {
   id?: string;
@@ -114,21 +114,25 @@ export default function Sidebar() {
   const [rppManuallyCollapsed, setRppManuallyCollapsed] = useState(false);
   const [protaManuallyCollapsed, setProtaManuallyCollapsed] = useState(false);
   const [promesManuallyCollapsed, setPromesManuallyCollapsed] = useState(false);
+  const [examManuallyCollapsed, setExamManuallyCollapsed] = useState(false);
 
   const user = getStoredUser();
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    router.push("/login");
+    window.location.href = "/login";
   };
 
   const rppRoutes = ["/dashboard/rpp", "/generate"];
   const protaRoutes = ["/dashboard/prota", "/generate-prota"];
   const promesRoutes = ["/dashboard/promes", "/generate-promes", "/dashboard/promes"];
+  const examRoutes = ["/dashboard/exam"];
 
   const rppExpanded = rppRoutes.includes(pathname) || !rppManuallyCollapsed;
   const protaExpanded = protaRoutes.includes(pathname) || !protaManuallyCollapsed;
   const promesExpanded = promesRoutes.includes(pathname) || !promesManuallyCollapsed;
+  const examExpanded = examRoutes.includes(pathname) || pathname.startsWith("/dashboard/exam") || !examManuallyCollapsed;
 
   return (
     <aside className="w-16 md:w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 flex flex-col fixed inset-y-0 left-0 z-10 pt-16">
@@ -253,6 +257,25 @@ export default function Sidebar() {
           >
             <Plus size={16} />
             <span className="hidden md:inline">Buat Promes</span>
+          </Link>
+        </NavGroup>
+
+        <NavGroup
+          label="Ujian"
+          icon={<ClipboardList size={18} />}
+          isExpanded={examExpanded}
+          onToggle={() => setExamManuallyCollapsed(!examManuallyCollapsed)}
+        >
+          <Link
+            href="/dashboard/exam"
+            className={`flex items-center gap-3 px-2 md:px-4 py-2 rounded-lg transition-colors text-sm ${
+              pathname === "/dashboard/exam"
+                ? "bg-orange-50 dark:bg-orange-900/40 text-orange-600 dark:text-orange-300 font-medium"
+                : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+            }`}
+          >
+            <Save size={16} />
+            <span className="hidden md:inline">Ujian Saya</span>
           </Link>
         </NavGroup>
 

@@ -25,6 +25,7 @@ model User {
   rpps      RPP[]
   protas    Prota[]
   promes    Promes[]
+  exams     Exam[]
 }
 
 model FreeUsage {
@@ -101,6 +102,102 @@ model Promes {
   updatedAt   DateTime @updatedAt
 
   @@index([userId])
+}
+
+model Exam {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+
+  mataPelajaran   String
+  judul           String
+  kodeUjian       String   @unique
+  tanggalMulai    DateTime
+  tanggalSelesai  DateTime
+
+  questions       ExamQuestion[]
+  students        ExamStudent[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model ExamQuestion {
+  id          String   @id @default(cuid())
+  examId      String
+  exam        Exam     @relation(fields: [examId], references: [id], onDelete: Cascade)
+
+  pertanyaan  String
+  point       Int
+  jenis       String   @default("essay") // essay, pilihan_ganda, multiple_answer
+  kunciJawaban Json?   // essay: {"text":"..."} / pilihan_ganda: {"pilihan":"b"} / multiple_answer: {"pilihan":["a","c"]}
+
+  choices     ExamQuestionChoice[]
+  answers     ExamAnswer[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([examId])
+}
+
+model ExamQuestionChoice {
+  id         String   @id @default(cuid())
+  questionId String
+  question   ExamQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  label      String   // a, b, c, d
+  teks       String
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([questionId, label])
+  @@index([questionId])
+}
+
+model ExamStudent {
+  id          String   @id @default(cuid())
+  examId      String
+  exam        Exam     @relation(fields: [examId], references: [id], onDelete: Cascade)
+
+  nama        String
+  username    String
+  password    String
+  startedAt   DateTime @default(now())
+  submittedAt DateTime?
+
+  tabSwitchCount Int      @default(0)
+  score          Int?
+  scoreReleased  Boolean  @default(false)
+
+  answers     ExamAnswer[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([examId, username])
+  @@index([examId])
+}
+
+model ExamAnswer {
+  id            String      @id @default(cuid())
+  examStudentId String
+  examStudent   ExamStudent @relation(fields: [examStudentId], references: [id], onDelete: Cascade)
+  questionId    String
+  question      ExamQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  jawaban       String
+  score         Int?
+
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@unique([examStudentId, questionId])
+  @@index([examStudentId])
+  @@index([questionId])
 }
 
 model MataPelajaran {

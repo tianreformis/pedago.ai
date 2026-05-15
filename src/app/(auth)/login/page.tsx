@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
+import { Turnstile } from "@marsidev/react-turnstile";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -12,9 +13,11 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!turnstileToken) return;
     setIsLoading(true);
     setError("");
 
@@ -22,7 +25,7 @@ export default function LoginPage() {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, turnstileToken }),
       });
       const data = await res.json();
       
@@ -90,9 +93,17 @@ export default function LoginPage() {
               </div>
             </div>
 
+            <Turnstile
+              siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
+              onSuccess={setTurnstileToken}
+              onError={() => setTurnstileToken(null)}
+              onExpire={() => setTurnstileToken(null)}
+              options={{ theme: 'auto' }}
+            />
+
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || !turnstileToken}
               className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white font-semibold py-3 rounded-xl transition-colors"
             >
               {isLoading ? "Masuk..." : "Masuk"}

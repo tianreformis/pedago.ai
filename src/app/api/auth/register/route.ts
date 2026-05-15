@@ -2,13 +2,18 @@ import { NextRequest, NextResponse } from "next/server";
 import { prismaClient } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { createToken } from "@/lib/jwt";
+import { verifyTurnstileToken } from "@/lib/turnstile";
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, password, name, school } = await req.json();
+    const { email, password, name, school, turnstileToken } = await req.json();
 
     if (!email || !password || !name) {
       return NextResponse.json({ error: "Nama, email, dan password wajib diisi" }, { status: 400 });
+    }
+
+    if (!turnstileToken || !(await verifyTurnstileToken(turnstileToken))) {
+      return NextResponse.json({ error: "Verifikasi captcha gagal" }, { status: 400 });
     }
 
     const existing = await prismaClient.user.findUnique({ where: { email } });
