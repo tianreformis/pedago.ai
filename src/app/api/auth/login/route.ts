@@ -30,12 +30,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Email atau password salah" }, { status: 401 });
     }
 
-    const token = createToken(user.id, user.email, user.isAdmin);
+    const token = createToken(user.id, user.email, user.isAdmin, user.role);
 
     const response = NextResponse.json({
       success: true,
       data: {
-        user: { id: user.id, email: user.email, name: user.name, school: user.school, isAdmin: user.isAdmin },
+        user: { id: user.id, email: user.email, name: user.name, school: user.school, isAdmin: user.isAdmin, role: user.role },
         token,
       },
     });

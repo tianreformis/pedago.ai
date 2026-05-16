@@ -6,7 +6,7 @@ import { verifyTurnstileToken } from "@/lib/turnstile";
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, password, name, school, turnstileToken } = await req.json();
+    const { email, password, name, school, role, turnstileToken } = await req.json();
 
     if (!email || !password || !name) {
       return NextResponse.json({ error: "Nama, email, dan password wajib diisi" }, { status: 400 });
@@ -29,15 +29,25 @@ export async function POST(req: NextRequest) {
         password: hashedPassword,
         name,
         school: school || null,
+        role: role || "teacher",
       },
     });
 
-    const token = createToken(user.id, user.email, user.isAdmin);
+    // If student, also create Student record for exam system compatibility
+    if (role === "student") {
+      await prismaClient.student.upsert({
+        where: { email },
+        update: {},
+        create: { email, nama: name, password: hashedPassword },
+      });
+    }
+
+    const token = createToken(user.id, user.email, user.isAdmin, user.role);
 
     const response = NextResponse.json({
       success: true,
       data: {
-        user: { id: user.id, email: user.email, name: user.name, school: user.school, isAdmin: user.isAdmin },
+        user: { id: user.id, email: user.email, name: user.name, school: user.school, isAdmin: user.isAdmin, role: user.role },
         token,
       },
     });

@@ -33,6 +33,18 @@ useEffect(() => {
         return;
       }
 
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        try {
+          const u = JSON.parse(storedUser);
+          setUser(u);
+          if (u.role === "student") {
+            router.push("/dashboard/grade");
+            return;
+          }
+        } catch {}
+      }
+
       try {
         const [rppRes, protaRes, promesRes, adminRes] = await Promise.all([
           fetch("/api/rpp", { headers: { Authorization: `Bearer ${token}` } }),

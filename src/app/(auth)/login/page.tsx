@@ -33,7 +33,8 @@ export default function LoginPage() {
         localStorage.setItem("token", data.data.token);
         localStorage.setItem("user", JSON.stringify(data.data.user));
         window.dispatchEvent(new Event("user-logged-in"));
-        router.push("/dashboard");
+        const role = data.data.user?.role || "teacher";
+        router.push(role === "student" ? "/dashboard/grade" : "/dashboard");
       } else {
         setError(data.error || "Login gagal");
       }

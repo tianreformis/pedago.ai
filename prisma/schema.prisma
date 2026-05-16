@@ -15,6 +15,7 @@ model User {
   name      String?
   school    String? 
   isAdmin   Boolean  @default(false)
+  role      String   @default("teacher") // teacher, student
   
   subscriptionStatus   String   @default("free") // free, active, expired
   subscriptionPlan     String?  // monthly, yearly

@@ -1,8 +1,11 @@
 "use client";
 
 import { useEffect, useState, useSyncExternalStore } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
+
+const STUDENT_ALLOWED = ["/dashboard/grade"];
+const TEACHER_ONLY = ["/dashboard/rpp", "/dashboard/prota", "/dashboard/promes", "/dashboard/exam", "/dashboard/user", "/generate", "/generate-prota", "/generate-promes", "/settings", "/payment"];
 
 let cachedUser: any = null;
 let cachedUserId: string | null = null;
@@ -63,8 +66,12 @@ function getSnapshot(): any | null {
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
   useSyncExternalStore(subscribe, getSnapshot, () => null);
   const [isLoading, setIsLoading] = useState(true);
+
+  const user = getStoredUser();
+  const isStudent = user?.role === "student";
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -72,8 +79,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       router.push("/login");
       return;
     }
+    if (isStudent && !STUDENT_ALLOWED.some((p) => pathname === p || pathname.startsWith(p + "/"))) {
+      router.push("/dashboard/grade");
+      return;
+    }
+    if (!isStudent && pathname.startsWith("/dashboard/grade")) {
+      router.push("/dashboard");
+      return;
+    }
     setIsLoading(false);
-  }, [router]);
+  }, [router, pathname, isStudent]);
 
   if (isLoading) {
     return (

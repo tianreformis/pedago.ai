@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { FileText, Calendar, LayoutDashboard, ChevronDown, LogOut, CreditCard, Users, Plus, Save, School, Table, ClipboardList } from "lucide-react";
+import { FileText, Calendar, LayoutDashboard, ChevronDown, LogOut, CreditCard, Users, Plus, Save, School, Table, ClipboardList, GraduationCap, ExternalLink } from "lucide-react";
 
 interface User {
   id?: string;
@@ -13,6 +13,7 @@ interface User {
   subscriptionStatus?: string;
   subscriptionExpiry?: string;
   isAdmin?: boolean;
+  role?: string;
 }
 
 let cachedUser: User | null = null;
@@ -117,11 +118,12 @@ export default function Sidebar() {
   const [examManuallyCollapsed, setExamManuallyCollapsed] = useState(false);
 
   const user = getStoredUser();
+  const isStudent = user?.role === "student";
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    window.location.href = "/login";
+    window.location.href = "/";
   };
 
   const rppRoutes = ["/dashboard/rpp", "/generate"];
@@ -133,6 +135,62 @@ export default function Sidebar() {
   const protaExpanded = protaRoutes.includes(pathname) || !protaManuallyCollapsed;
   const promesExpanded = promesRoutes.includes(pathname) || !promesManuallyCollapsed;
   const examExpanded = examRoutes.includes(pathname) || pathname.startsWith("/dashboard/exam") || !examManuallyCollapsed;
+
+  if (isStudent) {
+    return (
+      <aside className="w-16 md:w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 flex flex-col fixed inset-y-0 left-0 z-10 pt-16">
+        <div className="hidden md:block p-4 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex items-center gap-3 mb-1">
+            <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/50 flex items-center justify-center text-green-600 dark:text-green-300 font-semibold text-sm">
+              {user?.name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || "S"}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
+                {user?.name || "Siswa"}
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-300">Siswa</p>
+            </div>
+          </div>
+        </div>
+
+        <nav className="flex-1 p-2 md:p-4 space-y-2 overflow-y-auto">
+          <Link
+            href="/dashboard/grade"
+            className={`flex items-center gap-3 px-2 py-3 md:px-4 rounded-lg transition-colors ${
+              pathname === "/dashboard/grade"
+                ? "bg-green-50 dark:bg-green-900/40 text-green-600 dark:text-green-300"
+                : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+            }`}
+          >
+            <ClipboardList size={18} />
+            <span className="hidden md:inline font-medium">Lihat Nilai</span>
+          </Link>
+
+          <Link
+            href="/exam"
+            className={`flex items-center gap-3 px-2 py-3 md:px-4 rounded-lg transition-colors ${
+              pathname.startsWith("/exam")
+                ? "bg-green-50 dark:bg-green-900/40 text-green-600 dark:text-green-300"
+                : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+            }`}
+          >
+            <GraduationCap size={18} />
+            <span className="hidden md:inline font-medium">Masuk Ujian</span>
+          </Link>
+        </nav>
+
+        <div className="p-2 md:p-4 border-t border-gray-200 dark:border-gray-700">
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-3 w-full px-2 py-3 md:px-4 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/40 transition-colors"
+          >
+            <LogOut size={18} />
+            <span className="hidden md:inline font-medium">Keluar</span>
+          </button>
+        </div>
+      </aside>
+    );
+  }
 
   return (
     <aside className="w-16 md:w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 flex flex-col fixed inset-y-0 left-0 z-10 pt-16">

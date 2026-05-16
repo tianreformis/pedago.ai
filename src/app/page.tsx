@@ -6,8 +6,7 @@ import {
   BookOpen, Sparkles, FileDown, Save, Calendar,
   Clock, Shield, Zap, CheckCircle, ArrowRight,
   Users, Target, Award, Star, PlayCircle,
-  TrendingUp, MessageSquare, Layers, Menu, X,
-  GraduationCap
+  TrendingUp, MessageSquare, Layers, Menu, X
 } from "lucide-react";
 
 interface UserData {
@@ -77,7 +76,6 @@ function getUserSnapshot(): UserData | null {
 export default function Home() {
   const user = useSyncExternalStore(subscribeToUser, getUserSnapshot, () => null);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const studentToken = typeof window !== "undefined" ? localStorage.getItem("studentToken") : null;
 
   return (
     <div className="min-h-screen">
@@ -90,10 +88,6 @@ export default function Home() {
           </Link>
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-3">
-            <Link href="/exam" className="text-white/80 hover:text-white px-3 py-2 text-sm font-medium transition-colors flex items-center gap-1.5">
-              <GraduationCap size={16} />
-              <span>{studentToken ? "Hasil Ujian" : "Login Siswa"}</span>
-            </Link>
             {user ? (
               <Link href="/dashboard" className="bg-white text-blue-700 hover:bg-blue-50 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
                 Dashboard
@@ -119,17 +113,9 @@ export default function Home() {
           </button>
         </div>
         {/* Mobile menu */}
-        {mobileOpen && (
+          {mobileOpen && (
           <div className="md:hidden bg-blue-700/95 dark:bg-blue-950/95 backdrop-blur-md border-t border-white/10">
             <div className="px-4 py-4 space-y-3">
-              <Link
-                href="/exam"
-                onClick={() => setMobileOpen(false)}
-                className="flex items-center gap-2 text-white/90 hover:text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors"
-              >
-                <GraduationCap size={18} />
-                <span>{studentToken ? "Hasil Ujian" : "Login Siswa"}</span>
-              </Link>
               {user ? (
                 <Link
                   href="/dashboard"

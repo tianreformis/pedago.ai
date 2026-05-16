@@ -18,20 +18,20 @@ interface ExamResult {
   answerCount: number;
 }
 
-export default function StudentExamsPage() {
+export default function GradePage() {
   const router = useRouter();
   const [results, setResults] = useState<ExamResult[]>([]);
   const [studentInfo, setStudentInfo] = useState({ nama: "", email: "" });
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem("studentToken");
+    const token = localStorage.getItem("token");
     if (!token) {
-      router.push("/exam");
+      router.push("/login");
       return;
     }
 
-    fetch("/api/student/exams", {
+    fetch("/api/exam/my-grades", {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((r) => r.json())
@@ -39,10 +39,6 @@ export default function StudentExamsPage() {
         if (data.success) {
           setResults(data.data.exams);
           setStudentInfo({ nama: data.data.nama, email: data.data.email });
-        } else {
-          localStorage.removeItem("studentToken");
-          localStorage.removeItem("studentData");
-          router.push("/exam");
         }
       })
       .catch(() => {})
@@ -60,9 +56,9 @@ export default function StudentExamsPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Hasil Ujian</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Lihat Nilai</h1>
         <p className="text-gray-600 dark:text-gray-400">
-          {studentInfo.nama} ({studentInfo.email})
+          {studentInfo.nama && `${studentInfo.nama} (${studentInfo.email})`}
         </p>
       </div>
 
