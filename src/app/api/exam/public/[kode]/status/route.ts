@@ -16,30 +16,41 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ kode
       return NextResponse.json({ error: "Invalid token" }, { status: 401 });
     }
 
-    const studentId = decoded.userId;
-    const student = await prismaClient.examStudent.findUnique({
-      where: { id: studentId },
-      include: { exam: true, answers: true },
+    const globalStudentId = decoded.userId;
+
+    const globalStudent = await prismaClient.student.findUnique({ where: { id: globalStudentId } });
+    if (!globalStudent) {
+      return NextResponse.json({ error: "Student not found" }, { status: 404 });
+    }
+
+    const exam = await prismaClient.exam.findUnique({ where: { kodeUjian: kode } });
+    if (!exam) {
+      return NextResponse.json({ error: "Ujian tidak ditemukan" }, { status: 404 });
+    }
+
+    const examStudent = await prismaClient.examStudent.findUnique({
+      where: { examId_username: { examId: exam.id, username: globalStudent.email } },
+      include: { answers: true },
     });
 
-    if (!student || student.exam.kodeUjian !== kode) {
+    if (!examStudent) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const answersMap: Record<string, string> = {};
-    for (const a of student.answers) {
+    for (const a of examStudent.answers) {
       answersMap[a.questionId] = a.jawaban;
     }
 
     return NextResponse.json({
       success: true,
       data: {
-        studentId: student.id,
-        nama: student.nama,
-        startedAt: student.startedAt,
-        submittedAt: student.submittedAt,
-        score: student.score,
-        scoreReleased: student.scoreReleased,
+        studentId: examStudent.id,
+        nama: examStudent.nama,
+        startedAt: examStudent.startedAt,
+        submittedAt: examStudent.submittedAt,
+        score: examStudent.score,
+        scoreReleased: examStudent.scoreReleased,
         answers: answersMap,
       },
     });

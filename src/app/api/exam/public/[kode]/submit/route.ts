@@ -16,23 +16,32 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ kod
       return NextResponse.json({ error: "Invalid token" }, { status: 401 });
     }
 
-    const studentId = decoded.userId;
+    const globalStudentId = decoded.userId;
 
-    const student = await prismaClient.examStudent.findUnique({
-      where: { id: studentId },
-      include: { exam: true },
+    const globalStudent = await prismaClient.student.findUnique({ where: { id: globalStudentId } });
+    if (!globalStudent) {
+      return NextResponse.json({ error: "Student not found" }, { status: 404 });
+    }
+
+    const exam = await prismaClient.exam.findUnique({ where: { kodeUjian: kode } });
+    if (!exam) {
+      return NextResponse.json({ error: "Ujian tidak ditemukan" }, { status: 404 });
+    }
+
+    const examStudent = await prismaClient.examStudent.findUnique({
+      where: { examId_username: { examId: exam.id, username: globalStudent.email } },
     });
 
-    if (!student || student.exam.kodeUjian !== kode) {
+    if (!examStudent) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    if (student.submittedAt) {
+    if (examStudent.submittedAt) {
       return NextResponse.json({ error: "Sudah dikumpulkan" }, { status: 400 });
     }
 
     await prismaClient.examStudent.update({
-      where: { id: studentId },
+      where: { id: examStudent.id },
       data: { submittedAt: new Date() },
     });
 
