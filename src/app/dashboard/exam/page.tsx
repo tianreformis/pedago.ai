@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Plus, ClipboardList, Clock, Trash2, ChevronLeft, ChevronRight, Pencil, Copy, X } from "lucide-react";
+import { toast, Toaster } from "sonner";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 
 const JENJANG_OPTIONS = ["SD", "SMP", "SMA", "SMK"];
@@ -140,19 +141,18 @@ export default function DashboardExamPage() {
     if (!token) return;
 
     if (!form.mataPelajaran || !form.judul || !form.tanggalMulai || !form.tanggalSelesai) {
-      setFormError("Semua field harus diisi");
+      toast.error("Semua field harus diisi");
       return;
     }
 
     const mulai = new Date(form.tanggalMulai);
     const selesai = new Date(form.tanggalSelesai);
     if (selesai <= mulai) {
-      setFormError("Tanggal selesai harus setelah tanggal mulai");
+      toast.error("Tanggal selesai harus setelah tanggal mulai");
       return;
     }
 
     setIsSaving(true);
-    setFormError("");
 
     const body: Record<string, unknown> = {
       mataPelajaran: form.mataPelajaran,
@@ -172,10 +172,18 @@ export default function DashboardExamPage() {
         });
         const data = await res.json();
         if (data.success) {
-          setExams(exams.map((e) => (e.id === editTarget.id ? { ...e, ...data.data } : e)));
+          const updated = exams.map((e) => (e.id === editTarget.id ? { ...e, ...data.data } : e));
+          setExams(updated);
+          if (isAdmin) {
+            setGroupedExams(groupedExams.map((g) => ({
+              ...g,
+              exams: g.exams.map((e) => (e.id === editTarget.id ? { ...e, ...data.data } : e)),
+            })));
+          }
           setShowCreateModal(false);
+          toast.success("Ujian berhasil diperbarui");
         } else {
-          setFormError(data.error);
+          toast.error(data.error || "Gagal memperbarui");
         }
       } else {
         const res = await fetch("/api/exam", {
@@ -185,14 +193,43 @@ export default function DashboardExamPage() {
         });
         const data = await res.json();
         if (data.success) {
-          setExams([data.data, ...exams]);
+          const newExam = data.data;
+          setExams([newExam, ...exams]);
+          if (isAdmin) {
+            const storedUser = localStorage.getItem("user");
+            const currentUser = storedUser ? JSON.parse(storedUser) : null;
+            const email = currentUser?.email || "unknown";
+            const name = currentUser?.name || null;
+            let found = false;
+            setGroupedExams((prev) => {
+              const next = prev.map((g) => {
+                if (g.user.email === email) {
+                  found = true;
+                  return { ...g, exams: [newExam, ...g.exams] };
+                }
+                return g;
+              });
+              if (!found) {
+                next.unshift({
+                  user: { id: currentUser?.id || "unknown", name, email },
+                  exams: [newExam],
+                });
+              }
+              return next;
+            });
+          }
+          setCurrentPage(1);
           setShowCreateModal(false);
+          toast.success("Ujian berhasil dibuat");
         } else {
-          setFormError(data.error);
+          toast.error(data.error || "Gagal membuat ujian");
         }
       }
-    } catch (e) { setFormError("Gagal menyimpan"); }
-    finally { setIsSaving(false); }
+    } catch {
+      toast.error("Gagal menyimpan");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -203,9 +240,18 @@ export default function DashboardExamPage() {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
-      setExams(exams.filter((e) => e.id !== id));
-    } catch (e) { console.error(e); }
-    finally { setDeleteTarget(null); }
+      setExams((prev) => prev.filter((e) => e.id !== id));
+      if (isAdmin) {
+        setGroupedExams((prev) =>
+          prev
+            .map((g) => ({ ...g, exams: g.exams.filter((e) => e.id !== id) }))
+            .filter((g) => g.exams.length > 0)
+        );
+      }
+      toast.success("Ujian berhasil dihapus");
+    } catch {
+      toast.error("Gagal menghapus");
+    } finally { setDeleteTarget(null); }
   };
 
   const copyKode = (kode: string) => {
@@ -218,6 +264,7 @@ export default function DashboardExamPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
+      <Toaster position="top-right" richColors />
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Ujian</h1>
