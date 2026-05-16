@@ -160,10 +160,26 @@ model ExamQuestionChoice {
   @@index([questionId])
 }
 
+model Student {
+  id              String         @id @default(cuid())
+  email           String         @unique
+  nama            String
+  password        String
+  resetToken      String?        @unique
+  resetTokenExpiry DateTime?
+
+  examStudents    ExamStudent[]
+
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
 model ExamStudent {
   id          String   @id @default(cuid())
   examId      String
   exam        Exam     @relation(fields: [examId], references: [id], onDelete: Cascade)
+  studentId   String?
+  student     Student? @relation(fields: [studentId], references: [id])
 
   nama        String
   username    String
@@ -182,6 +198,7 @@ model ExamStudent {
 
   @@unique([examId, username])
   @@index([examId])
+  @@index([studentId])
 }
 
 model ExamAnswer {

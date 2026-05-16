@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { ClipboardList, ArrowRight } from "lucide-react";
 
 export default function ExamPublicPage() {
@@ -9,6 +10,11 @@ export default function ExamPublicPage() {
   const [kode, setKode] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [studentToken, setStudentToken] = useState("");
+
+  useEffect(() => {
+    setStudentToken(localStorage.getItem("studentToken") || "");
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,6 +81,21 @@ export default function ExamPublicPage() {
             <ArrowRight size={20} />
           </button>
         </form>
+
+        <div className="mt-4 space-y-2">
+          {studentToken && (
+            <div className="text-center">
+              <Link href="/student/exam" className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400">
+                Lihat hasil ujian saya →
+              </Link>
+            </div>
+          )}
+          <div className="text-center">
+            <Link href="/student/forgot-password" className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+              Lupa password siswa?
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   );

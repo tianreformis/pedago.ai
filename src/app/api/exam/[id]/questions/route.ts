@@ -10,21 +10,21 @@ function getUserId(req: NextRequest): { userId: string | null; isAdmin: boolean 
   return { userId: decoded?.userId || null, isAdmin: decoded?.isAdmin === true };
 }
 
-async function verifyExamOwner(examId: string, userId: string): Promise<boolean> {
+async function verifyExamOwner(examId: string, userId: string, isAdmin: boolean): Promise<boolean> {
   const exam = await prismaClient.exam.findUnique({ where: { id: examId } });
   if (!exam) return false;
-  return exam.userId === userId;
+  return exam.userId === userId || isAdmin;
 }
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { userId } = getUserId(req);
+    const { userId, isAdmin } = getUserId(req);
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { id } = await params;
-    const isOwner = await verifyExamOwner(id, userId);
+    const isOwner = await verifyExamOwner(id, userId, isAdmin);
     if (!isOwner) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
@@ -44,13 +44,13 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { userId } = getUserId(req);
+    const { userId, isAdmin } = getUserId(req);
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { id } = await params;
-    const isOwner = await verifyExamOwner(id, userId);
+    const isOwner = await verifyExamOwner(id, userId, isAdmin);
     if (!isOwner) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }

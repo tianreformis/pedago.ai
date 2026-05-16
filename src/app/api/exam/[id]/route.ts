@@ -12,7 +12,7 @@ function getUserId(req: NextRequest): { userId: string | null; isAdmin: boolean 
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { userId } = getUserId(req);
+    const { userId, isAdmin } = getUserId(req);
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -32,7 +32,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     if (!exam) {
       return NextResponse.json({ error: "Exam not found" }, { status: 404 });
     }
-    if (exam.userId !== userId) {
+    if (exam.userId !== userId && !isAdmin) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -45,7 +45,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { userId } = getUserId(req);
+    const { userId, isAdmin } = getUserId(req);
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -55,7 +55,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     if (!existing) {
       return NextResponse.json({ error: "Exam not found" }, { status: 404 });
     }
-    if (existing.userId !== userId) {
+    if (existing.userId !== userId && !isAdmin) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -88,7 +88,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { userId } = getUserId(req);
+    const { userId, isAdmin } = getUserId(req);
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -98,7 +98,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     if (!existing) {
       return NextResponse.json({ error: "Exam not found" }, { status: 404 });
     }
-    if (existing.userId !== userId) {
+    if (existing.userId !== userId && !isAdmin) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

@@ -33,44 +33,70 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ kod
         return NextResponse.json({ error: "Semua field harus diisi" }, { status: 400 });
       }
 
-      const existing = await prismaClient.examStudent.findUnique({
+      // Create or find global Student by email (username)
+      let student = await prismaClient.student.findUnique({ where: { email: username } });
+      if (!student) {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        student = await prismaClient.student.create({
+          data: { email: username, nama, password: hashedPassword },
+        });
+      } else {
+        // Verify password matches existing account
+        const valid = await bcrypt.compare(password, student.password);
+        if (!valid) {
+          return NextResponse.json({ error: "Email sudah terdaftar dengan password berbeda" }, { status: 400 });
+        }
+      }
+
+      // Create or find ExamStudent record for this exam
+      let examStudent = await prismaClient.examStudent.findUnique({
         where: { examId_username: { examId: exam.id, username } },
       });
 
-      if (existing) {
-        return NextResponse.json({ error: "Username sudah digunakan" }, { status: 400 });
+      if (examStudent) {
+        // Already registered for this exam
+        const token = createToken(student.id, student.email, false, "student");
+        return NextResponse.json({
+          success: true,
+          data: {
+            studentId: examStudent.id,
+            globalStudentId: student.id,
+            nama: examStudent.nama,
+            username: examStudent.username,
+            token,
+            startedAt: examStudent.startedAt,
+          },
+        });
       }
 
-      const hashedPassword = await bcrypt.hash(password, 10);
-      const student = await prismaClient.examStudent.create({
-        data: { examId: exam.id, nama, username, password: hashedPassword },
+      examStudent = await prismaClient.examStudent.create({
+        data: { examId: exam.id, studentId: student.id, nama, username, password: student.password },
       });
 
-      const token = createToken(student.id, `student-${username}`, false);
+      const token = createToken(student.id, student.email, false, "student");
 
       return NextResponse.json({
         success: true,
         data: {
-          studentId: student.id,
+          studentId: examStudent.id,
+          globalStudentId: student.id,
           nama: student.nama,
-          username: student.username,
+          username: student.email,
           token,
-          startedAt: student.startedAt,
+          startedAt: examStudent.startedAt,
         },
       });
     }
 
     if (action === "login") {
       if (!username || !password) {
-        return NextResponse.json({ error: "Username dan password harus diisi" }, { status: 400 });
+        return NextResponse.json({ error: "Email dan password harus diisi" }, { status: 400 });
       }
 
-      const student = await prismaClient.examStudent.findUnique({
-        where: { examId_username: { examId: exam.id, username } },
-      });
-
+      // Authenticate against global Student table
+      const student = await prismaClient.student.findUnique({ where: { email: username } });
       if (!student) {
-        return NextResponse.json({ error: "Username tidak terdaftar" }, { status: 400 });
+        return NextResponse.json({ error: "Email tidak terdaftar" }, { status: 400 });
       }
 
       const validPassword = await bcrypt.compare(password, student.password);
@@ -78,16 +104,29 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ kod
         return NextResponse.json({ error: "Password salah" }, { status: 400 });
       }
 
-      const token = createToken(student.id, `student-${username}`, false);
+      // Find or create ExamStudent for this exam
+      let examStudent = await prismaClient.examStudent.findUnique({
+        where: { examId_username: { examId: exam.id, username } },
+      });
+
+      if (!examStudent) {
+        // Allow login even after exam ends to see results
+        examStudent = await prismaClient.examStudent.create({
+          data: { examId: exam.id, studentId: student.id, nama: student.nama, username: student.email, password: student.password },
+        });
+      }
+
+      const token = createToken(student.id, student.email, false, "student");
 
       return NextResponse.json({
         success: true,
         data: {
-          studentId: student.id,
+          studentId: examStudent.id,
+          globalStudentId: student.id,
           nama: student.nama,
-          username: student.username,
+          username: student.email,
           token,
-          startedAt: student.startedAt,
+          startedAt: examStudent.startedAt,
         },
       });
     }

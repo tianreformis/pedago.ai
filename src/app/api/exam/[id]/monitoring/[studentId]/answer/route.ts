@@ -12,14 +12,14 @@ function getUserId(req: NextRequest): { userId: string | null; isAdmin: boolean 
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string; studentId: string }> }) {
   try {
-    const { userId } = getUserId(req);
+    const { userId, isAdmin } = getUserId(req);
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { id, studentId } = await params;
     const exam = await prismaClient.exam.findUnique({ where: { id } });
-    if (!exam || exam.userId !== userId) {
+    if (!exam || (exam.userId !== userId && !isAdmin)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

@@ -84,6 +84,33 @@ export default function TakeExamPage() {
   };
 
   const tryRestoreSession = useCallback(async () => {
+    // Try global student token first
+    const globalToken = localStorage.getItem("studentToken");
+    if (globalToken) {
+      const data = JSON.parse(localStorage.getItem("studentData") || "{}");
+      const res = await fetch(`/api/exam/public/${kode}/status`, {
+        headers: { Authorization: `Bearer ${globalToken}` },
+      });
+      const statusData = await res.json();
+      if (statusData.success) {
+        setStudent({
+          studentId: statusData.data.studentId,
+          nama: data.nama || "",
+          username: data.email || "",
+          token: globalToken,
+          startedAt: statusData.data.startedAt,
+        });
+        setAnswers(statusData.data.answers || {});
+        if (statusData.data.submittedAt) setSubmitted(true);
+        if (statusData.data.scoreReleased) {
+          setResultData({ score: statusData.data.score, scoreReleased: true });
+        } else if (statusData.data.submittedAt && examEnded) {
+          setResultData({ score: statusData.data.score, scoreReleased: false });
+        }
+        return true;
+      }
+    }
+
     const stored = localStorage.getItem(`exam_session_${kode}`);
     if (!stored) return;
 
@@ -214,6 +241,9 @@ export default function TakeExamPage() {
           nama: data.data.nama,
           username: data.data.username,
         }));
+        // Save global student token
+        localStorage.setItem("studentToken", data.data.token);
+        localStorage.setItem("studentData", JSON.stringify({ nama: data.data.nama, email: data.data.username }));
 
         // Check status after login to see if there's a released score
         const statusRes = await fetch(`/api/exam/public/${kode}/status`, {
@@ -399,6 +429,18 @@ export default function TakeExamPage() {
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
+              {authMode === "login" && (
+                <div className="text-right -mt-2">
+                  <a
+                    href="/student/forgot-password"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                  >
+                    Lupa Password?
+                  </a>
+                </div>
+              )}
 
               {authError && <p className="text-sm text-red-600 dark:text-red-400">{authError}</p>}
 
