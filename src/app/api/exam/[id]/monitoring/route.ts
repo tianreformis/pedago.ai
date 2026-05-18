@@ -63,6 +63,35 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       return false;
     }
 
+    function calculateAnswerScore(jenis: string, jawaban: string, kunciJawaban: unknown, point: number, choices: { label: string }[]): number | null {
+      if (jenis === "essay") return null;
+      const kj = kunciJawaban as Record<string, unknown> | null;
+      if (!kj) return null;
+
+      if (jenis === "pilihan_ganda" || jenis === "true_false") {
+        return jawaban === (kj.pilihan as string) ? point : 0;
+      }
+
+      if (jenis === "multiple_answer") {
+        try {
+          const studentAnswers: string[] = JSON.parse(jawaban || "[]");
+          const correct = (kj.pilihan as string[]) || [];
+          const totalCorrect = correct.length;
+          const totalWrong = choices.length - totalCorrect;
+          const correctSelected = correct.filter((c: string) => studentAnswers.includes(c)).length;
+          const wrongSelected = studentAnswers.filter((s: string) => !correct.includes(s)).length;
+          if (totalCorrect === 0) return 0;
+          let ratio = correctSelected / totalCorrect;
+          if (totalWrong > 0) ratio -= wrongSelected / totalWrong;
+          return Math.round(Math.max(0, ratio) * point);
+        } catch {
+          return 0;
+        }
+      }
+
+      return 0;
+    }
+
     const data = students.map((s) => ({
       id: s.id,
       nama: s.nama,
@@ -74,17 +103,21 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       scoreReleased: s.scoreReleased,
       answeredCount: s._count.answers,
       totalQuestions,
-      answers: s.answers.map((a) => ({
-        questionId: a.questionId,
-        jenis: a.question.jenis,
-        pertanyaan: a.question.pertanyaan,
-        point: a.question.point,
-        kunciJawaban: a.question.kunciJawaban,
-        choices: a.question.choices.map((c) => ({ label: c.label, teks: c.teks })),
-        jawaban: a.jawaban,
-        score: a.score,
-        isCorrect: evaluateAnswer(a.question.jenis, a.jawaban, a.question.kunciJawaban),
-      })),
+      answers: s.answers.map((a) => {
+        const qChoices = a.question.choices.map((c) => ({ label: c.label, teks: c.teks }));
+        const calculatedScore = a.score !== null ? a.score : calculateAnswerScore(a.question.jenis, a.jawaban, a.question.kunciJawaban, a.question.point, a.question.choices);
+        return {
+          questionId: a.questionId,
+          jenis: a.question.jenis,
+          pertanyaan: a.question.pertanyaan,
+          point: a.question.point,
+          kunciJawaban: a.question.kunciJawaban,
+          choices: qChoices,
+          jawaban: a.jawaban,
+          score: calculatedScore,
+          isCorrect: evaluateAnswer(a.question.jenis, a.jawaban, a.question.kunciJawaban),
+        };
+      }),
     }));
 
     return NextResponse.json({ success: true, data });
