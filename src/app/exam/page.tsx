@@ -3,23 +3,26 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ClipboardList, ArrowRight, LogIn, Loader2, Eye, EyeOff } from "lucide-react";
+import { ClipboardList, ArrowRight, ArrowLeft } from "lucide-react";
 
 export default function ExamPublicPage() {
   const router = useRouter();
   const [kode, setKode] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [studentToken, setStudentToken] = useState("");
-  const [showLogin, setShowLogin] = useState(false);
-  const [loginEmail, setLoginEmail] = useState("");
-  const [loginPassword, setLoginPassword] = useState("");
-  const [loginLoading, setLoginLoading] = useState(false);
-  const [loginError, setLoginError] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+  const [isLoggedInStudent, setIsLoggedInStudent] = useState(false);
 
   useEffect(() => {
-    setStudentToken(localStorage.getItem("studentToken") || "");
+    const token = localStorage.getItem("token");
+    if (token) {
+      const stored = localStorage.getItem("user");
+      if (stored) {
+        try {
+          const user = JSON.parse(stored);
+          if (user.role === "student") setIsLoggedInStudent(true);
+        } catch {}
+      }
+    }
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -46,35 +49,6 @@ export default function ExamPublicPage() {
       setError("Gagal menghubungi server");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!loginEmail || !loginPassword) { setLoginError("Email dan password harus diisi"); return; }
-
-    setLoginLoading(true);
-    setLoginError("");
-
-    try {
-      const res = await fetch("/api/student/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: loginEmail, password: loginPassword }),
-      });
-      const data = await res.json();
-
-      if (data.success) {
-        localStorage.setItem("studentToken", data.token);
-        localStorage.setItem("studentData", JSON.stringify({ nama: data.nama, email: data.email }));
-        router.push("/student/exam");
-      } else {
-        setLoginError(data.error || "Login gagal");
-      }
-    } catch {
-      setLoginError("Gagal menghubungi server");
-    } finally {
-      setLoginLoading(false);
     }
   };
 
@@ -117,70 +91,17 @@ export default function ExamPublicPage() {
           </button>
         </form>
 
-        <div className="mt-4 space-y-2">
-          {studentToken ? (
-            <div className="text-center">
-              <Link href="/student/exam" className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400">
-                Lihat hasil ujian saya →
-              </Link>
-            </div>
+        <div className="mt-4 text-center">
+          {isLoggedInStudent ? (
+            <Link href="/dashboard/grade" className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 flex items-center justify-center gap-1">
+              <ArrowLeft size={14} /> Kembali ke Dashboard
+            </Link>
           ) : (
-            <div className="text-center">
-              <button
-                onClick={() => setShowLogin(!showLogin)}
-                className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 flex items-center justify-center gap-1 mx-auto"
-              >
-                <LogIn size={14} /> Login Siswa
-              </button>
-            </div>
+            <Link href="/student/forgot-password" className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+              Lupa password siswa?
+            </Link>
           )}
         </div>
-
-        {showLogin && (
-          <form onSubmit={handleLogin} className="mt-4 bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white text-center">Login Siswa</h3>
-            <p className="text-xs text-gray-500 dark:text-gray-400 text-center">Login untuk melihat hasil ujian Anda</p>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
-              <input
-                type="email"
-                value={loginEmail}
-                onChange={(e) => setLoginEmail(e.target.value)}
-                placeholder="nama@email.com"
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={loginPassword}
-                  onChange={(e) => setLoginPassword(e.target.value)}
-                  placeholder="Masukkan password"
-                  className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
-            </div>
-            {loginError && <p className="text-sm text-red-600 dark:text-red-400 text-center">{loginError}</p>}
-            <button
-              type="submit"
-              disabled={loginLoading}
-              className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-xl font-medium transition-colors disabled:opacity-50"
-            >
-              {loginLoading ? <Loader2 size={18} className="animate-spin" /> : "Login"}
-              <LogIn size={18} />
-            </button>
-            <div className="text-center">
-              <Link href="/student/forgot-password" className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                Lupa password?
-              </Link>
-            </div>
-          </form>
-        )}
       </div>
     </div>
   );
