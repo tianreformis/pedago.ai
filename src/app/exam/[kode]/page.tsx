@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Loader2, LogIn, UserPlus, CheckCircle, Clock, AlertTriangle, AlertOctagon, Award } from "lucide-react";
+import { Loader2, CheckCircle, Clock, AlertTriangle, AlertOctagon, Award } from "lucide-react";
 
 interface Choice {
   label: string;
@@ -45,17 +45,13 @@ export default function TakeExamPage() {
   const [resultData, setResultData] = useState<{ score: number | null; scoreReleased: boolean } | null>(null);
   const [examEnded, setExamEnded] = useState(false);
 
-  const [authMode, setAuthMode] = useState<"login" | "register">("register");
-  const [authForm, setAuthForm] = useState({ nama: "", username: "", password: "" });
-  const [authError, setAuthError] = useState("");
-  const [authLoading, setAuthLoading] = useState(false);
-
   const [savingId, setSavingId] = useState<string | null>(null);
 
   const [timeLeft, setTimeLeft] = useState<string>("");
   const [tabWarning, setTabWarning] = useState(false);
   const tabSwitchCount = useRef(0);
   const lastTabSwitch = useRef(0);
+  const [isAutoAuthing, setIsAutoAuthing] = useState(false);
 
   const questions = exam?.questions || [];
   const answeredCount = Object.keys(answers).length;
@@ -146,6 +142,41 @@ export default function TakeExamPage() {
   }, [exam, loading, tryRestoreSession]);
 
   useEffect(() => {
+    if (exam && !loading && !student && !examEnded) {
+      const userToken = localStorage.getItem("token");
+      if (!userToken) {
+        router.push("/login");
+        return;
+      }
+      setIsAutoAuthing(true);
+      fetch(`/api/exam/public/${kode}/auto-auth`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${userToken}` },
+      })
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.success) {
+            localStorage.setItem("studentToken", data.data.token);
+            localStorage.setItem("studentData", JSON.stringify({ nama: data.data.nama, email: data.data.username }));
+            localStorage.setItem(`exam_session_${kode}`, JSON.stringify({ token: data.data.token, nama: data.data.nama, username: data.data.username }));
+            setStudent({
+              studentId: data.data.studentId,
+              nama: data.data.nama,
+              username: data.data.username,
+              token: data.data.token,
+              startedAt: data.data.startedAt,
+            });
+            if (data.data.submittedAt) setSubmitted(true);
+          } else {
+            setExamError(data.error || "Gagal mengakses ujian");
+          }
+        })
+        .catch(() => setExamError("Gagal menghubungi server"))
+        .finally(() => setIsAutoAuthing(false));
+    }
+  }, [exam, loading, student, examEnded, kode, router]);
+
+  useEffect(() => {
     if (!exam || !student || submitted) return;
 
     const selesai = new Date(exam.tanggalSelesai).getTime();
@@ -207,70 +238,6 @@ export default function TakeExamPage() {
     document.addEventListener("visibilitychange", handleVisibility);
     return () => document.removeEventListener("visibilitychange", handleVisibility);
   }, [student, submitted, logTabSwitch]);
-
-  const handleAuth = async () => {
-    if (authMode === "register" && !authForm.nama.trim()) {
-      setAuthError("Nama harus diisi");
-      return;
-    }
-    if (!authForm.username.trim() || !authForm.password.trim()) {
-      setAuthError("Username dan password harus diisi");
-      return;
-    }
-
-    setAuthLoading(true);
-    setAuthError("");
-
-    try {
-      const res = await fetch(`/api/exam/public/${kode}/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: authMode,
-          nama: authForm.nama.trim(),
-          username: authForm.username.trim(),
-          password: authForm.password,
-        }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setStudent(data.data);
-        localStorage.setItem(`exam_session_${kode}`, JSON.stringify({
-          token: data.data.token,
-          studentId: data.data.studentId,
-          nama: data.data.nama,
-          username: data.data.username,
-        }));
-        // Save global student token
-        localStorage.setItem("studentToken", data.data.token);
-        localStorage.setItem("studentData", JSON.stringify({ nama: data.data.nama, email: data.data.username }));
-
-        // Check status after login to see if there's a released score
-        const statusRes = await fetch(`/api/exam/public/${kode}/status`, {
-          headers: { Authorization: `Bearer ${data.data.token}` },
-        });
-        const statusData = await statusRes.json();
-        if (statusData.success) {
-          if (statusData.data.submittedAt && statusData.data.scoreReleased) {
-            setSubmitted(true);
-            setResultData({ score: statusData.data.score, scoreReleased: true });
-          } else if (statusData.data.submittedAt) {
-            setSubmitted(true);
-            setResultData({ score: statusData.data.score, scoreReleased: false });
-          }
-        }
-      } else {
-        setAuthError(data.error);
-        if (data.error === "Username sudah digunakan") {
-          setAuthMode("login");
-        }
-      }
-    } catch {
-      setAuthError("Gagal login");
-    } finally {
-      setAuthLoading(false);
-    }
-  };
 
   const handleSaveAnswer = async (questionId: string, jawaban: string) => {
     if (!student) return;
@@ -371,88 +338,25 @@ export default function TakeExamPage() {
   }
 
   if (!student) {
+    if (isAutoAuthing) {
+      return (
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
+          <div className="text-center">
+            <Loader2 className="animate-spin text-blue-600 mx-auto mb-4" size={32} />
+            <p className="text-gray-500 dark:text-gray-400">Menyiapkan ujian...</p>
+          </div>
+        </div>
+      );
+    }
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center px-4">
-        <div className="w-full max-w-md">
-          <div className="text-center mb-6">
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">{exam?.judul}</h1>
-            <p className="text-gray-500 dark:text-gray-400">{exam?.mataPelajaran}</p>
-            {examEnded && <p className="text-sm text-orange-500 mt-2">Ujian sudah berakhir</p>}
-          </div>
-
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
-            <div className="flex gap-2 mb-6">
-              <button
-                onClick={() => { setAuthMode("register"); setAuthError(""); }}
-                className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${authMode === "register" ? "bg-blue-600 text-white" : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"}`}
-              >
-                <UserPlus size={16} className="inline mr-1" /> Daftar
-              </button>
-              <button
-                onClick={() => { setAuthMode("login"); setAuthError(""); }}
-                className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${authMode === "login" ? "bg-blue-600 text-white" : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"}`}
-              >
-                <LogIn size={16} className="inline mr-1" /> Login
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              {authMode === "register" && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nama Lengkap</label>
-                  <input
-                    type="text"
-                    value={authForm.nama}
-                    onChange={(e) => setAuthForm({ ...authForm, nama: e.target.value })}
-                    placeholder="Masukkan nama Anda"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-              )}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Username</label>
-                <input
-                  type="text"
-                  value={authForm.username}
-                  onChange={(e) => setAuthForm({ ...authForm, username: e.target.value })}
-                  placeholder="Buat username"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
-                <input
-                  type="password"
-                  value={authForm.password}
-                  onChange={(e) => setAuthForm({ ...authForm, password: e.target.value })}
-                  placeholder={authMode === "register" ? "Buat password" : "Masukkan password"}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              {authMode === "login" && (
-                <div className="text-right -mt-2">
-                  <a
-                    href="/student/forgot-password"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
-                  >
-                    Lupa Password?
-                  </a>
-                </div>
-              )}
-
-              {authError && <p className="text-sm text-red-600 dark:text-red-400">{authError}</p>}
-
-              <button
-                onClick={handleAuth}
-                disabled={authLoading}
-                className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-medium transition-colors disabled:opacity-50"
-              >
-                {authLoading ? <Loader2 size={18} className="animate-spin" /> : "Masuk"}
-              </button>
-            </div>
-          </div>
+        <div className="text-center">
+          <AlertTriangle className="mx-auto text-orange-500 mb-4" size={48} />
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Silahkan Login Terlebih Dahulu</h1>
+          <p className="text-gray-500 dark:text-gray-400 mb-4">Anda harus login untuk mengakses ujian ini.</p>
+          <button onClick={() => router.push("/login")} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+            Login
+          </button>
         </div>
       </div>
     );
@@ -538,14 +442,14 @@ export default function TakeExamPage() {
                 />
               )}
 
-              {jenis === "pilihan_ganda" && (
+              {(jenis === "pilihan_ganda" || jenis === "true_false") && (
                 <div className="mt-2 space-y-2">
                   {choices.map((c: Choice) => (
                     <label key={c.label} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
                       selectedValue === c.label ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20" : "border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
                     }`}>
                       <input type="radio" name={`q_${q.id}`} value={c.label} checked={selectedValue === c.label} onChange={() => handleRadioChange(c.label)} className="w-4 h-4 text-blue-600" />
-                      <span className="font-mono text-sm text-gray-500 w-4">{c.label.toUpperCase()}.</span>
+                      {jenis !== "true_false" && <span className="font-mono text-sm text-gray-500 w-4">{c.label.toUpperCase()}.</span>}
                       <span className="text-gray-900 dark:text-white">{c.teks}</span>
                     </label>
                   ))}

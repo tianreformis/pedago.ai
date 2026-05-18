@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { ArrowLeft, Plus, Trash2, Pencil, X, Sparkles, Loader2, Users, Check, HelpCircle, ListChecks } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Pencil, X, Sparkles, Loader2, Users, Check, HelpCircle, ListChecks, ToggleLeft } from "lucide-react";
 import Link from "next/link";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 
@@ -40,6 +40,7 @@ const JENIS_OPTIONS = [
   { value: "essay", label: "Essay", icon: HelpCircle },
   { value: "pilihan_ganda", label: "Pilihan Ganda", icon: Check },
   { value: "multiple_answer", label: "Multiple Answer", icon: ListChecks },
+  { value: "true_false", label: "True/False", icon: ToggleLeft },
 ];
 
 const LABELS = ["a", "b", "c", "d", "e"];
@@ -101,6 +102,7 @@ export default function ExamDetailPage() {
 
   const initChoices = (jenis: string) => {
     if (jenis === "essay") return [];
+    if (jenis === "true_false") return [{ label: "benar", teks: "Benar" }, { label: "salah", teks: "Salah" }];
     return LABELS.slice(0, 4).map((l) => ({ label: l, teks: "" }));
   };
 
@@ -134,7 +136,7 @@ export default function ExamDetailPage() {
     setQForm((prev) => ({
       ...prev,
       jenis,
-      choices: jenis === "essay" ? [] : (prev.choices.length > 0 ? prev.choices : initChoices(jenis)),
+      choices: jenis === "essay" ? [] : jenis === "true_false" ? initChoices("true_false") : (prev.choices.length > 0 ? prev.choices : initChoices(jenis)),
       kunciJawaban: null,
     }));
   };
@@ -179,12 +181,12 @@ export default function ExamDetailPage() {
     const point = parseInt(qForm.point);
     if (!point || point < 1) return "Point harus minimal 1";
 
-    if (qForm.jenis === "pilihan_ganda" || qForm.jenis === "multiple_answer") {
+    if (qForm.jenis === "pilihan_ganda" || qForm.jenis === "true_false" || qForm.jenis === "multiple_answer") {
       const emptyChoice = qForm.choices.find((c) => !c.teks.trim());
       if (emptyChoice) return `Pilihan ${emptyChoice.label.toUpperCase()} tidak boleh kosong`;
       if (qForm.choices.length < 2) return "Minimal 2 pilihan jawaban";
 
-      if (qForm.jenis === "pilihan_ganda") {
+      if (qForm.jenis === "pilihan_ganda" || qForm.jenis === "true_false") {
         if (!qForm.kunciJawaban || !(qForm.kunciJawaban as { pilihan?: string }).pilihan) {
           return "Tentukan jawaban benar terlebih dahulu";
         }
@@ -289,7 +291,7 @@ export default function ExamDetailPage() {
 
   const totalPoint = exam.questions.reduce((sum, q) => sum + q.point, 0);
 
-  const JenisIcon = qForm.jenis === "essay" ? HelpCircle : qForm.jenis === "pilihan_ganda" ? Check : ListChecks;
+  const JenisIcon = qForm.jenis === "essay" ? HelpCircle : qForm.jenis === "pilihan_ganda" ? Check : qForm.jenis === "true_false" ? ToggleLeft : qForm.jenis === "multiple_answer" ? ListChecks : HelpCircle;
   const kunciPilihan = (qForm.kunciJawaban as { pilihan?: string | string[] })?.pilihan;
 
   return (
@@ -452,7 +454,7 @@ export default function ExamDetailPage() {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Jenis Soal</label>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-4 gap-2">
                   {JENIS_OPTIONS.map((opt) => {
                     const Icon = opt.icon;
                     return (
@@ -460,7 +462,7 @@ export default function ExamDetailPage() {
                         key={opt.value}
                         type="button"
                         onClick={() => handleJenisChange(opt.value)}
-                        className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${qForm.jenis === opt.value ? "border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400" : "border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700"}`}
+                        className={`flex flex-col items-center gap-1 px-2 py-2 rounded-lg border text-xs font-medium transition-colors ${qForm.jenis === opt.value ? "border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400" : "border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700"}`}
                       >
                         <Icon size={16} />
                         {opt.label}
@@ -492,28 +494,33 @@ export default function ExamDetailPage() {
                 />
               </div>
 
-              {(qForm.jenis === "pilihan_ganda" || qForm.jenis === "multiple_answer") && (
+              {(qForm.jenis === "pilihan_ganda" || qForm.jenis === "true_false" || qForm.jenis === "multiple_answer") && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Pilihan Jawaban
+                    {qForm.jenis === "true_false" ? "Jawaban Benar" : "Pilihan Jawaban"}
                     {qForm.jenis === "pilihan_ganda" && <span className="text-gray-400 font-normal ml-1">(pilih satu jawaban benar)</span>}
+                    {qForm.jenis === "true_false" && <span className="text-gray-400 font-normal ml-1">(pilih jawaban yang benar)</span>}
                     {qForm.jenis === "multiple_answer" && <span className="text-gray-400 font-normal ml-1">(bisa lebih dari satu jawaban benar)</span>}
                   </label>
                   <div className="space-y-2">
                     {qForm.choices.map((c) => {
-                      const isKunciPilihanGanda = qForm.jenis === "pilihan_ganda" && kunciPilihan === c.label;
+                      const isKunciPilihanGanda = (qForm.jenis === "pilihan_ganda" || qForm.jenis === "true_false") && kunciPilihan === c.label;
                       const isKunciMultiple = qForm.jenis === "multiple_answer" && Array.isArray(kunciPilihan) && kunciPilihan.includes(c.label);
                       return (
                         <div key={c.label} className={`flex items-center gap-2 p-2 rounded-lg border ${isKunciPilihanGanda || isKunciMultiple ? "border-green-400 bg-green-50 dark:bg-green-900/20" : "border-gray-200 dark:border-gray-600"}`}>
-                          <span className="font-mono text-sm font-bold text-gray-500 w-5">{c.label.toUpperCase()}</span>
-                          <input
-                            type="text"
-                            value={c.teks}
-                            onChange={(e) => handleChoiceChange(c.label, e.target.value)}
-                            placeholder={`Pilihan ${c.label.toUpperCase()}`}
-                            className="flex-1 px-2 py-1 border border-gray-200 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          />
-                          {qForm.jenis === "pilihan_ganda" && (
+                          {qForm.jenis !== "true_false" && <span className="font-mono text-sm font-bold text-gray-500 w-5">{c.label.toUpperCase()}</span>}
+                          {qForm.jenis === "true_false" ? (
+                            <span className="flex-1 text-gray-900 dark:text-white text-sm">{c.teks}</span>
+                          ) : (
+                            <input
+                              type="text"
+                              value={c.teks}
+                              onChange={(e) => handleChoiceChange(c.label, e.target.value)}
+                              placeholder={`Pilihan ${c.label.toUpperCase()}`}
+                              className="flex-1 px-2 py-1 border border-gray-200 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                          )}
+                          {(qForm.jenis === "pilihan_ganda" || qForm.jenis === "true_false") && (
                             <button
                               type="button"
                               onClick={() => setKunciPilihanGanda(c.label)}
@@ -546,7 +553,7 @@ export default function ExamDetailPage() {
                       );
                     })}
                   </div>
-                  {qForm.choices.length < 5 && (
+                  {qForm.choices.length < 5 && qForm.jenis !== "true_false" && (
                     <button
                       type="button"
                       onClick={addChoice}
@@ -605,7 +612,7 @@ export default function ExamDetailPage() {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Jenis Soal</label>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-4 gap-2">
                   {JENIS_OPTIONS.map((opt) => {
                     const Icon = opt.icon;
                     return (
@@ -613,7 +620,7 @@ export default function ExamDetailPage() {
                         key={opt.value}
                         type="button"
                         onClick={() => setGenerateForm({ ...generateForm, jenis: opt.value })}
-                        className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${generateForm.jenis === opt.value ? "border-purple-500 bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400" : "border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700"}`}
+                        className={`flex flex-col items-center gap-1 px-2 py-2 rounded-lg border text-xs font-medium transition-colors ${generateForm.jenis === opt.value ? "border-purple-500 bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400" : "border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700"}`}
                       >
                         <Icon size={16} />
                         {opt.label}

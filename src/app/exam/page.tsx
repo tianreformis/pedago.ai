@@ -14,16 +14,18 @@ export default function ExamPublicPage() {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (token) {
-      const stored = localStorage.getItem("user");
-      if (stored) {
-        try {
-          const user = JSON.parse(stored);
-          if (user.role === "student") setIsLoggedInStudent(true);
-        } catch {}
-      }
+    if (!token) {
+      router.push("/login");
+      return;
     }
-  }, []);
+    const stored = localStorage.getItem("user");
+    if (stored) {
+      try {
+        const user = JSON.parse(stored);
+        if (user.role === "student") setIsLoggedInStudent(true);
+      } catch {}
+    }
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

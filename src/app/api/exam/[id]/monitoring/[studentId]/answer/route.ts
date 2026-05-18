@@ -48,7 +48,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     for (const a of answers) {
       if (a.score !== null) {
         totalScore += a.score;
-      } else if (a.question.jenis === "pilihan_ganda") {
+      } else if (a.question.jenis === "pilihan_ganda" || a.question.jenis === "true_false") {
         const kj = a.question.kunciJawaban as Record<string, unknown> | null;
         if (a.jawaban === (kj?.pilihan as string)) {
           totalScore += a.question.point;

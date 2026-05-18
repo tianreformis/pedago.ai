@@ -499,12 +499,12 @@ export default function MonitoringPage() {
                             <div className="space-y-0.5 mb-1">
                               {a.choices.map((c) => {
                                 const isKunci = kunci?.pilihan ? (Array.isArray(kunci.pilihan) ? kunci.pilihan.includes(c.label) : kunci.pilihan === c.label) : false;
-                                const isSelected = a.jenis === "pilihan_ganda" ? a.jawaban === c.label : (JSON.parse(a.jawaban || "[]") as string[]).includes(c.label);
+                                const isSelected = (a.jenis === "pilihan_ganda" || a.jenis === "true_false") ? a.jawaban === c.label : (JSON.parse(a.jawaban || "[]") as string[]).includes(c.label);
                                 return (
                                   <div key={c.label} className={`flex items-center gap-1 text-xs px-1.5 py-0.5 rounded ${isKunci ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300" : isSelected ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300" : "text-gray-500"}`}>
                                     {isSelected && (isKunci ? <CheckCircle size={10} /> : <XCircle size={10} />)}
                                     {!isSelected && isKunci && <CheckCircle size={10} />}
-                                    <span className="font-mono">{c.label.toUpperCase()}.</span>
+                                    {a.jenis !== "true_false" && <span className="font-mono">{c.label.toUpperCase()}.</span>}
                                     <span className="truncate">{c.teks}</span>
                                     {isKunci && <span className="text-[10px] opacity-70 ml-auto">(kunci)</span>}
                                   </div>

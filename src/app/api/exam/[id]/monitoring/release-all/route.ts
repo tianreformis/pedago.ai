@@ -40,7 +40,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         const answer = student.answers.find((a) => a.questionId === question.id);
         if (!answer) continue;
 
-        if (question.jenis === "pilihan_ganda") {
+        if (question.jenis === "pilihan_ganda" || question.jenis === "true_false") {
           const kj = question.kunciJawaban as Record<string, unknown> | null;
           if (answer.jawaban === (kj?.pilihan as string)) {
             totalScore += question.point;

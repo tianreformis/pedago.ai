@@ -29,7 +29,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const questionType = jenis || "essay";
     const pilihanCount = Math.min(Math.max(parseInt(jumlahPilihan) || 4, 3), 10);
 
-    if (!["essay", "pilihan_ganda", "multiple_answer"].includes(questionType)) {
+    if (!["essay", "pilihan_ganda", "multiple_answer", "true_false"].includes(questionType)) {
       return NextResponse.json({ error: "Jenis soal tidak valid" }, { status: 400 });
     }
 
@@ -53,6 +53,20 @@ Format output JSON array:
 ${exampleChoices}
     ],
     "kunciJawaban": { "pilihan": "${choiceLabels[0]}" }
+  }
+]`;
+    } else if (questionType === "true_false") {
+      formatInstructions = `Buat soal dengan 2 pilihan jawaban: "benar" (berarti pernyataan benar) dan "salah" (berarti pernyataan salah). Tentukan jawaban yang benar.
+Format output JSON array:
+[
+  {
+    "pertanyaan": "teks soal",
+    "point": 10,
+    "choices": [
+      { "label": "benar", "teks": "Benar" },
+      { "label": "salah", "teks": "Salah" }
+    ],
+    "kunciJawaban": { "pilihan": "benar" }
   }
 ]`;
     } else {
@@ -142,7 +156,7 @@ Kembalikan HANYA JSON array, tanpa markdown, tanpa teks lain.`;
         data: questionData as any,
       });
 
-      if (q.choices && Array.isArray(q.choices) && (questionType === "pilihan_ganda" || questionType === "multiple_answer")) {
+      if (q.choices && Array.isArray(q.choices) && (questionType === "pilihan_ganda" || questionType === "multiple_answer" || questionType === "true_false")) {
         const choiceData = (q.choices as { label: string; teks: string }[]).map((c) => ({
           questionId: question.id,
           label: c.label,

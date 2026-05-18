@@ -46,7 +46,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       if (!kunciJawaban) return false;
       const kj = kunciJawaban as Record<string, unknown>;
       if (jenis === "essay") return false;
-      if (jenis === "pilihan_ganda") {
+      if (jenis === "pilihan_ganda" || jenis === "true_false") {
         return jawaban === kj.pilihan;
       }
       if (jenis === "multiple_answer") {

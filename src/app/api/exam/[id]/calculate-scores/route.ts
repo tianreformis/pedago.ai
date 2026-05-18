@@ -52,7 +52,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
           continue; // essay score stays 0, teacher grades manually
         }
 
-        if (jenis === "pilihan_ganda") {
+        if (jenis === "pilihan_ganda" || jenis === "true_false") {
           if (answer.jawaban === (kj?.pilihan as string)) {
             totalScore += point;
           }
