@@ -33,13 +33,7 @@ export default function NotFoundPage() {
               <Home size={18} />
               Kembali ke Beranda
             </Link>
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center gap-2 border-2 border-white/30 text-white font-semibold px-6 py-3 rounded-xl hover:bg-white/10 transition-colors w-full sm:w-auto justify-center"
-            >
-              <ArrowLeft size={18} />
-              Dashboard
-            </Link>
+
           </div>
         </div>
       </div>
