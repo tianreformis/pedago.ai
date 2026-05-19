@@ -6,5 +6,6 @@
     {
     "PROMPT": "$G "
     },
-    "workbench.colorTheme": "Solarized Light",
+    // "workbench.colorTheme": "Solarized Light",
+    "workbench.colorTheme": "Monokai Dimmed",
 }
